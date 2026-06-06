@@ -22,7 +22,16 @@
 - Scope: [key in-scope items]
 - Notable constraints or decisions: [any]
 
-### [HH:MM UTC] [Phase or Decision Point]
+### [HH:MM UTC] Build Phase
+
+[Description of what was built during this phase. Include decisions made, obstacles, solutions.]
+
+### [HH:MM UTC] Tests Run
+
+<!-- Required entry. Format: "Tests: X passed, Y failed. [Action taken if any failures.]" -->
+Tests: [X] passed, [Y] failed.
+
+### [HH:MM UTC] [Any Additional Phase]
 
 <!-- Append entries here as work progresses. Record:
      - What you built or decided
@@ -32,5 +41,5 @@
 [ENTRY]
 
 <!-- Final entry must always be one of these: -->
-<!-- "Build complete. Success criteria reviewed." -->
+<!-- "Build complete. Success criteria reviewed. All tests passing." -->
 <!-- "Build aborted. See ABORTED.md." -->

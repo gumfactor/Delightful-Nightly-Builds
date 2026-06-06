@@ -58,10 +58,22 @@ builds/YYYY-MM-DD/
 └── [list every file]
 ```
 
+## Testing Strategy
+
+- **Framework:** <!-- e.g. pytest, Playwright, Vitest, Jest -->
+- **Test file location:** <!-- e.g. tests/test_main.py, tests/*.spec.js -->
+- **Run command:** <!-- e.g. "python -m pytest tests/ -v" or "npx playwright test" -->
+- **What will be tested:**
+  - [Core function / behavior 1]
+  - [Core function / behavior 2]
+  - [Edge case]
+  - [Error handling scenario]
+
 ## Success Criteria
 
-<!-- 3–5 specific, verifiable criteria. You will check each one when done. -->
-1. [Criterion — specific and testable]
+<!-- 3–5 specific, verifiable criteria. You will check each one when done.
+     At least one criterion must be "All tests pass." -->
+1. All tests pass (zero failures)
 2. [Criterion — specific and testable]
 3. [Criterion — specific and testable]
 4. [Optional]

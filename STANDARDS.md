@@ -25,6 +25,12 @@
 - [ ] All code runs without modification (no broken imports, missing files, missing dependencies)
 - [ ] `builds/index.md` has been updated with this build's entry
 
+### Tests
+- [ ] At least one test file exists in a `tests/` subfolder
+- [ ] Minimum test count met for complexity level (Focused: 3, Solid: 5, Ambitious: 8)
+- [ ] All tests pass with zero failures (run the full test suite before committing)
+- [ ] `BUILD_LOG.md` contains a test results entry: `Tests: X passed, Y failed`
+
 ### Documentation
 - [ ] `Manual.md` exists for any build with a user interface
 - [ ] Every function or class over 10 lines has a descriptive docstring or comment block
@@ -59,6 +65,16 @@
 - `.gitignore` note for `node_modules/` inside the build folder's README or PRD
 - Lock file (`package-lock.json`) committed if `npm install` was actually run
 
+### Testing
+- Tests cover the happy path through the main user flow
+- Tests include at least one edge case (empty input, boundary values, invalid data)
+- Test names are descriptive — reading them explains what the code does
+- Tests are independent — each test sets up and tears down its own state
+- Playwright tests use stable selectors (`data-testid` attributes preferred over CSS classes)
+- No tests that `sleep` or use arbitrary timeouts — use proper async/await or Playwright's auto-waiting
+- Python tests: use `pytest` fixtures for shared setup; avoid global state
+- Tests live in `tests/` and can be run with a single command documented in `Manual.md`
+
 ### Scope Discipline
 - If scope had to shrink mid-build, add a "Scope Changes" subsection to PRD.md explaining what was dropped and why
 - A partial build done well is better than an ambitious build done poorly
@@ -76,6 +92,11 @@ builds/YYYY-MM-DD/          ← Everything lives here
 ├── FutureFeatures.md       ← Required always
 ├── Manual.md               ← Required if any UI exists
 ├── index.html              ← Single-file web apps: place at folder root
+├── playwright.config.js    ← If using Playwright (HTML/JS builds)
+├── tests/                  ← All test files live here
+│   ├── test_*.py           ← Python (pytest)
+│   ├── *.spec.js           ← Playwright
+│   └── *.test.js           ← Jest / Vitest
 └── src/                    ← Multi-file builds: all code lives here
     ├── main.py             ← (or main.js, index.js, App.jsx, etc.)
     └── ...
@@ -107,8 +128,9 @@ Search your own created files for these patterns before committing:
 
 A build is complete when ALL of the following are true:
 
-1. All hard standards pass
-2. The code runs as described in `Manual.md` (or `PRD.md` if no Manual)
-3. `BUILD_LOG.md` final entry reads: `Build complete. Success criteria reviewed.`
-4. `builds/index.md` has been updated with this build's row
-5. All changes are committed and pushed to the remote
+1. All hard standards pass (including tests)
+2. The full test suite runs with zero failures
+3. The code runs as described in `Manual.md` (or `PRD.md` if no Manual)
+4. `BUILD_LOG.md` final entry reads: `Build complete. Success criteria reviewed. All tests passing.`
+5. `builds/index.md` has been updated with this build's row
+6. All changes are committed and pushed to the remote

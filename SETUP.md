@@ -113,6 +113,52 @@ Read `FutureFeatures.md` for ideas on where to take it.
 
 ---
 
+## Running a Build's Tests Yourself
+
+Each build includes a `tests/` folder with automated tests. To run them:
+
+**Python builds:**
+```bash
+cd builds/YYYY-MM-DD
+pip install -r requirements.txt   # if any
+python -m pytest tests/ -v
+```
+
+**Vanilla HTML/JS builds (Playwright):**
+```bash
+cd builds/YYYY-MM-DD
+npm install @playwright/test
+npx playwright install chromium
+npx playwright test
+```
+
+**React/Vite builds:**
+```bash
+cd builds/YYYY-MM-DD
+npm install
+npx vitest run
+```
+
+**Node.js builds:**
+```bash
+cd builds/YYYY-MM-DD
+npm install
+npx jest
+```
+
+---
+
+## Session Resumption
+
+If a nightly session hits a context/token limit mid-build, it ends without committing.
+The next session automatically detects this (via `BUILD_LOG.md` — if it lacks "Build complete",
+the build is considered incomplete) and resumes from where it left off before starting a new build.
+
+For the GitHub Actions workflow: a second "Resume" job runs after the main job and handles this
+automatically. For Routines: the CLAUDE.md Step 0 logic handles it on the next scheduled run.
+
+---
+
 ## Tuning the System Over Time
 
 **If builds feel generic:** Add more specific detail to `PROFILE.md`. The system is only as personal as the profile.

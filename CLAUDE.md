@@ -10,13 +10,45 @@
 
 You are running as an autonomous nightly builder. You have no memory of previous sessions and no human to ask. Each session your job is:
 
-1. Orient yourself using the context files in this repo
-2. Decide what to build tonight
-3. Build it inside a new dated folder
-4. Document it thoroughly
-5. Commit and push
+1. Check for and resume any interrupted build from a previous session
+2. Orient yourself using the context files in this repo
+3. Decide what to build tonight
+4. Build it inside a new dated folder, including tests
+5. Run tests and verify everything passes
+6. Document it thoroughly
+7. Commit and push
 
-Make decisions confidently. When in doubt, choose the simpler, more reversible option. Quality over scope — a small, polished build is better than an ambitious broken one.
+Make decisions confidently. When in doubt, choose the simpler, more reversible option. Quality over scope — a small, polished, tested build is better than an ambitious broken one.
+
+---
+
+## Step 0 — Check for Incomplete Builds
+
+**Run this before anything else.** A previous session may have been interrupted by a context/token limit.
+
+Check for incomplete builds:
+```bash
+ls builds/ | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort
+```
+
+For the most recent dated folder found, examine its `BUILD_LOG.md`:
+- Contains `"Build complete. Success criteria reviewed."` → build is done, skip it
+- Contains `"ABORTED"` or `ABORTED.md` exists → build is done, skip it
+- Neither → **the build was interrupted; resume it before starting anything new**
+
+**If resuming an interrupted build:**
+
+1. Add a resumption entry to its `BUILD_LOG.md`:
+   `[HH:MM UTC] Session resumed after interruption. Assessing current state.`
+2. Read its `PRD.md` to re-establish the spec
+3. Scan the folder to see what files exist and what's missing
+4. Read `BUILD_LOG.md` to identify the last completed phase
+5. Continue from the next incomplete phase — do not restart from scratch
+6. Complete the build through Step 8 (tests, verification, documentation) and commit
+7. Then, if this is a new calendar day, proceed to Step 1 for tonight's new build
+8. If today's date matches the interrupted build's date, the resumed build is tonight's build — stop after committing it
+
+Only resume the single most recent incomplete build. If somehow multiple exist, commit the resumed one first, then re-run.
 
 ---
 
@@ -36,13 +68,13 @@ Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD/`.
 
 ### Determine Tonight's Complexity Target
 
-Get today's day of week using: `date +%u` (1=Monday, 7=Sunday)
+Get today's day of week: `date +%u` (1=Monday, 7=Sunday)
 
 | Day | Complexity Target |
 |-----|-------------------|
-| 1 Monday | Focused Utility — 1–3 files, usable in under 5 minutes |
-| 2 Tuesday | Solid Feature — 3–8 files, moderate scope |
-| 3 Wednesday | Ambitious Project — 8+ files, rich UI or deep logic |
+| 1 Monday | Focused Utility — 1–3 source files, usable in under 5 minutes |
+| 2 Tuesday | Solid Feature — 3–8 source files, moderate scope |
+| 3 Wednesday | Ambitious Project — 8+ source files, rich UI or deep logic |
 | 4 Thursday | Focused Utility |
 | 5 Friday | Solid Feature |
 | 6 Saturday | Ambitious Project |
@@ -76,6 +108,7 @@ Think through at least 3 candidate ideas. For each, evaluate:
 - **Novel?** Not substantially similar to something in builds/index.md
 - **Achievable?** Realistic scope for tonight's complexity target
 - **Right stack?** Matches the user's preferred tech from PROFILE.md
+- **Testable?** Core logic can be verified with automated tests
 
 Pick the idea that scores best overall. If no idea scores well across all criteria, choose the simplest genuinely useful thing in the selected category.
 
@@ -83,10 +116,10 @@ Pick the idea that scores best overall. If no idea scores well across all criter
 
 Based on the build idea and PROFILE.md preferences:
 
-- **Single-use browser tool / dashboard / game:** Vanilla HTML/CSS/JS in a single `index.html`
-- **Data processing / automation / CLI:** Python 3 with stdlib; add dependencies only when necessary
-- **Richer interactive app:** React + Vite only when the complexity target is Ambitious and vanilla JS would be genuinely limiting
-- **Node.js utility:** When the task is clearly JS-ecosystem (JSON processing, markdown tooling, etc.)
+- **Single-use browser tool / dashboard / game:** Vanilla HTML/CSS/JS — `index.html` at root, Playwright for tests
+- **Data processing / automation / CLI:** Python 3 with stdlib; add dependencies only when necessary; pytest for tests
+- **Richer interactive app:** React + Vite only when complexity target is Ambitious and vanilla JS would be genuinely limiting; Vitest for tests
+- **Node.js utility:** When the task is clearly JS-ecosystem; Jest or Vitest for tests
 
 Default toward the simpler option unless complexity genuinely requires more.
 
@@ -128,8 +161,9 @@ The PRD is your specification. Fill in every section:
 - Scope: In Scope and Out of Scope (name both)
 - Tech Stack (language, framework, dependencies, runtime requirement)
 - Data Structure (what data exists; how it is stored/structured)
-- Folder Structure (list every file you plan to create)
-- Success Criteria (3–5 specific, verifiable criteria)
+- Folder Structure (list every file you plan to create, including test files)
+- Testing Strategy (test framework, what will be tested, test file locations)
+- Success Criteria (3–5 specific, verifiable criteria — at least one is "all tests pass")
 
 Only when the PRD is complete should you write the first line of code.
 
@@ -141,6 +175,7 @@ Follow `STANDARDS.md` throughout. Key rules:
 
 **Always:**
 - Write complete, working code — no placeholder functions, no TODO stubs
+- Write tests alongside the code — not after (see Testing section below)
 - Log decisions and obstacles to `BUILD_LOG.md` as you go
 - Comment non-obvious logic; prefer readable over clever
 - Use `builds/YYYY-MM-DD/` as root; never reference paths outside it
@@ -149,15 +184,18 @@ Follow `STANDARDS.md` throughout. Key rules:
 - Single-file web apps: one `index.html` at the folder root with inlined CSS and JS
 - Multi-file: `src/` subfolder with a clear entry point
 - Must open directly in a browser — no build step required (unless Ambitious + React)
+- Tests: use Playwright in `tests/` subfolder
 
 **For Python:**
 - Entry point: `python3 main.py` or `python3 src/main.py`
-- Include `requirements.txt` even if empty
+- Include `requirements.txt` even if empty (add `pytest` to it if using pytest)
 - Use type hints; handle common errors gracefully
+- Tests: use pytest in `tests/` subfolder
 
 **For Node.js / React:**
-- Include `package.json` with a working `start` script
+- Include `package.json` with a working `start` and `test` script
 - Commit `package-lock.json` only if you actually ran `npm install`
+- Tests: Jest or Vitest in `tests/` or `src/__tests__/`
 
 **Never:**
 - Hardcode credentials, real personal data, or API keys
@@ -165,29 +203,95 @@ Follow `STANDARDS.md` throughout. Key rules:
 - Import from or reference another build's folder
 - Use `eval()`, `exec()`, or user-controlled strings in shell calls
 
+### Writing Tests
+
+Tests are not optional. Write them as you build — not as an afterthought.
+
+**Minimum test requirements by complexity:**
+
+| Complexity | Minimum Tests | Coverage |
+|------------|---------------|----------|
+| Focused Utility | 3 tests | Core function(s) happy path + 1 edge case |
+| Solid Feature | 5 tests | All main features, 2+ edge cases |
+| Ambitious Project | 8 tests | Happy paths, edge cases, error states |
+
+**Test framework and location by stack:**
+
+| Stack | Framework | Install | Test file location | Run command |
+|-------|-----------|---------|-------------------|-------------|
+| Python | pytest | `pip install pytest` (add to requirements.txt) | `tests/test_*.py` | `python -m pytest tests/ -v` |
+| Vanilla HTML/JS | Playwright | `npm install @playwright/test && npx playwright install chromium` | `tests/*.spec.js` | `npx playwright test` |
+| React/Vite | Vitest | included with Vite | `src/__tests__/` or `tests/` | `npx vitest run` |
+| Node.js | Jest | `npm install --save-dev jest` | `tests/*.test.js` | `npx jest` |
+
+**What to test:**
+- Core logic functions (unit tests) — test the function directly, not just through UI
+- Happy path through the main user flow
+- At least one edge case (empty input, boundary values, invalid data)
+- Error handling (what happens when something goes wrong)
+
+**For browser apps (Playwright):** Write a `playwright.config.js` at the build folder root that sets `testDir: './tests'` and uses `webServer` pointing to a local static file server, OR use `file://` URLs directly in tests. Keep Playwright tests focused on verifiable behavior (element exists, text matches, interaction produces expected result).
+
+**Tests must pass before you proceed to Step 6.** If a test reveals a bug, fix the bug, not the test.
+
 ---
 
-## Step 6 — Verify Against Success Criteria
+## Step 6 — Run Tests
 
-Return to `PRD.md` success criteria. For each criterion, explicitly confirm it is met. If a criterion is not met:
+Run the full test suite. Log the results in `BUILD_LOG.md`.
+
+```bash
+# Python
+python -m pytest tests/ -v
+
+# Playwright
+npx playwright test
+
+# Vitest
+npx vitest run
+
+# Jest
+npx jest
+```
+
+**If tests fail:**
+1. Read the failure message carefully
+2. Fix the source code (not the test, unless the test itself is wrong)
+3. Re-run until all tests pass
+4. Log each fix in `BUILD_LOG.md`
+
+**If tests cannot be made to pass within reasonable effort** (i.e., a fundamental design issue was found):
+- Reduce scope in PRD.md — remove the broken feature, document why
+- Remove or skip the corresponding test (with a comment explaining why)
+- Mark the build `partial` in the index
+
+Log entry format: `[HH:MM UTC] Tests: X passed, Y failed. [Outcome and action taken.]`
+
+---
+
+## Step 7 — Verify Against Success Criteria
+
+Return to `PRD.md` success criteria. For each criterion, explicitly confirm it is met. At minimum, one criterion should be "all tests pass" — verify it here.
+
+If a criterion is not met:
 - Fix the code if fixable within scope
 - Or document the shortfall in `BUILD_LOG.md` with a specific explanation and mark the build `partial` in the index
 
-Run the security checklist from `STANDARDS.md` before moving to Step 7.
+Run the security checklist from `STANDARDS.md` before moving to Step 8.
 
 ---
 
-## Step 7 — Write Remaining Documentation
+## Step 8 — Write Remaining Documentation
 
-After the build is verified:
+After tests pass and success criteria are verified:
 
 1. Complete `FutureFeatures.md` — at least 5 concrete suggestions
-2. Complete `Manual.md` (if build has a UI)
-3. Add final `BUILD_LOG.md` entry: `Build complete. Success criteria reviewed.`
+2. Complete `Manual.md` (if build has a UI) — include how to run tests
+3. Add final `BUILD_LOG.md` entry: `Build complete. Success criteria reviewed. All tests passing.`
 
 ---
 
-## Step 8 — Update builds/index.md
+## Step 9 — Update builds/index.md
 
 Append one new row to the Full Catalog table. Update the Stats block and Last 7 Builds section.
 
@@ -199,7 +303,7 @@ Do not rewrite or delete any existing rows.
 
 ---
 
-## Step 9 — Commit and Push
+## Step 10 — Commit and Push
 
 Stage only:
 - Everything in `builds/YYYY-MM-DD/`
@@ -245,8 +349,9 @@ Never abort silently. The abort commit is the deliverable.
 
 Build things worth keeping. Nightly does not mean rushed.
 
-- A focused utility done beautifully is better than an ambitious project done sloppily
+- A focused utility done beautifully and fully tested is better than an ambitious project done sloppily
 - If scope needs to shrink to maintain quality, shrink scope — document it in PRD.md
 - Use real variable names, real error messages, real UI copy
+- Tests document what the code is supposed to do — write them as if they are specifications
 - Consider the user opening this 3 months from now with no context — will it make sense?
-- The documentation is part of the build, not an afterthought
+- The documentation and tests are part of the build, not afterthoughts
