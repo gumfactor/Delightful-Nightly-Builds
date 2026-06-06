@@ -105,14 +105,18 @@ Read `builds/ideas.md`. Collect all rows where Status = `pending`.
 
 **If no pending ideas exist:** skip the lottery entirely. Go to Step 2d.
 
-**If pending ideas exist:** generate a random integer 1–100.
-- **1–25 → Lottery draw.** Proceed as follows:
-  1. For each pending idea, compute tickets: `tickets = Your Rating` if rated; `tickets = 5` if blank.
-  2. Build a weighted pool: for each idea, add it to the pool `[tickets]` times.
-  3. Pick one entry from the pool at random. That idea is tonight's build.
-  4. Update its Status to `built` in `builds/ideas.md`.
-  5. Skip Steps 2d and 2e. Go directly to Step 2f.
-- **26–100 → Fresh ideas.** Go to Step 2d.
+**If pending ideas exist:**
+1. Count pending ideas that have a numeric `Your Rating` (call this `R`).
+2. Compute tonight's lottery chance: `lottery_chance = min(75, 25 + R * 2)` percent.
+   - 0 rated → 25% &nbsp;&nbsp; 5 rated → 35% &nbsp;&nbsp; 10 rated → 45% &nbsp;&nbsp; 25+ rated → 75% (cap)
+3. Generate a random integer 1–100.
+   - **Roll ≤ lottery_chance → Lottery draw.** Proceed as follows:
+     1. For each pending idea, compute tickets: `tickets = Your Rating` if rated; `tickets = 5` if blank.
+     2. Build a weighted pool: for each idea, add it to the pool `[tickets]` times.
+     3. Pick one entry from the pool at random. That idea is tonight's build.
+     4. Update its Status to `built` in `builds/ideas.md`.
+     5. Skip Steps 2d and 2e. Go directly to Step 2f.
+   - **Roll > lottery_chance → Fresh ideas.** Go to Step 2d.
 
 Record in `WhyThis.md` whether tonight's build came from the lottery or fresh generation.
 
