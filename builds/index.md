@@ -27,9 +27,9 @@ in format: `YYYY-MM-DD — [Category ID] — [Title] ([Status])`_
 
 ## Full Catalog
 
-| Date | Category | Title | Short Description | Tech | Status | Your Rating |
-|------|----------|-------|-------------------|------|--------|-------------|
-| — | — | — | *No builds yet — this row is a placeholder* | — | — | — |
+| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating |
+|------|----------|------------|-------|-------------------|------|--------|-------------|
+| — | — | — | — | *No builds yet — this row is a placeholder* | — | — | — |
 
 ---
 

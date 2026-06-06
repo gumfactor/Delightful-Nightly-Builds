@@ -10,9 +10,12 @@
 
 ## How the Lottery Works
 
-Each night there is a **25% chance** Claude draws tonight's build from this backlog
-instead of generating fresh ideas. Within that draw, each pending idea's probability
-is proportional to its ticket count:
+Claude selects tonight's **category** and **complexity target** first (from the rotation),
+then filters this backlog to matching ideas before running the draw. Ideas that don't
+match tonight's category or are too complex for tonight's target are skipped — if the
+filtered pool is empty, Claude generates fresh ideas instead.
+
+When a draw does happen, each matching idea's probability is proportional to its ticket count:
 
 | Your Rating | Tickets in Draw |
 |-------------|-----------------|
@@ -31,9 +34,9 @@ always generates fresh ideas.
 
 ## Backlog
 
-| ID | Date Added | Category | Title | Description | Your Rating | Status |
-|----|------------|----------|-------|-------------|-------------|--------|
-| — | — | — | — | *Empty — ideas will appear here after the first build session* | — | — |
+| ID | Date Added | Category | Complexity | Title | Description | Your Rating | Status |
+|----|------------|----------|------------|-------|-------------|-------------|--------|
+| — | — | — | — | — | *Empty — ideas will appear here after the first build session* | — | — |
 
 ---
 

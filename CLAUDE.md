@@ -99,30 +99,7 @@ in builds rated 8–10 ("high") vs. builds rated 1–4 ("low"). Hold this as a s
 
 ---
 
-### 2c — Run the Lottery
-
-Read `builds/ideas.md`. Collect all rows where Status = `pending`.
-
-**If no pending ideas exist:** skip the lottery entirely. Go to Step 2d.
-
-**If pending ideas exist:**
-1. Count pending ideas that have a numeric `Your Rating` (call this `R`).
-2. Compute tonight's lottery chance: `lottery_chance = min(75, 25 + R * 2)` percent.
-   - 0 rated → 25% &nbsp;&nbsp; 5 rated → 35% &nbsp;&nbsp; 10 rated → 45% &nbsp;&nbsp; 25+ rated → 75% (cap)
-3. Generate a random integer 1–100.
-   - **Roll ≤ lottery_chance → Lottery draw.** Proceed as follows:
-     1. For each pending idea, compute tickets: `tickets = Your Rating` if rated; `tickets = 5` if blank.
-     2. Build a weighted pool: for each idea, add it to the pool `[tickets]` times.
-     3. Pick one entry from the pool at random. That idea is tonight's build.
-     4. Update its Status to `built` in `builds/ideas.md`.
-     5. Skip Steps 2d and 2e. Go directly to Step 2f.
-   - **Roll > lottery_chance → Fresh ideas.** Go to Step 2d.
-
-Record in `WhyThis.md` whether tonight's build came from the lottery or fresh generation.
-
----
-
-### 2d — Choose a Category (Fresh Path Only)
+### 2c — Choose Tonight's Category
 
 Check the "Last 7 Builds" section of `builds/index.md`. Choose a category not recently used.
 If the preference prior (Step 2b) revealed strong category preferences, factor that in —
@@ -140,11 +117,42 @@ but don't let it override the rotation entirely. Variety matters.
 | H  | Developer Tool | Code formatter, schema inspector, diff tool, snippet library |
 | I  | Life Admin Helper | Budget tracker, meal planner, habit log, checklist |
 
+Choose the category now. Both the lottery and fresh idea generation use it.
+
+---
+
+### 2d — Run the Lottery
+
+Read `builds/ideas.md`. Collect all rows where Status = `pending`.
+
+**Filter the pool:** Keep only ideas where:
+- **Category** matches tonight's chosen category (Step 2c), AND
+- **Complexity** is compatible with tonight's target: `focused` ideas are eligible any night;
+  `solid` ideas are eligible on solid or ambitious nights; `ambitious` ideas are eligible on ambitious nights only.
+
+**If the filtered pool is empty:** skip the lottery entirely. Go to Step 2e.
+
+**If the filtered pool has entries:**
+1. Count filtered ideas that have a numeric `Your Rating` (call this `R`).
+2. Compute tonight's lottery chance: `lottery_chance = min(75, 25 + R * 2)` percent.
+   - 0 rated → 25% &nbsp;&nbsp; 5 rated → 35% &nbsp;&nbsp; 10 rated → 45% &nbsp;&nbsp; 25+ rated → 75% (cap)
+3. Generate a random integer 1–100.
+   - **Roll ≤ lottery_chance → Lottery draw.** Proceed as follows:
+     1. For each idea in the filtered pool, compute tickets: `tickets = Your Rating` if rated; `tickets = 5` if blank.
+     2. Build a weighted pool: for each idea, add it to the pool `[tickets]` times.
+     3. Pick one entry from the pool at random. That idea is tonight's build.
+     4. Update its Status to `built` in `builds/ideas.md`.
+     5. Skip Step 2e. Go directly to Step 2f.
+   - **Roll > lottery_chance → Fresh ideas.** Go to Step 2e.
+
+Record in `WhyThis.md` whether tonight's build came from the lottery or fresh generation, the roll, and the filtered pool size.
+
 ---
 
 ### 2e — Generate and Evaluate Fresh Ideas (Fresh Path Only)
 
-Think through at least 3 candidate ideas. For each, evaluate:
+Generate at least 3 candidate ideas within tonight's chosen category and complexity target.
+For each, evaluate:
 
 - **Self-contained?** No cloud infrastructure required, no unconfigured paid APIs
 - **Reversible?** Deleting the folder removes it entirely
@@ -159,6 +167,8 @@ Pick the idea that scores best overall. If no idea scores well, choose the simpl
 **After choosing, append every non-winning candidate to `builds/ideas.md`** with:
 - A new sequential ID (increment from the last row)
 - Today's date
+- Tonight's category ID
+- Tonight's complexity target (`focused`, `solid`, or `ambitious`)
 - Status: `pending`
 - Your Rating: `—`
 
@@ -349,9 +359,10 @@ After tests pass and success criteria are verified:
 
 Append one new row to the Full Catalog table. Update the Stats block and Last 7 Builds section.
 
-Table columns: `| Date | Category | Title | Short Description | Tech | Status | Your Rating |`
+Table columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating |`
 
 Leave `Your Rating` as `—`. The user fills this in after reviewing the build.
+Set `Complexity` to `focused`, `solid`, or `ambitious` to match what was built.
 
 Status: `complete`, `partial`, or `aborted`
 

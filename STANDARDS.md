@@ -23,7 +23,7 @@
 - [ ] `BUILD_LOG.md` exists and has at least one entry per major phase
 - [ ] `FutureFeatures.md` exists and has at least 5 concrete suggestions
 - [ ] All code runs without modification (no broken imports, missing files, missing dependencies)
-- [ ] `builds/index.md` has been updated with this build's entry (including blank `Your Rating` column)
+- [ ] `builds/index.md` has been updated with this build's entry (Category, Complexity, and blank `Your Rating` all filled)
 - [ ] Non-winning fresh ideas have been appended to `builds/ideas.md` (fresh path only; not required for lottery draws)
 
 ### Tests
