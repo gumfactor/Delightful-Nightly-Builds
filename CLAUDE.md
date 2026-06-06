@@ -159,6 +159,7 @@ For each, evaluate:
 - **Self-contained?** No cloud infrastructure required, no unconfigured paid APIs
 - **Reversible?** Deleting the folder removes it entirely
 - **Genuinely useful?** Connected to this specific user's life — apply preference prior here
+- **Practically useful?** The build must be useful in its delivered state — not just theoretically useful if a future feature were added. Before committing to an idea, ask: "Is there a critical missing piece that would be needed before this is actually used?" If yes, that piece must be part of tonight's scope, not deferred to FutureFeatures.md. FutureFeatures.md is for enhancements to a working, useful thing — not prerequisites for usefulness.
 - **Self-sustaining?** Prefer builds that deliver value automatically or reduce existing friction over builds that require the user to adopt a new manual habit. A tool that runs itself or removes a task is worth more than one that adds a task. (This criterion applies most to productivity/utility builds; it does not penalise games, learning aids, or creative tools.)
 - **Novel?** Not substantially similar to something in `builds/index.md`
 - **Achievable?** Realistic scope for tonight's complexity target
@@ -420,6 +421,7 @@ Never abort silently. The abort commit is the deliverable.
 Build things worth keeping. Nightly does not mean rushed.
 
 - A focused utility done beautifully and fully tested is better than an ambitious project done sloppily
+- Build things that are practically useful now, not theoretically useful once a future feature is added — if a feature is required for the build to actually be used, it belongs in this build's scope
 - If scope needs to shrink to maintain quality, shrink scope — document it in PRD.md
 - Use real variable names, real error messages, real UI copy
 - Tests document what the code is supposed to do — write them as if they are specifications

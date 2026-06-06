@@ -80,6 +80,7 @@
 - If scope had to shrink mid-build, add a "Scope Changes" subsection to PRD.md explaining what was dropped and why
 - A partial build done well is better than an ambitious build done poorly
 - If a feature can't be done correctly, remove it rather than shipping it broken
+- **Practical usefulness over theoretical usefulness** — FutureFeatures.md is for enhancements to a working, valuable thing. If a feature is required to make the build genuinely useful (not just interesting in concept), it must be part of the current build's scope. Ship something the user will actually open again, not something that requires a sequel to be worth using.
 
 ---
 
