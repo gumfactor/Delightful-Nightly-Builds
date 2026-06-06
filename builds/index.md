@@ -2,8 +2,7 @@
 
 > **Claude:** Append one row to the Full Catalog table each night. Update the Stats block and Last 7 Builds section.
 > Never delete or rewrite existing rows — this is an append-only record.
-> **You:** Add a rating (1–10) in the `Your Rating` column after reviewing a build. Leave blank if you haven't reviewed it yet.
-> Ratings inform future build idea generation — Claude reads them as a preference signal.
+> **You:** Add `Your Rating` (1–10) and `Rating Notes` after reviewing a build. Both feed future build decisions.
 
 ---
 
@@ -27,9 +26,9 @@ in format: `YYYY-MM-DD — [Category ID] — [Title] ([Status])`_
 
 ## Full Catalog
 
-| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating |
-|------|----------|------------|-------|-------------------|------|--------|-------------|
-| — | — | — | — | *No builds yet — this row is a placeholder* | — | — | — |
+| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |
+|------|----------|------------|-------|-------------------|------|--------|-------------|--------------|
+| — | — | — | — | *No builds yet — this row is a placeholder* | — | — | — | — |
 
 ---
 

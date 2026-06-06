@@ -89,10 +89,12 @@ Get today's day of week: `date +%u` (1=Monday, 7=Sunday)
 Read `builds/index.md`. Find all rows where `Your Rating` contains a number (not `—`).
 
 **If 3 or more rated builds exist:**
-Identify patterns — which categories, tech stacks, complexity levels, and themes appear
-in builds rated 8–10 ("high") vs. builds rated 1–4 ("low"). Hold this as a soft prior:
+Read both `Your Rating` and `Rating Notes` for each rated build. Identify patterns — which
+categories, tech stacks, complexity levels, and themes appear in high-rated (8–10) vs.
+low-rated (1–4) builds. Pay particular attention to the notes: they explain *why* a build
+scored as it did and are more actionable than the number alone. Hold this as a soft prior:
 - When evaluating fresh ideas, give extra weight to ideas that share characteristics with high-rated builds on the "genuinely useful" criterion
-- Ideas that echo low-rated patterns need a stronger case on other criteria to win
+- Ideas that echo low-rated patterns — especially patterns the notes call out (e.g. "requires manual discipline", "too similar to existing tools") — need a stronger case to win
 - This is judgment, not arithmetic — a compelling idea in a "low-rated" category can still win outright
 
 **If fewer than 3 rated builds exist:** insufficient signal; skip this step and evaluate all ideas equally.
@@ -157,6 +159,7 @@ For each, evaluate:
 - **Self-contained?** No cloud infrastructure required, no unconfigured paid APIs
 - **Reversible?** Deleting the folder removes it entirely
 - **Genuinely useful?** Connected to this specific user's life — apply preference prior here
+- **Self-sustaining?** Prefer builds that deliver value automatically or reduce existing friction over builds that require the user to adopt a new manual habit. A tool that runs itself or removes a task is worth more than one that adds a task. (This criterion applies most to productivity/utility builds; it does not penalise games, learning aids, or creative tools.)
 - **Novel?** Not substantially similar to something in `builds/index.md`
 - **Achievable?** Realistic scope for tonight's complexity target
 - **Right stack?** Matches the user's preferred tech from PROFILE.md
@@ -359,9 +362,9 @@ After tests pass and success criteria are verified:
 
 Append one new row to the Full Catalog table. Update the Stats block and Last 7 Builds section.
 
-Table columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating |`
+Table columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
 
-Leave `Your Rating` as `—`. The user fills this in after reviewing the build.
+Leave `Your Rating` and `Rating Notes` as `—`. The user fills these in after reviewing the build.
 Set `Complexity` to `focused`, `solid`, or `ambitious` to match what was built.
 
 Status: `complete`, `partial`, or `aborted`
