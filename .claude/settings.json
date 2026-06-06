@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(mkdir:*)",
+      "Bash(date:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx:*)",
+      "Write(builds/**)",
+      "Write(builds/index.md)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(rmdir:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(npm install -g:*)",
+      "Bash(pip install:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Write(CLAUDE.md)",
+      "Write(PROFILE.md)",
+      "Write(STANDARDS.md)",
+      "Write(templates/**)",
+      "Write(.claude/**)",
+      "Write(.github/**)",
+      "Write(SETUP.md)"
+    ]
+  }
+}

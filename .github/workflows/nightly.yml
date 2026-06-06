@@ -1,0 +1,70 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 2:00 AM UTC daily — adjust to your preferred time
+  workflow_dispatch:        # Manual trigger for testing
+    inputs:
+      debug_note:
+        description: 'Optional note to include in session context'
+        required: false
+        default: ''
+
+permissions:
+  contents: write           # Required for Claude to commit and push
+
+jobs:
+  nightly-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # Full history so Claude can read builds/index.md
+
+      - name: Configure git identity
+        run: |
+          git config user.name "Claude Nightly Builder"
+          git config user.email "noreply@anthropic.com"
+
+      - name: Run nightly build
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are running a scheduled nightly build session for the
+            Delightful-Nightly-Builds repository.
+
+            Your full operating instructions are in CLAUDE.md at the root of
+            this repo. Read it now before doing anything else.
+
+            Your task: build one new project tonight by following the process
+            in CLAUDE.md exactly.
+
+            1. Read CLAUDE.md, PROFILE.md, and builds/index.md to orient yourself.
+            2. Decide what to build using the framework in CLAUDE.md Section 2.
+            3. Create builds/YYYY-MM-DD/ (today's UTC date).
+            4. Write PRD.md first — then build — then write all documentation.
+            5. Verify your build meets the PRD success criteria.
+            6. Update builds/index.md with tonight's entry.
+            7. Commit and push. Stage only builds/YYYY-MM-DD/ and builds/index.md.
+
+            Constraints:
+            - Do not modify any files outside builds/YYYY-MM-DD/ and builds/index.md.
+            - If you cannot complete the build safely, follow the Abort Protocol in CLAUDE.md.
+            - Do not ask for human input — make all decisions autonomously.
+            - Quality over quantity: a small, working, well-documented build is the goal.
+
+            Begin now.
+          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep"
+          max_turns: 80
+
+      - name: Verify build was committed
+        run: |
+          echo "=== Latest 3 commits ==="
+          git log --oneline -3
+          echo ""
+          echo "=== Latest build folder ==="
+          ls builds/ | grep -v index.md | sort | tail -1 || echo "No dated folders found"
