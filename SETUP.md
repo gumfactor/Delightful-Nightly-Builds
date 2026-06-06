@@ -39,21 +39,23 @@ You are running a scheduled nightly build session for the Delightful-Nightly-Bui
 
 Your full operating instructions are in CLAUDE.md at the root of this repo. Read it now before doing anything else.
 
-Your task: build one new project tonight by following the process in CLAUDE.md exactly.
+Your task: follow the process in CLAUDE.md exactly — including Step 0 (check for incomplete builds), then build tonight's project, write and run tests, verify success criteria, document, and push.
 
-1. Read CLAUDE.md, PROFILE.md, and builds/index.md to orient yourself.
-2. Decide what to build using the framework in CLAUDE.md Section 2.
-3. Create builds/YYYY-MM-DD/ (today's UTC date).
-4. Write PRD.md first — then build — then write all documentation.
-5. Verify your build meets the PRD success criteria.
-6. Update builds/index.md with tonight's entry.
-7. Commit and push. Stage only builds/YYYY-MM-DD/ and builds/index.md.
+1. Read CLAUDE.md fully, then PROFILE.md, then builds/index.md.
+2. Step 0: check for any incomplete build from a prior session and resume if found.
+3. Decide what to build using the framework in CLAUDE.md.
+4. Create builds/YYYY-MM-DD/ (today's UTC date).
+5. Write PRD.md first (including Testing Strategy section) — then build.
+6. Write tests as you build. Run them: they must all pass.
+7. Verify success criteria, write documentation.
+8. Update builds/index.md.
+9. Commit and push. Stage only builds/YYYY-MM-DD/ and builds/index.md.
 
 Constraints:
 - Do not modify any files outside builds/YYYY-MM-DD/ and builds/index.md.
-- If you cannot complete the build safely, follow the Abort Protocol in CLAUDE.md.
+- If you cannot complete safely, follow the Abort Protocol in CLAUDE.md.
 - Do not ask for human input — make all decisions autonomously.
-- Quality over quantity: a small, working, well-documented build is the goal.
+- All tests must pass before committing.
 
 Begin now.
 ```
