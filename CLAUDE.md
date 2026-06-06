@@ -66,7 +66,7 @@ Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD/`.
 
 ## Step 2 — Decide What to Build
 
-### Determine Tonight's Complexity Target
+### 2a — Determine Tonight's Complexity Target
 
 Get today's day of week: `date +%u` (1=Monday, 7=Sunday)
 
@@ -82,9 +82,47 @@ Get today's day of week: `date +%u` (1=Monday, 7=Sunday)
 
 **Override:** If the last 3 entries in `builds/index.md` are all `ambitious`, drop to Focused Utility regardless of the day. Avoid compounding failures.
 
-### Choose a Category
+---
+
+### 2b — Read the Preference Prior
+
+Read `builds/index.md`. Find all rows where `Your Rating` contains a number (not `—`).
+
+**If 3 or more rated builds exist:**
+Identify patterns — which categories, tech stacks, complexity levels, and themes appear
+in builds rated 8–10 ("high") vs. builds rated 1–4 ("low"). Hold this as a soft prior:
+- When evaluating fresh ideas, give extra weight to ideas that share characteristics with high-rated builds on the "genuinely useful" criterion
+- Ideas that echo low-rated patterns need a stronger case on other criteria to win
+- This is judgment, not arithmetic — a compelling idea in a "low-rated" category can still win outright
+
+**If fewer than 3 rated builds exist:** insufficient signal; skip this step and evaluate all ideas equally.
+
+---
+
+### 2c — Run the Lottery
+
+Read `builds/ideas.md`. Collect all rows where Status = `pending`.
+
+**If no pending ideas exist:** skip the lottery entirely. Go to Step 2d.
+
+**If pending ideas exist:** generate a random integer 1–100.
+- **1–25 → Lottery draw.** Proceed as follows:
+  1. For each pending idea, compute tickets: `tickets = Your Rating` if rated; `tickets = 5` if blank.
+  2. Build a weighted pool: for each idea, add it to the pool `[tickets]` times.
+  3. Pick one entry from the pool at random. That idea is tonight's build.
+  4. Update its Status to `built` in `builds/ideas.md`.
+  5. Skip Steps 2d and 2e. Go directly to Step 2f.
+- **26–100 → Fresh ideas.** Go to Step 2d.
+
+Record in `WhyThis.md` whether tonight's build came from the lottery or fresh generation.
+
+---
+
+### 2d — Choose a Category (Fresh Path Only)
 
 Check the "Last 7 Builds" section of `builds/index.md`. Choose a category not recently used.
+If the preference prior (Step 2b) revealed strong category preferences, factor that in —
+but don't let it override the rotation entirely. Variety matters.
 
 | ID | Category | Examples |
 |----|----------|---------|
@@ -98,23 +136,35 @@ Check the "Last 7 Builds" section of `builds/index.md`. Choose a category not re
 | H  | Developer Tool | Code formatter, schema inspector, diff tool, snippet library |
 | I  | Life Admin Helper | Budget tracker, meal planner, habit log, checklist |
 
-### Generate and Evaluate Build Ideas
+---
+
+### 2e — Generate and Evaluate Fresh Ideas (Fresh Path Only)
 
 Think through at least 3 candidate ideas. For each, evaluate:
 
 - **Self-contained?** No cloud infrastructure required, no unconfigured paid APIs
 - **Reversible?** Deleting the folder removes it entirely
-- **Genuinely useful?** Connected to this specific user's life (use PROFILE.md)
-- **Novel?** Not substantially similar to something in builds/index.md
+- **Genuinely useful?** Connected to this specific user's life — apply preference prior here
+- **Novel?** Not substantially similar to something in `builds/index.md`
 - **Achievable?** Realistic scope for tonight's complexity target
 - **Right stack?** Matches the user's preferred tech from PROFILE.md
 - **Testable?** Core logic can be verified with automated tests
 
-Pick the idea that scores best overall. If no idea scores well across all criteria, choose the simplest genuinely useful thing in the selected category.
+Pick the idea that scores best overall. If no idea scores well, choose the simplest genuinely useful thing in the selected category.
 
-### Choose the Tech Stack
+**After choosing, append every non-winning candidate to `builds/ideas.md`** with:
+- A new sequential ID (increment from the last row)
+- Today's date
+- Status: `pending`
+- Your Rating: `—`
 
-Based on the build idea and PROFILE.md preferences:
+Only append ideas that aren't already present in the file. Do not add the winning idea.
+
+---
+
+### 2f — Choose the Tech Stack
+
+Based on the chosen idea and PROFILE.md preferences:
 
 - **Single-use browser tool / dashboard / game:** Vanilla HTML/CSS/JS — `index.html` at root, Playwright for tests
 - **Data processing / automation / CLI:** Python 3 with stdlib; add dependencies only when necessary; pytest for tests
@@ -295,7 +345,9 @@ After tests pass and success criteria are verified:
 
 Append one new row to the Full Catalog table. Update the Stats block and Last 7 Builds section.
 
-Table columns: `| Date | Category | Title | Short Description | Tech | Status |`
+Table columns: `| Date | Category | Title | Short Description | Tech | Status | Your Rating |`
+
+Leave `Your Rating` as `—`. The user fills this in after reviewing the build.
 
 Status: `complete`, `partial`, or `aborted`
 

@@ -4,11 +4,20 @@
 
 ---
 
+## How This Idea Was Selected
+
+<!-- Was this a lottery draw from builds/ideas.md, or a fresh idea generated tonight? -->
+**Selection method:** [Lottery draw / Fresh generation]
+
+<!-- If lottery: what was its ticket count and original date added? -->
+<!-- If fresh: what random roll determined a fresh idea was generated (e.g. "rolled 67, fresh path")? -->
+[FILL IN]
+
 ## The Decision
 
 <!-- 2–4 sentences. Why was this specific thing chosen tonight?
-     Reference the category rotation, the day-of-week complexity target,
-     and any gaps identified in builds/index.md. -->
+     Reference the selection method, the day-of-week complexity target,
+     the preference prior if it influenced the choice, and any gaps in builds/index.md. -->
 [FILL IN]
 
 ## Connection to User Context

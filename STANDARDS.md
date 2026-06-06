@@ -19,11 +19,12 @@
 
 ### Completeness
 - [ ] `PRD.md` exists and all sections are filled — no `[YOUR ANSWER]` or `[TBD]` placeholders
-- [ ] `WhyThis.md` exists and explains the specific rationale for tonight's choice
+- [ ] `WhyThis.md` exists, explains the specific rationale, and notes whether tonight's idea came from the lottery or fresh generation
 - [ ] `BUILD_LOG.md` exists and has at least one entry per major phase
 - [ ] `FutureFeatures.md` exists and has at least 5 concrete suggestions
 - [ ] All code runs without modification (no broken imports, missing files, missing dependencies)
-- [ ] `builds/index.md` has been updated with this build's entry
+- [ ] `builds/index.md` has been updated with this build's entry (including blank `Your Rating` column)
+- [ ] Non-winning fresh ideas have been appended to `builds/ideas.md` (fresh path only; not required for lottery draws)
 
 ### Tests
 - [ ] At least one test file exists in a `tests/` subfolder
