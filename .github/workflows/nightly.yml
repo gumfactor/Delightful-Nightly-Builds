@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write           # Required for Claude to commit and push
+  id-token: write           # Required for claude-code-action OIDC authentication
 
 jobs:
   nightly-build:
@@ -85,8 +86,6 @@ jobs:
             - All tests must pass before committing.
 
             Begin now.
-          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep"
-          max_turns: 120
 
       - name: Check if build needs resumption
         id: check_incomplete
@@ -137,8 +136,6 @@ jobs:
             - Playwright: npx playwright test
             - Vitest: npx vitest run
             - Jest: npx jest
-          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep"
-          max_turns: 80
 
       - name: Verify build was committed
         run: |
