@@ -1,9 +1,7 @@
 name: Nightly Build
 
 on:
-  schedule:
-    - cron: '0 9 * * *'   # 4:00 AM EST (UTC-5) daily
-  workflow_dispatch:        # Manual trigger for testing
+  workflow_dispatch:        # Manual trigger only — Routines is the primary scheduler
     inputs:
       debug_note:
         description: 'Optional note to pass to the build session'
