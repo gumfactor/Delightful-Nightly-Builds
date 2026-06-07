@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '0 2 * * *'   # 2:00 AM UTC daily — adjust to your preferred time
+    - cron: '0 9 * * *'   # 4:00 AM EST (UTC-5) daily
   workflow_dispatch:        # Manual trigger for testing
     inputs:
       debug_note:
