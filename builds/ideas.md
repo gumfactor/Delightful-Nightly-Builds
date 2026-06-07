@@ -2,7 +2,7 @@
 
 > **Claude:** Append the ideas you considered but didn't build after every fresh-idea session.
 > Mark a drawn idea's Status as `built` when it gets selected for a build.
-> **You:** Add a rating (1–10) to any idea to influence its lottery weight.
+> **You:** Add a rating (1–10) and Rating Notes to any idea to influence its lottery weight and guide future builds.
 > Leave the rating blank (—) to keep the default weight (5 tickets).
 > Set Status to `skipped` on any idea you never want built.
 
@@ -34,9 +34,11 @@ always generates fresh ideas.
 
 ## Backlog
 
-| ID | Date Added | Category | Complexity | Title | Description | Your Rating | Status |
-|----|------------|----------|------------|-------|-------------|-------------|--------|
-| — | — | — | — | — | *Empty — ideas will appear here after the first build session* | — | — |
+| ID | Date Added | Category | Complexity | Title | Description | Your Rating | Rating Notes | Status |
+|----|------------|----------|------------|-------|-------------|-------------|--------------|--------|
+| 1 | 2026-06-06 | F | ambitious | The Canada List CSV Quality Inspector | Browser-based tool to inspect and validate CSV uploads for The Canada List pipeline — flags malformed rows, missing required columns, encoding issues, and duplicate entries before ingestion | 7 | Could be very useful if implemented properly — unclear what role Playwright plays here vs. a pure Python validator | pending |
+| 2 | 2026-06-06 | A | ambitious | Investment Research Dashboard | Comprehensive personal finance dashboard — portfolio tracking, watchlist, research notes, and performance over time; not just an investing-interest toy but a genuinely useful daily tool | 6 | Love the idea of a comprehensive investment dashboard, but not just for investing interest — that framing is less exciting | pending |
+| 3 | 2026-06-06 | A | ambitious | Lab Research Project Tracker | Dashboard for tracking neuroscience lab projects, milestones, team tasks, and publication status | 4 | No need — already use Teamwork.com for project tracking | pending |
 
 ---
 
