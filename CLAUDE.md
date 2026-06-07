@@ -175,6 +175,7 @@ Pick the idea that scores best overall. If no idea scores well, choose the simpl
 - Tonight's complexity target (`focused`, `solid`, or `ambitious`)
 - Status: `pending`
 - Your Rating: `—`
+- Rating Notes: `—`
 
 Only append ideas that aren't already present in the file. Do not add the winning idea.
 
