@@ -1,5 +1,7 @@
 # Windows Setup — Git Standup Reporter
 
+> **Version:** 2.0 (2026-06-08)
+
 ## Requirements
 
 - Python 3.11 or later (for `tomllib` support)

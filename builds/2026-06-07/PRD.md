@@ -1,6 +1,7 @@
 # PRD — Git Standup Reporter
 
 > **Build date:** 2026-06-07
+> **Version:** 2.0 (extended 2026-06-08)
 > **Category:** H — Developer Tool
 > **Complexity:** Focused Utility
 > **Day of week:** Sunday → Focused Utility
