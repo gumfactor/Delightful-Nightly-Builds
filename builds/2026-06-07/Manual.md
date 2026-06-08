@@ -1,135 +1,129 @@
 # Manual — Git Standup Reporter
 
-> **Version:** 1.0 (built 2026-06-07)
-> **Complexity:** Focused Utility
+> **Version:** 2.0 (extended 2026-06-08)
+> **Complexity:** Focused Utility (original) + Solid Feature extension
 
 ---
 
 ## What This Is
 
-Git Standup Reporter is a Python CLI that reads your git commit history and prints a clean standup-ready summary of what you worked on. Run it from any project directory (or point it at multiple repos) and it tells you exactly what was committed in the last N hours — grouped by repository, author-filtered, and formatted as either plain text or markdown.
+Git Standup Reporter is a Python script that runs daily and produces a morning digest of everything you committed in the last 24 hours — across all your GitHub repos and any uncommitted local work in `C:\Dev`. It runs automatically via Windows Task Scheduler and appends output to a markdown file you open each morning.
 
-It solves the problem of re-establishing context across sessions and writing standups when you're managing several concurrent projects. Unlike tools that require you to log entries manually, this one reads state that already exists: your git history.
+It covers two sources:
+- **GitHub API** — all commits pushed to any of your repos, from any machine or agent
+- **Local git scan** — commits in your local `C:\Dev` repos that haven't been pushed yet
 
----
-
-## Quick Start
-
-1. Navigate to any git repository (or stay anywhere and specify a path):
-   ```bash
-   cd ~/my-project
-   python3 /path/to/builds/2026-06-07/main.py .
-   ```
-
-2. See what was committed in the last 24 hours by the current git user. That's it.
-
-3. To scan multiple repos at once:
-   ```bash
-   python3 main.py ~/project-a ~/project-b ~/the-canada-list
-   ```
+Commits that exist in both (pushed local commits) are deduplicated by SHA so they appear only once.
 
 ---
 
-## How to Use It
+## Setup (One-Time)
 
-### Basic Usage
+See `SETUP_WINDOWS.md` for the full setup walkthrough. Summary:
 
-```bash
-# Current directory, last 24 hours, current git user
-python3 main.py .
+1. **Create a GitHub token** at github.com → Settings → Developer Settings → Personal Access Tokens (Classic) with `repo` scope
+2. **Set the environment variable** permanently in PowerShell:
+   ```powershell
+   [System.Environment]::SetEnvironmentVariable("GITHUB_TOKEN", "your-token-here", "User")
+   ```
+3. **Configure `standup.toml`** — copy `standup.toml.example` to `standup.toml` and fill in your values:
+   ```toml
+   [standup]
+   github_username = "gumfactor"
+   hours = 24
+   format = "markdown"
+   journal_path = "C:/Users/100505118/OneDrive/Dev/Dev-management/Git-Standup/standup_journal.jsonl"
+   local_roots = ["C:/Dev"]
+   exclude_repos = []
+   ```
+4. **Schedule the task** via Windows Task Scheduler (see `SETUP_WINDOWS.md`)
 
-# Specific repo path
-python3 main.py /path/to/repo
+---
 
-# Multiple repos
-python3 main.py /path/to/repo-a /path/to/repo-b
+## Running Manually
 
-# Last 8 hours only
-python3 main.py . --hours 8
-
-# Last 7 days
-python3 main.py . --hours 168
+```powershell
+cd C:\Users\100505118\Dev\Delightful-nightly-builds\builds\2026-06-07
+python main.py
 ```
 
-### Author Filtering
+Prints the standup report to the terminal and appends a JSON entry to the journal file.
 
-By default, standup reporter auto-detects your author name from `git config user.name` in the first valid repo path. You can override or disable this:
+---
 
-```bash
-# Filter to a specific author
-python3 main.py . --author "Shane"
+## Output Format
 
-# Show commits from all authors (team standup mode)
-python3 main.py . --all-authors
-```
+### Text (format = "text")
 
-### Output Formats
-
-```bash
-# Plain text (default) — clean, readable in terminal
-python3 main.py .
-
-# Markdown — suitable for pasting into Coda, Notion, or a PR description
-python3 main.py . --format markdown
-```
-
-**Text output example:**
 ```
 Standup — last 24 hours
 ========================================
 
 [my-project]
   • Add login page  (abc12345)
-  • Fix typo in README  (def67890)
+  • Fix bug in parser  (def67890) (local)
+
+[canada-list]
+  • Update CSV validator  (aaa11111)
 ```
 
-**Markdown output example:**
+### Markdown (format = "markdown")
+
 ```markdown
 ## Standup — last 24 hours
 
 ### my-project
 
 - Add login page  `abc12345`
-- Fix typo in README  `def67890`
+- Fix bug in parser  `def67890` *(local)*
+
+### canada-list
+
+- Update CSV validator  `aaa11111`
 ```
 
-### Graceful Failure
-
-If a path is not a git repository, or has no commits in the window, it is silently treated as empty. If no repos have any commits, the output is:
-
-```
-Nothing committed in the last 24 hours.
-```
-
-No errors, no tracebacks.
+Commits tagged `(local)` or `*(local)*` are unpushed — they exist in your local `C:\Dev` repos but haven't been pushed to GitHub yet.
 
 ---
 
-## Configuration
+## Configuration Reference
 
-No configuration files. All options are flags.
+All settings live in `standup.toml` in the build folder. The `GITHUB_TOKEN` environment variable must be set separately — never put it in the config file.
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `paths` (positional) | `.` | One or more git repo paths to scan |
-| `--hours N` | `24` | How many hours back to look |
-| `--author NAME` | auto-detected | Filter commits by author name substring |
-| `--all-authors` | off | Include commits from all authors |
-| `--format text\|markdown` | `text` | Output format |
+| Key | Default | Description |
+|-----|---------|-------------|
+| `github_username` | `""` | Your GitHub username |
+| `hours` | `24` | How many hours back to look |
+| `format` | `"text"` | Output format: `"text"` or `"markdown"` |
+| `journal_path` | `~/.standup_journal.jsonl` | Path to the JSONL history file |
+| `local_roots` | `[]` | Parent directories to scan for local git repos |
+| `exclude_repos` | `[]` | Repo names to skip (e.g. `["archived-thing"]`) |
+
+---
+
+## Output Files
+
+- **`standup_today.md`** (or wherever Task Scheduler appends) — human-readable markdown, the file you open each morning
+- **`standup_journal.jsonl`** — machine-readable JSONL history, one line per run; structured for future querying
 
 ---
 
 ## Running the Tests
 
-```bash
-python3 -m pytest /path/to/builds/2026-06-07/tests/ -v
+```powershell
+python -m pytest tests/ -v
 ```
 
-Expected output: **18 passed, 0 failed**
+Expected: **46 passed, 0 failed**
 
-Tests cover:
-- `test_standup.py` — formatter logic with mock commit data (8 tests, no git calls)
-- `test_git_log.py` — real temp repo fixture; commit reading, author filtering, error handling (10 tests)
+Test files:
+- `test_standup.py` — formatter logic (11 tests)
+- `test_git_log.py` — original local git reader tests (10 tests, kept for historical record)
+- `test_local_git.py` — unpushed commit scanner (5 tests)
+- `test_github_api.py` — GitHub API client with mocked responses (5 tests)
+- `test_dedup.py` — SHA deduplication logic (5 tests)
+- `test_journal.py` — JSONL journal writer (5 tests)
+- `test_config.py` — TOML config loading (5 tests)
 
 ---
 
@@ -137,15 +131,16 @@ Tests cover:
 
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
-| `Nothing committed in the last 24 hours` but you know you committed | Author filter mismatch | Run with `--all-authors` to bypass author filtering |
-| Output shows someone else's commits | `git config user.name` is set to a shared name | Use `--author "Your Name"` explicitly |
-| `fatal: not a git repository` is not shown but path seems wrong | Error is silently swallowed; path returns empty | Check that the path is a valid git repo with `git -C /path status` |
-| Tests fail in CI with signing errors | Environment has global commit signing enabled | The fixture sets `commit.gpgsign = false` locally — ensure git 2.x is installed |
+| `Warning: GITHUB_TOKEN not set` | Environment variable not visible to this terminal | Reopen PowerShell/VS Code after setting the variable; VS Code requires a full restart |
+| `Nothing committed in the last 24 hours` but you know you committed | GitHub API not returning results, or local repos not found | Verify `github_username` in standup.toml; check `local_roots` paths exist |
+| TOML parse error with backslashes | Windows paths use `\` which TOML treats as escape sequences | Use forward slashes in standup.toml: `C:/Dev` not `C:\Dev` |
+| Task runs but file not created | Output path doesn't exist yet | Create the parent folder manually first, or let the journal auto-create on first run |
+| GitHub API returns partial results | Token lacks `repo` scope | Regenerate token with `repo` scope checked |
 
 ---
 
 ## Known Limitations
 
-- If two different repos have the same top-level directory name, their commits will be merged under one name in the output dict. Use distinct repo names to avoid this.
-- `--hours 0` is accepted and produces "Nothing committed in the last 0 hours." rather than an error. It is a valid edge case, not a useful input.
-- The author auto-detection reads only the first valid path in the list. If repos have different configured authors, use `--author` explicitly.
+- `local_roots` scans only one level deep — repos nested inside subdirectories of `C:\Dev` won't be found. Add the intermediate directory to `local_roots` if needed.
+- If two different repos share the same directory name, their commits may appear merged under one name. Use distinct repo names.
+- Agent-created commits (e.g. from Claude Code Routines) are captured via the GitHub API, not the local scan. They'll appear without the `(local)` tag since they go straight to GitHub.

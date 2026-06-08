@@ -66,3 +66,26 @@ Manual.md written with full command reference, quick start, examples, and test i
 builds/ideas.md updated with two non-winning candidates: Python Type Coverage Checker (ID 4) and .env File Inspector (ID 5).
 
 Build complete. Success criteria reviewed. All tests passing.
+
+---
+
+### [2026-06-08] Human-Assisted Extension Session
+
+Extended the build significantly after post-review identified that the original tool required manual invocation and only saw local commits — making it near-useless in practice.
+
+**Changes made:**
+- Added `src/github_api.py` — fetches all repos and pushed commits from GitHub API using `GITHUB_TOKEN` environment variable
+- Added `src/local_git.py` — scans `local_roots` directories for git repos, returns unpushed commits via `@{u}..HEAD`
+- Added `src/dedup.py` — merges GitHub and local sources, deduplicates by full SHA
+- Added `src/journal.py` — appends each run to a JSONL history file
+- Added `src/config.py` — loads `standup.toml` using Python 3.11 `tomllib`
+- Rewrote `main.py` — config-driven flow replacing argparse CLI
+- Updated `src/standup.py` — added `(local)` tag for unpushed commits
+- Added `standup.toml.example` config template
+- Added `SETUP_WINDOWS.md` — Windows Task Scheduler setup guide
+- Added 28 new tests across 5 new test files; updated existing formatter tests
+- Updated `Manual.md` and `PRD.md` to reflect new architecture
+
+Tests: 46 passed, 0 failed (up from 18).
+
+User confirmed working: Task Scheduler registered, GITHUB_TOKEN set, output verified on Windows.

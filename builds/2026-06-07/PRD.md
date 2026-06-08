@@ -41,10 +41,10 @@ As a researcher and solo founder who manages multiple simultaneous git projects,
 
 ## Tech Stack
 
-- **Language:** Python 3.9+
-- **Framework:** None (argparse + subprocess from stdlib)
-- **Dependencies:** stdlib only (argparse, subprocess, pathlib, datetime); pytest for tests
-- **Runtime requirement:** `python3 main.py [paths...] [options]` — no install required beyond git and Python 3
+- **Language:** Python 3.11+ (required for `tomllib`)
+- **Framework:** None (stdlib only)
+- **Dependencies:** stdlib only (tomllib, urllib.request, subprocess, pathlib, json, datetime); pytest for tests
+- **Runtime requirement:** `python main.py` from the build folder — requires `standup.toml` and `GITHUB_TOKEN` environment variable
 
 ## Data Structure
 
@@ -70,15 +70,28 @@ builds/2026-06-07/
 ├── BUILD_LOG.md
 ├── FutureFeatures.md
 ├── Manual.md
-├── main.py                       ← CLI entry point
+├── SETUP_WINDOWS.md              ← Windows Task Scheduler setup guide
+├── main.py                       ← entry point; reads config, calls all modules
+├── standup.toml                  ← local config (not committed; see standup.toml.example)
+├── standup.toml.example          ← template config file
 ├── requirements.txt              ← pytest only
 ├── src/
 │   ├── __init__.py
-│   ├── git_log.py                ← subprocess git calls → list of commit dicts
-│   └── standup.py                ← pure formatting logic
+│   ├── config.py                 ← TOML config loader
+│   ├── github_api.py             ← GitHub API client (list repos, get commits)
+│   ├── local_git.py              ← local repo scanner + unpushed commit reader
+│   ├── dedup.py                  ← SHA-based merge and deduplication
+│   ├── journal.py                ← JSONL journal writer
+│   ├── standup.py                ← pure formatting logic
+│   └── git_log.py                ← original local git reader (kept for historical record)
 └── tests/
-    ├── test_standup.py           ← formatter tests using mock data (8 tests)
-    └── test_git_log.py           ← git reader tests using real temp repo (9 tests)
+    ├── test_standup.py           ← formatter tests (11 tests)
+    ├── test_config.py            ← config loading tests (5 tests)
+    ├── test_github_api.py        ← GitHub API tests with mocked responses (5 tests)
+    ├── test_local_git.py         ← local git scanner tests (5 tests)
+    ├── test_dedup.py             ← deduplication logic tests (5 tests)
+    ├── test_journal.py           ← JSONL journal tests (5 tests)
+    └── test_git_log.py           ← original git reader tests (10 tests, historical)
 ```
 
 ## Testing Strategy
@@ -116,4 +129,20 @@ builds/2026-06-07/
 
 ## Scope Changes
 
-<!-- No scope changes during this build. -->
+**Extended 2026-06-08 in a human-assisted session.**
+
+The original build was a local-only git log CLI driven by command-line arguments. After review, the following scope changes were made to make the tool practically useful:
+
+**Added:**
+- GitHub API data source — fetches pushed commits from all repos under the configured username, auto-discovering new repos without requiring a manual list
+- Local unpushed commit scanner — scans `local_roots` directories for git repos and returns commits not yet pushed to remote
+- SHA-based deduplication — merges both sources without double-counting commits that appear in both
+- JSONL journal — appends each run to a structured history file for future querying
+- `standup.toml` config file — replaces command-line arguments as the primary configuration mechanism; `GITHUB_TOKEN` read from environment variable
+- Windows Task Scheduler setup guide (`SETUP_WINDOWS.md`)
+- `source` field added to commit dicts (`"github"` or `"local_unpushed"`) — displayed as `(local)` tag in output
+
+**Removed:**
+- Command-line argument interface (`paths`, `--author`, `--all-authors`, `--format`, `--hours` flags) — all settings now live in `standup.toml`
+
+**Rationale:** The original build required manual invocation and only saw local commits. The extension makes it self-running (Task Scheduler) and comprehensive (GitHub API + local scan), which is the minimum required for the tool to be genuinely useful rather than just theoretically useful.
