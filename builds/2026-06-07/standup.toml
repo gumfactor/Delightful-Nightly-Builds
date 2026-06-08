@@ -5,6 +5,6 @@
 github_username = "gumfactor"     # your GitHub username
 hours = 24                                   # look back this many hours
 format = "markdown"                          # "text" or "markdown"
-journal_path = "C:\Users\100505118\OneDrive\Dev\Dev-management\Git-Standup\standup_journal.jsonl"
-local_roots = ["C:\Dev"]                     # parent directories containing your local repos
+journal_path = "C:/Users/100505118/OneDrive/Dev/Dev-management/Git-Standup/standup_journal.jsonl"
+local_roots = ["C:/Dev"]                     # parent directories containing your local repos
 exclude_repos = []                           # repo names to skip (e.g. ["archived-thing"])
