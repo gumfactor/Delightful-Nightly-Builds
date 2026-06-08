@@ -1,0 +1,11 @@
+# standup.toml — Git Standup Reporter configuration
+# Copy this file to standup.toml and fill in your values.
+# IMPORTANT: Never put your GitHub token here — use the GITHUB_TOKEN environment variable.
+
+[standup]
+github_username = "your-github-username"     # your GitHub username
+hours = 24                                   # look back this many hours
+format = "markdown"                          # "text" or "markdown"
+journal_path = "C:/Users/yourname/.standup_journal.jsonl"
+local_roots = ["C:/Dev"]                     # parent directories containing your local repos
+exclude_repos = []                           # repo names to skip (e.g. ["archived-thing"])

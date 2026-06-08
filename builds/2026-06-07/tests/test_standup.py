@@ -17,6 +17,7 @@ SAMPLE_COMMITS_MYAPP = [
         "author": "Alice",
         "timestamp": "2026-06-07 10:00:00 +0000",
         "repo": "myapp",
+        "source": "github",
     },
     {
         "hash": "def67890",
@@ -24,6 +25,7 @@ SAMPLE_COMMITS_MYAPP = [
         "author": "Alice",
         "timestamp": "2026-06-07 09:00:00 +0000",
         "repo": "myapp",
+        "source": "github",
     },
 ]
 
@@ -95,6 +97,30 @@ def test_format_standup_text_uses_bracket_repo_label():
     """Text format labels repos with [repo-name] brackets."""
     result = format_standup({"myapp": SAMPLE_COMMITS_MYAPP}, hours=24, format_type="text")
     assert "[myapp]" in result
+
+
+def test_local_unpushed_commit_tagged_in_text_output():
+    """Commits with source='local_unpushed' show (local) tag in text output."""
+    commits = [{"hash": "aaa11111", "message": "WIP change", "author": "A",
+                "timestamp": "2026-06-07", "repo": "myapp", "source": "local_unpushed"}]
+    result = format_standup({"myapp": commits}, hours=24, format_type="text")
+    assert "(local)" in result
+
+
+def test_local_unpushed_commit_tagged_in_markdown_output():
+    """Commits with source='local_unpushed' show *(local)* tag in markdown output."""
+    commits = [{"hash": "aaa11111", "message": "WIP change", "author": "A",
+                "timestamp": "2026-06-07", "repo": "myapp", "source": "local_unpushed"}]
+    result = format_standup({"myapp": commits}, hours=24, format_type="markdown")
+    assert "*(local)*" in result
+
+
+def test_github_commit_has_no_local_tag():
+    """Commits with source='github' do not get the (local) tag."""
+    commits = [{"hash": "bbb22222", "message": "Pushed fix", "author": "A",
+                "timestamp": "2026-06-07", "repo": "myapp", "source": "github"}]
+    result = format_standup({"myapp": commits}, hours=24, format_type="text")
+    assert "(local)" not in result
 
 
 def test_format_standup_repos_sorted_alphabetically():
