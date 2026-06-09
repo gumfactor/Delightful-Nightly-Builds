@@ -161,7 +161,7 @@ For each, evaluate:
 - **Genuinely useful?** Connected to this specific user's life — apply preference prior here
 - **Practically useful?** The build must be useful in its delivered state — not just theoretically useful if a future feature were added. Before committing to an idea, ask: "Is there a critical missing piece that would be needed before this is actually used?" If yes, that piece must be part of tonight's scope, not deferred to FutureFeatures.md. FutureFeatures.md is for enhancements to a working, useful thing — not prerequisites for usefulness.
 - **Self-sustaining?** Prefer builds that deliver value automatically or reduce existing friction over builds that require the user to adopt a new manual habit. A tool that runs itself or removes a task is worth more than one that adds a task. (This criterion applies most to productivity/utility builds; it does not penalise games, learning aids, or creative tools.)
-- **Novel?** Not substantially similar to something in `builds/index.md`
+- **Novel?** Not substantially similar to something in `builds/index.md`, AND not trivially redundant with tools already in the user's daily stack (check PROFILE.md). If `pandas.describe()`, `R summary()`, or another tool the user already uses covers this in two lines, it's not worth building. The bar is: does this do something the user can't already do easily with what they have?
 - **Achievable?** Realistic scope for tonight's complexity target
 - **Right stack?** Matches the user's preferred tech from PROFILE.md
 - **Testable?** Core logic can be verified with automated tests

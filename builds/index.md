@@ -8,18 +8,20 @@
 
 ## Stats
 
-- **Total builds:** 1
-- **Completed:** 1
+- **Total builds:** 3
+- **Completed:** 3
 - **Partial:** 0
 - **Aborted:** 0
-- **Last build date:** 2026-06-06
-- **Categories used (all time):** B
+- **Last build date:** 2026-06-08
+- **Categories used (all time):** B, F, H
 
 ---
 
 ## Last 7 Builds (Quick Reference for Decision-Making)
 
 - 2026-06-06 — [B] — ambitious — AI Session Context Bridge (complete)
+- 2026-06-07 — [H] — focused — Git Standup Reporter (complete)
+- 2026-06-08 — [F] — focused — Quick Data Profiler (complete)
 
 ---
 
@@ -28,6 +30,8 @@
 | Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |
 |------|----------|------------|-------|-------------------|------|--------|-------------|--------------|
 | 2026-06-06 | B | ambitious | AI Session Context Bridge (ctxlog) | Python CLI to capture AI coding session state and generate markdown handoff documents | Python 3, stdlib, pytest | complete | 3 | Requires manual entry to be useful — value depends entirely on what you write into it, making it no better than a markdown file. Architecture is sound but the wrong layer was automated. Would score higher with auto-capture of git state and Claude Code session transcript. |
+| 2026-06-07 | H | focused | Git Standup Reporter | Python CLI to summarise recent git commits as a standup report; extended to pull GitHub pushed commits and local unpushed commits automatically | Python 3, stdlib, pytest | complete | — | — |
+| 2026-06-08 | F | focused | Quick Data Profiler | Python CLI that profiles CSV and JSON/JSONL files — infers column types, shows null rates, computes numeric distributions, and lists top-value frequencies | Python 3, stdlib, pytest | complete | 1 | Totally redundant with pandas df.describe() and R summary() — trivially handled by existing tools in the user's stack. No reason to build this. |
 
 ---
 
