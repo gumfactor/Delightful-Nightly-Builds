@@ -10,7 +10,7 @@
 
 ### Safety & Reversibility
 - [ ] All build output is entirely within `builds/YYYY-MM-DD-title-slug/`
-- [ ] The only file outside the build folder that is modified is `builds/index.md`
+- [ ] Files outside the build folder are limited to `builds/index.md` and, when the selection workflow requires it, `builds/ideas.md`
 - [ ] No build file imports from, references, or modifies another build's folder
 - [ ] No system-level operations (no `rm -rf`, no system file writes, no registry edits)
 - [ ] No credentials, API keys, or passwords hardcoded in source files
@@ -25,6 +25,7 @@
 - [ ] All code runs without modification (no broken imports, missing files, missing dependencies)
 - [ ] `builds/index.md` has been updated with this build's entry (Category, Complexity, and blank `Your Rating` all filled)
 - [ ] Non-winning fresh ideas have been appended to `builds/ideas.md` (fresh path only; not required for lottery draws)
+- [ ] If the selected idea linked an Idea Brief, the brief was read before the build PRD and the PRD includes Idea Brief Traceability
 
 ### Tests
 - [ ] At least one test file exists in a `tests/` subfolder

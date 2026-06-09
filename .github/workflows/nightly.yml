@@ -72,7 +72,8 @@ jobs:
             6. Write tests as you build. Run them: they must all pass.
             7. Verify success criteria, write documentation.
             8. Update builds/index.md.
-            9. Commit and push. Stage only builds/YYYY-MM-DD/ and builds/index.md.
+            9. Commit and push. Stage only the dated build folder, builds/index.md,
+               and builds/ideas.md if the selection workflow changed it.
 
             Test commands available in this environment:
             - Python: python -m pytest tests/ -v
@@ -81,7 +82,8 @@ jobs:
             - Jest: npx jest
 
             Constraints:
-            - Do not modify any files outside builds/YYYY-MM-DD/ and builds/index.md.
+            - Do not modify any files outside the dated build folder, builds/index.md,
+              and builds/ideas.md when the selection workflow requires it.
             - If you cannot complete safely, follow the Abort Protocol in CLAUDE.md.
             - Do not ask for human input — make all decisions autonomously.
             - All tests must pass before committing.
@@ -130,7 +132,8 @@ jobs:
             7. Complete all documentation (FutureFeatures.md, Manual.md if needed).
             8. Add final BUILD_LOG.md entry: "Build complete. Success criteria reviewed. All tests passing."
             9. Update builds/index.md with the build's status.
-            10. Commit and push — stage only the build folder and builds/index.md.
+            10. Commit and push — stage only the build folder, builds/index.md,
+                and builds/ideas.md if it was changed by the selection workflow.
 
             Do not start a new build. Complete this one.
 

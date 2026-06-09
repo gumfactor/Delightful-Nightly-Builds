@@ -181,6 +181,7 @@ Pick the idea that scores best overall. If no idea scores well, choose the simpl
 - Today's date
 - Tonight's category ID
 - Tonight's complexity target (`focused`, `solid`, or `ambitious`)
+- Idea Brief: `—` unless a durable brief already exists in `builds/idea-briefs/`
 - Status: `pending`
 - Your Rating: `—`
 - Rating Notes: `—`
@@ -189,7 +190,28 @@ Only append ideas that aren't already present in the file. Do not add the winnin
 
 ---
 
-### 2f — Choose the Tech Stack
+### 2f — Consult the Linked Idea Brief
+
+If the selected backlog row has a link in its `Idea Brief` column:
+
+1. Open and read the linked document in full before choosing the implementation
+   scope, technology, or folder structure.
+2. Treat the brief as the durable product intent and the dated build's `PRD.md`
+   as the implementation contract for this specific build.
+3. Reconcile the brief with `PROFILE.md`, current provider/tool capabilities,
+   the night's complexity target, and the practical-usefulness criteria.
+4. Preserve the brief's central value proposition. If the full vision cannot
+   fit, choose a thin but complete vertical slice rather than shipping only
+   infrastructure or deferring a prerequisite for usefulness.
+5. Record the brief path and any deliberate deviations in `WhyThis.md`. Explain
+   material scope differences in the build `PRD.md` under Scope Changes.
+
+If the `Idea Brief` value is `—`, continue normally. Do not invent requirements
+that are not supported by the backlog row, `PROFILE.md`, or current context.
+
+---
+
+### 2g — Choose the Tech Stack
 
 Based on the chosen idea and PROFILE.md preferences:
 
@@ -231,6 +253,15 @@ Create these files using the templates in `templates/` as starting points:
 ## Step 4 — Write the PRD First
 
 **Do not write code before the PRD is complete.**
+
+If the selected idea has an Idea Brief, use it as an input now. Do not copy it
+wholesale: convert it into a current, achievable implementation specification
+for this dated build. Include an **Idea Brief Traceability** subsection naming:
+
+- the linked brief path;
+- the brief capabilities included in this build;
+- capabilities intentionally deferred;
+- any changed assumptions and why.
 
 The PRD is your specification. Fill in every section:
 - Goal (one sentence)
@@ -394,7 +425,7 @@ If already on a non-main branch (Routines sessions start on their own branch), s
 Stage only:
 - Everything in `builds/YYYY-MM-DD-title-slug/`
 - `builds/index.md`
-- `builds/ideas.md` (if modified — lottery status updates and fresh idea appends)
+- `builds/ideas.md` if modified by lottery status updates or fresh idea appends
 
 Do not stage any other files.
 

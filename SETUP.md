@@ -49,10 +49,12 @@ Your task: follow the process in CLAUDE.md exactly — including Step 0 (check f
 6. Write tests as you build. Run them: they must all pass.
 7. Verify success criteria, write documentation.
 8. Update builds/index.md.
-9. Commit and push. Stage only builds/YYYY-MM-DD/ and builds/index.md.
+9. Commit and push. Stage only the dated build folder, builds/index.md, and
+   builds/ideas.md if the selection workflow changed it.
 
 Constraints:
-- Do not modify any files outside builds/YYYY-MM-DD/ and builds/index.md.
+- Do not modify any files outside the dated build folder, builds/index.md, and
+  builds/ideas.md when the selection workflow requires it.
 - If you cannot complete safely, follow the Abort Protocol in CLAUDE.md.
 - Do not ask for human input — make all decisions autonomously.
 - All tests must pass before committing.
@@ -181,4 +183,5 @@ automatically. For Routines: the CLAUDE.md Step 0 logic handles it on the next s
 - Use APIs you haven't listed in PROFILE.md
 - Modify CLAUDE.md, PROFILE.md, STANDARDS.md, or templates/ (locked by settings.json)
 - Force push or rewrite history
-- Build things that touch files outside the dated build folder
+- Build things that touch files outside the dated build folder, except the
+  permitted catalog updates to `builds/index.md` and `builds/ideas.md`

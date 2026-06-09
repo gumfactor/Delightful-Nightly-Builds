@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delightful-nightly-builds Work Log</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f5f1;
+      --surface: #ffffff;
+      --paper: #fffdf8;
+      --ink: #292824;
+      --muted: #6f6d67;
+      --line: #dedbd3;
+      --accent: #245fc6;
+      --accent-soft: #eaf2ff;
+      --tag: #f0ecff;
+      --shadow: 0 8px 24px rgba(50, 45, 38, 0.07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 14px/1.55 "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    .shell { max-width: 1180px; margin: 0 auto; padding: 24px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: end; }
+    h1 { margin: 0; font-size: 28px; }
+    .subtitle, .count, .empty { color: var(--muted); }
+    .toolbar {
+      margin: 20px 0;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) repeat(4, minmax(130px, auto));
+      gap: 8px;
+      padding: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    input, select, button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 7px 9px;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+    }
+    button { cursor: pointer; }
+    .filters {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 8px;
+    }
+    .results { display: grid; gap: 14px; }
+    article {
+      padding: 20px 22px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+    }
+    .entry-head { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .entry-head h2 { margin: 3px 0 0; font-size: 21px; }
+    .entry-id { color: var(--muted); font: 12px Consolas, monospace; }
+    .meta, .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+    .pill, .tag {
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: var(--accent-soft);
+      font-size: 12px;
+    }
+    .tag { background: var(--tag); }
+    .summary { font-weight: 600; }
+    .content { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 10px; }
+    .content h1 { display: none; }
+    .content h2 { margin: 18px 0 7px; font-size: 17px; }
+    .content p, .content ul { margin: 7px 0; }
+    .task::before { content: "☐ "; color: var(--muted); }
+    .task.checked::before { content: "☑ "; color: var(--accent); }
+    .record-path { margin-top: 14px; color: var(--muted); font: 11px Consolas, monospace; }
+    @media (max-width: 850px) {
+      .toolbar, .filters { grid-template-columns: 1fr 1fr; }
+      .search { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .shell { padding: 14px; }
+      .toolbar, .filters { grid-template-columns: 1fr; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #191a1c; --surface: #242529; --paper: #292a2e; --ink: #eeeae2;
+        --muted: #aaa69e; --line: #414247; --accent-soft: #243c66; --tag: #3a3151;
+        --shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Delightful-nightly-builds Work Log</h1>
+        <div class="subtitle">Search and filter the durable project record.</div>
+      </div>
+      <div id="count" class="count">3 entries</div>
+    </header>
+    <section class="toolbar">
+      <input id="search" class="search" type="search" placeholder="Search entries">
+      <input id="from" type="date" aria-label="From date">
+      <input id="to" type="date" aria-label="To date">
+      <select id="sort" aria-label="Sort order">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="title">Title A-Z</option>
+      </select>
+      <button id="clear" type="button">Clear</button>
+      <div class="filters">
+        <select id="category" aria-label="Category"><option value="">All categories</option></select>
+        <select id="status" aria-label="Status"><option value="">All statuses</option></select>
+        <select id="phase" aria-label="Phase"><option value="">All phases</option></select>
+        <select id="owner" aria-label="Owner"><option value="">All owners</option></select>
+        <select id="tag" aria-label="Tag"><option value="">All tags</option></select>
+      </div>
+    </section>
+    <main id="results" class="results"></main>
+  </div>
+  <script id="worklog-data" type="application/json">[{"entry_id": "WL-20260609-001", "date": "2026-06-09", "title": "Adopt a system-scoped work log", "category": "Decision", "status": "approved", "phase": "system-governance", "owner": "", "tags": "governance;worklog;nightly-build-system", "related_paths": "Work Log/README.md;Work Log/worklog-index.csv", "summary": "Established a root Work Log for changes to the Delightful Nightly Builds framework while excluding individual dated builds.", "teamwork_project": "", "teamwork_task": "", "teamwork_url": "", "record_path": "Work Log/records/2026/wl-20260609-001-adopt-a-system-scoped-work-log.md", "tags_list": ["governance", "worklog", "nightly-build-system"], "content_html": "<h1>WL-20260609-001 Adopt a system-scoped work log<\/h1>\n<h2>Notes<\/h2>\n<p>Created a durable log for changes to the parent nightly-build setup. The scope is intentionally narrower than the repository: it covers selection logic, agent instructions, automation, standards, templates, backlog infrastructure, and repository-wide maintenance.<\/p>\n<h2>Key Points<\/h2>\n<ul>\n<li>Log parent-system changes, not the contents or review of individual nightly builds.<\/li>\n<li>Dated builds retain their own PRD, rationale, build log, and catalog history.<\/li>\n<li>When a change spans both levels, record only the system-level mechanism here.<\/li>\n<\/ul>\n<h2>Details<\/h2>\n<p>The Work Log README defines explicit inclusion and exclusion rules. Included examples are CLAUDE.md, STANDARDS.md, SETUP.md, workflow and agent configuration, templates, builds/index.md, builds/ideas.md, and builds/idea-briefs/. Dated folders matching builds/YYYY-MM-DD-title/ are excluded except as linked evidence for a parent-system decision.<\/p>\n<h2>Next Actions<\/h2>\n<ul>\n<li>None.<\/li>\n<\/ul>\n<h2>Metadata<\/h2>\n<ul>\n<li>Date: 2026-06-09<\/li>\n<li>Category: Decision<\/li>\n<li>Status: approved<\/li>\n<li>Phase: system-governance<\/li>\n<li>Owner:<\/li>\n<li>Tags: governance;worklog;nightly-build-system<\/li>\n<li>Related paths: Work Log/README.md;Work Log/worklog-index.csv<\/li>\n<li>Related entries:<\/li>\n<li>Teamwork project:<\/li>\n<li>Teamwork task:<\/li>\n<li>Teamwork URL:<\/li>\n<\/ul>", "plain_text": "WL-20260609-001 Adopt a system-scoped work log Notes Created a durable log for changes to the parent nightly-build setup. The scope is intentionally narrower than the repository: it covers selection logic, agent instructions, automation, standards, templates, backlog infrastructure, and repository-wide maintenance. Key Points - Log parent-system changes, not the contents or review of individual nightly builds. - Dated builds retain their own PRD, rationale, build log, and catalog history. - When a change spans both levels, record only the system-level mechanism here. Details The Work Log README defines explicit inclusion and exclusion rules. Included examples are CLAUDE.md, STANDARDS.md, SETUP.md, workflow and agent configuration, templates, builds/index.md, builds/ideas.md, and builds/idea-briefs/. Dated folders matching builds/YYYY-MM-DD-title/ are excluded except as linked evidence for a parent-system decision. Next Actions - None. Metadata - Date: 2026-06-09 - Category: Decision - Status: approved - Phase: system-governance - Owner: - Tags: governance;worklog;nightly-build-system - Related paths: Work Log/README.md;Work Log/worklog-index.csv - Related entries: - Teamwork project: - Teamwork task: - Teamwork URL:"}, {"entry_id": "WL-20260609-002", "date": "2026-06-09", "title": "Add linked idea briefs to the build-selection workflow", "category": "Change", "status": "implemented", "phase": "idea-selection", "owner": "", "tags": "ideas;prd;agent-instructions;nightly-build-system", "related_paths": "builds/ideas.md;builds/idea-briefs/README.md;builds/idea-briefs/cross-agent-project-activity-workstreams.md;CLAUDE.md;STANDARDS.md;SETUP.md;.github/workflows/nightly.yml", "summary": "Extended the idea backlog with linked durable briefs and required nightly agents to consult them before writing a selected build's PRD.", "teamwork_project": "", "teamwork_task": "", "teamwork_url": "", "record_path": "Work Log/records/2026/wl-20260609-002-add-linked-idea-briefs-to-the-build-selection-workflow.md", "tags_list": ["ideas", "prd", "agent-instructions", "nightly-build-system"], "content_html": "<h1>WL-20260609-002 Add linked idea briefs to the build-selection workflow<\/h1>\n<h2>Notes<\/h2>\n<p>Added a richer specification path for ambitious backlog ideas whose requirements do not fit safely in one table row.<\/p>\n<h2>Key Points<\/h2>\n<ul>\n<li>builds/ideas.md now has an Idea Brief column.<\/li>\n<li>Durable planning documents live under builds/idea-briefs/.<\/li>\n<li>Selected briefs must be read before scope and technology decisions are made.<\/li>\n<li>Build PRDs must document brief traceability, included capabilities, deferrals, and changed assumptions.<\/li>\n<\/ul>\n<h2>Details<\/h2>\n<p>Created a detailed brief for Cross-Agent Project Activity Workstreams and linked it from backlog idea 4. Updated CLAUDE.md, STANDARDS.md, SETUP.md, and both normal and resume GitHub Actions prompts so the autonomous workflow reads linked briefs and may stage builds/ideas.md when selection changes it. The brief remains an input to, rather than a replacement for, the dated build PRD.<\/p>\n<h2>Next Actions<\/h2>\n<ul>\n<li class=\"task open\">Use the traceability workflow when backlog idea 4 is selected.<\/li>\n<\/ul>\n<h2>Metadata<\/h2>\n<ul>\n<li>Date: 2026-06-09<\/li>\n<li>Category: Change<\/li>\n<li>Status: implemented<\/li>\n<li>Phase: idea-selection<\/li>\n<li>Owner:<\/li>\n<li>Tags: ideas;prd;agent-instructions;nightly-build-system<\/li>\n<li>Related paths: builds/ideas.md;builds/idea-briefs/README.md;builds/idea-briefs/cross-agent-project-activity-workstreams.md;CLAUDE.md;STANDARDS.md;SETUP.md;.github/workflows/nightly.yml<\/li>\n<li>Related entries: WL-20260609-001<\/li>\n<li>Teamwork project:<\/li>\n<li>Teamwork task:<\/li>\n<li>Teamwork URL:<\/li>\n<\/ul>", "plain_text": "WL-20260609-002 Add linked idea briefs to the build-selection workflow Notes Added a richer specification path for ambitious backlog ideas whose requirements do not fit safely in one table row. Key Points - builds/ideas.md now has an Idea Brief column. - Durable planning documents live under builds/idea-briefs/. - Selected briefs must be read before scope and technology decisions are made. - Build PRDs must document brief traceability, included capabilities, deferrals, and changed assumptions. Details Created a detailed brief for Cross-Agent Project Activity Workstreams and linked it from backlog idea 4. Updated CLAUDE.md, STANDARDS.md, SETUP.md, and both normal and resume GitHub Actions prompts so the autonomous workflow reads linked briefs and may stage builds/ideas.md when selection changes it. The brief remains an input to, rather than a replacement for, the dated build PRD. Next Actions - Use the traceability workflow when backlog idea 4 is selected. Metadata - Date: 2026-06-09 - Category: Change - Status: implemented - Phase: idea-selection - Owner: - Tags: ideas;prd;agent-instructions;nightly-build-system - Related paths: builds/ideas.md;builds/idea-briefs/README.md;builds/idea-briefs/cross-agent-project-activity-workstreams.md;CLAUDE.md;STANDARDS.md;SETUP.md;.github/workflows/nightly.yml - Related entries: WL-20260609-001 - Teamwork project: - Teamwork task: - Teamwork URL:"}, {"entry_id": "WL-20260609-003", "date": "2026-06-09", "title": "Restore dashboard support to the Work Log skill", "category": "Change", "status": "implemented", "phase": "system-governance", "owner": "", "tags": "worklog;dashboard;skills;nightly-build-system", "related_paths": "Work Log/dashboard/index.html;Work Log/dashboard/README.md", "summary": "Restored a portable self-contained dashboard generator to the reconstructed Work Log skill and enabled automatic refresh after new entries.", "teamwork_project": "", "teamwork_task": "", "teamwork_url": "", "record_path": "Work Log/records/2026/wl-20260609-003-restore-dashboard-support-to-the-work-log-skill.md", "tags_list": ["worklog", "dashboard", "skills", "nightly-build-system"], "content_html": "<h1>WL-20260609-003 Restore dashboard support to the Work Log skill<\/h1>\n<h2>Notes<\/h2>\n<p>The initial reconstruction preserved capture and query behavior but omitted the dashboard included in the saved DWELL implementation. Dashboard support has now been restored in a project-neutral form.<\/p>\n<h2>Key Points<\/h2>\n<ul>\n<li>The skill now exposes a dashboard command.<\/li>\n<li>Adding an entry rebuilds the dashboard automatically unless --no-dashboard is supplied.<\/li>\n<li>The generated dashboard supports search, sorting, date bounds, and metadata filters.<\/li>\n<li>The dashboard is a static snapshot and can be opened directly without a server.<\/li>\n<\/ul>\n<h2>Details<\/h2>\n<p>Added a reusable HTML template and dependency-free Python generation path. The generator resolves modern and legacy record paths, safely renders the Work Log Markdown subset, embeds current records, and writes Work Log/dashboard/index.html plus dashboard documentation. It was tested against this repository and a clean initialized project. The original OneDrive dashboard remained untouched because its generated file was permission-locked.<\/p>\n<h2>Next Actions<\/h2>\n<ul>\n<li>None.<\/li>\n<\/ul>\n<h2>Metadata<\/h2>\n<ul>\n<li>Date: 2026-06-09<\/li>\n<li>Category: Change<\/li>\n<li>Status: implemented<\/li>\n<li>Phase: system-governance<\/li>\n<li>Owner:<\/li>\n<li>Tags: worklog;dashboard;skills;nightly-build-system<\/li>\n<li>Related paths: Work Log/dashboard/index.html;Work Log/dashboard/README.md<\/li>\n<li>Related entries: WL-20260609-001<\/li>\n<li>Teamwork project:<\/li>\n<li>Teamwork task:<\/li>\n<li>Teamwork URL:<\/li>\n<\/ul>", "plain_text": "WL-20260609-003 Restore dashboard support to the Work Log skill Notes The initial reconstruction preserved capture and query behavior but omitted the dashboard included in the saved DWELL implementation. Dashboard support has now been restored in a project-neutral form. Key Points - The skill now exposes a dashboard command. - Adding an entry rebuilds the dashboard automatically unless --no-dashboard is supplied. - The generated dashboard supports search, sorting, date bounds, and metadata filters. - The dashboard is a static snapshot and can be opened directly without a server. Details Added a reusable HTML template and dependency-free Python generation path. The generator resolves modern and legacy record paths, safely renders the Work Log Markdown subset, embeds current records, and writes Work Log/dashboard/index.html plus dashboard documentation. It was tested against this repository and a clean initialized project. The original OneDrive dashboard remained untouched because its generated file was permission-locked. Next Actions - None. Metadata - Date: 2026-06-09 - Category: Change - Status: implemented - Phase: system-governance - Owner: - Tags: worklog;dashboard;skills;nightly-build-system - Related paths: Work Log/dashboard/index.html;Work Log/dashboard/README.md - Related entries: WL-20260609-001 - Teamwork project: - Teamwork task: - Teamwork URL:"}]</script>
+  <script>
+    const entries = JSON.parse(document.getElementById("worklog-data").textContent);
+    const ids = ["search", "from", "to", "sort", "category", "status", "phase", "owner", "tag"];
+    const controls = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+    const results = document.getElementById("results");
+    const count = document.getElementById("count");
+
+    function escapeHtml(value) {
+      return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+    }
+    function values(field) {
+      const all = field === "tag"
+        ? entries.flatMap(entry => entry.tags_list || [])
+        : entries.map(entry => entry[field]).filter(Boolean);
+      return [...new Set(all)].sort((a, b) => a.localeCompare(b));
+    }
+    for (const field of ["category", "status", "phase", "owner", "tag"]) {
+      for (const value of values(field)) {
+        controls[field].insertAdjacentHTML("beforeend",
+          `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`);
+      }
+    }
+    function matches(entry) {
+      const query = controls.search.value.trim().toLowerCase();
+      const haystack = [entry.entry_id, entry.title, entry.summary, entry.category,
+        entry.status, entry.phase, entry.owner, entry.plain_text, ...(entry.tags_list || [])]
+        .join(" ").toLowerCase();
+      return (!query || haystack.includes(query))
+        && (!controls.from.value || entry.date >= controls.from.value)
+        && (!controls.to.value || entry.date <= controls.to.value)
+        && (!controls.category.value || entry.category === controls.category.value)
+        && (!controls.status.value || entry.status === controls.status.value)
+        && (!controls.phase.value || entry.phase === controls.phase.value)
+        && (!controls.owner.value || entry.owner === controls.owner.value)
+        && (!controls.tag.value || (entry.tags_list || []).includes(controls.tag.value));
+    }
+    function render() {
+      const visible = entries.filter(matches);
+      visible.sort((a, b) => controls.sort.value === "oldest"
+        ? a.date.localeCompare(b.date) || a.entry_id.localeCompare(b.entry_id)
+        : controls.sort.value === "title"
+          ? a.title.localeCompare(b.title)
+          : b.date.localeCompare(a.date) || b.entry_id.localeCompare(a.entry_id));
+      count.textContent = `${visible.length} of ${entries.length} entries`;
+      results.innerHTML = visible.length ? visible.map(entry => `
+        <article>
+          <div class="entry-head">
+            <div><div class="entry-id">${escapeHtml(entry.entry_id)}</div>
+              <h2>${escapeHtml(entry.title)}</h2></div>
+            <div>${escapeHtml(entry.date)}</div>
+          </div>
+          <div class="meta">${[entry.category, entry.status, entry.phase, entry.owner]
+            .filter(Boolean).map(value => `<span class="pill">${escapeHtml(value)}</span>`).join("")}</div>
+          ${entry.summary ? `<div class="summary">${escapeHtml(entry.summary)}</div>` : ""}
+          <div class="content">${entry.content_html}</div>
+          <div class="tags">${(entry.tags_list || [])
+            .map(value => `<span class="tag">${escapeHtml(value)}</span>`).join("")}</div>
+          <div class="record-path">${escapeHtml(entry.record_path)}</div>
+        </article>`).join("") : '<div class="empty">No entries match the current filters.</div>';
+    }
+    for (const control of Object.values(controls)) {
+      control.addEventListener(control.tagName === "INPUT" ? "input" : "change", render);
+    }
+    document.getElementById("clear").addEventListener("click", () => {
+      for (const [key, control] of Object.entries(controls)) {
+        control.value = key === "sort" ? "newest" : "";
+      }
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>
