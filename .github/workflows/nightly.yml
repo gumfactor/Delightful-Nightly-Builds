@@ -11,6 +11,7 @@ on:
 permissions:
   contents: write           # Required for Claude to commit and push
   id-token: write           # Required for claude-code-action OIDC authentication
+  pull-requests: write      # Required for Claude to open PRs
 
 jobs:
   nightly-build:
@@ -48,6 +49,8 @@ jobs:
 
       - name: Run nightly build
         uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
@@ -108,6 +111,8 @@ jobs:
       - name: Resume incomplete build if needed
         if: steps.check_incomplete.outputs.needs_resume == 'true'
         uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |

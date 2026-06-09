@@ -383,11 +383,18 @@ Do not rewrite or delete any existing rows.
 
 ---
 
-## Step 10 — Commit and Push
+## Step 10 — Commit, Push, and Open Pull Request
+
+**Branch:** If currently on `main`, create a dedicated build branch before staging:
+```bash
+git checkout -b build/YYYY-MM-DD-title-slug
+```
+If already on a non-main branch (Routines sessions start on their own branch), stay on it.
 
 Stage only:
 - Everything in `builds/YYYY-MM-DD-title-slug/`
 - `builds/index.md`
+- `builds/ideas.md` (if modified — lottery status updates and fresh idea appends)
 
 Do not stage any other files.
 
@@ -398,7 +405,32 @@ build(YYYY-MM-DD): [Title] — [Category ID + Name]
 [One sentence describing what was built and what it does.]
 ```
 
-Push to origin. If push fails, wait 4 seconds and retry once. If it fails again, log the failure in `BUILD_LOG.md` and stop — do not force push.
+Push to origin:
+```bash
+git push -u origin $(git branch --show-current)
+```
+
+**Open a pull request targeting `main`:**
+```bash
+gh pr create \
+  --base main \
+  --title "build(YYYY-MM-DD): [Title] — [Category ID + Name]" \
+  --body "## What was built
+[One paragraph: what it is, why tonight, what problem it solves]
+
+## Tech
+[Stack and key dependencies]
+
+## Test results
+Tests: X passed, 0 failed
+
+## Key files
+- \`PRD.md\` — full spec
+- \`BUILD_LOG.md\` — session log
+- \`Manual.md\` — usage instructions (if applicable)"
+```
+
+If push fails, wait 4 seconds and retry once. If it fails again, log the failure in `BUILD_LOG.md` and stop — do not force push. Do not open a PR if the push failed.
 
 ---
 
