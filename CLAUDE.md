@@ -72,13 +72,21 @@ Get today's day of week: `date +%u` (1=Monday, 7=Sunday)
 
 | Day | Complexity Target |
 |-----|-------------------|
-| 1 Monday | Focused Utility — 1–3 source files, usable in under 5 minutes |
-| 2 Tuesday | Solid Feature — 3–8 source files, moderate scope |
-| 3 Wednesday | Ambitious Project — 8+ source files, rich UI or deep logic |
+| 1 Monday | Focused Utility |
+| 2 Tuesday | Solid Feature |
+| 3 Wednesday | Ambitious Project |
 | 4 Thursday | Focused Utility |
 | 5 Friday | Solid Feature |
 | 6 Saturday | Ambitious Project |
 | 7 Sunday | Focused Utility |
+
+**Complexity definitions:**
+
+- **Focused Utility** — Solves one specific, well-scoped problem the user actually has. Immediately usable. Does something the user couldn't trivially do with existing tools in a few lines.
+- **Solid Feature** — Multiple interacting components with non-trivial logic or data model. Has a meaningful workflow — state, multiple modes, or a real user flow. Something a user would return to repeatedly.
+- **Ambitious Project** — Genuinely complex: rich UI, deep logic, or meaningful data architecture. Feels like something you'd publish or share. Requires real design decisions, not just implementation.
+
+File count is not a measure of complexity. Judge by depth, scope, and value delivered.
 
 **Override:** If the last 3 entries in `builds/index.md` are all `ambitious`, drop to Focused Utility regardless of the day. Avoid compounding failures.
 
@@ -280,9 +288,9 @@ Tests are not optional. Write them as you build — not as an afterthought.
 
 | Complexity | Minimum Tests | Coverage |
 |------------|---------------|----------|
-| Focused Utility | 3 tests | Core function(s) happy path + 1 edge case |
-| Solid Feature | 5 tests | All main features, 2+ edge cases |
-| Ambitious Project | 8 tests | Happy paths, edge cases, error states |
+| Focused Utility | 5 tests | Core function(s) happy path + 2 edge cases |
+| Solid Feature | 10 tests | All main features, multiple edge cases, error states |
+| Ambitious Project | 15 tests | Full coverage of happy paths, edge cases, error states, and integration |
 
 **Test framework and location by stack:**
 

@@ -28,7 +28,7 @@
 
 ### Tests
 - [ ] At least one test file exists in a `tests/` subfolder
-- [ ] Minimum test count met for complexity level (Focused: 3, Solid: 5, Ambitious: 8)
+- [ ] Minimum test count met for complexity level (Focused: 5, Solid: 10, Ambitious: 15)
 - [ ] All tests pass with zero failures (run the full test suite before committing)
 - [ ] `BUILD_LOG.md` contains a test results entry: `Tests: X passed, Y failed`
 
