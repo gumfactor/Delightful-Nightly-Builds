@@ -1,0 +1,5 @@
+{"event": "login", "user_id": 101, "ts": "2024-03-01T09:00:00"}
+{"event": "view", "user_id": 102, "ts": "2024-03-01T09:05:00"}
+{"event": "purchase", "user_id": 101, "ts": "2024-03-01T09:12:00"}
+{"event": "logout", "user_id": 103, "ts": "2024-03-01T09:20:00"}
+{"event": "login", "user_id": 104, "ts": "2024-03-01T09:25:00"}

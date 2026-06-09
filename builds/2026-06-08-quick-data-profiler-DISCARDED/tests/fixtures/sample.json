@@ -1,0 +1,7 @@
+[
+  {"product": "Maple Syrup", "province": "QC", "price": 12.99, "in_stock": true},
+  {"product": "Hockey Stick", "province": "ON", "price": 89.99, "in_stock": true},
+  {"product": "Canoe Paddle", "province": "BC", "price": 45.00, "in_stock": false},
+  {"product": "Toque", "province": "AB", "price": 18.50, "in_stock": true},
+  {"product": "Poutine Kit", "province": "QC", "price": 8.75, "in_stock": null}
+]

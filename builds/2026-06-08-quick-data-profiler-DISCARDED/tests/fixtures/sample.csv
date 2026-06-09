@@ -1,0 +1,11 @@
+id,name,age,score,registered_on,active,category
+1,Alice,34,92.5,2023-01-15,true,A
+2,Bob,28,78.0,2023-03-22,false,B
+3,Charlie,45,88.5,2022-11-01,true,A
+4,Diana,31,,2023-05-10,true,C
+5,Eve,22,95.0,2023-07-04,false,A
+6,Frank,38,71.5,2022-09-18,true,B
+7,Grace,,82.0,2023-02-28,false,C
+8,Hank,52,66.0,2023-08-12,true,B
+9,Iris,29,90.5,2023-04-03,false,A
+10,Jack,41,77.5,2023-06-19,true,C
