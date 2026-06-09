@@ -39,6 +39,8 @@ always generates fresh ideas.
 | 1 | 2026-06-06 | F | ambitious | The Canada List CSV Quality Inspector | Browser-based tool to inspect and validate CSV uploads for The Canada List pipeline — flags malformed rows, missing required columns, encoding issues, and duplicate entries before ingestion | 7 | Could be very useful if implemented properly — unclear what role Playwright plays here vs. a pure Python validator | pending |
 | 2 | 2026-06-06 | A | ambitious | Investment Research Dashboard | Comprehensive personal finance dashboard — portfolio tracking, watchlist, research notes, and performance over time; not just an investing-interest toy but a genuinely useful daily tool | 6 | Love the idea of a comprehensive investment dashboard, but not just for investing interest — that framing is less exciting | pending |
 | 3 | 2026-06-06 | A | ambitious | Lab Research Project Tracker | Dashboard for tracking neuroscience lab projects, milestones, team tasks, and publication status | 4 | No need — already use Teamwork.com for project tracking | pending |
+| 4 | 2026-06-09 | A | solid | Research Study Pipeline Tracker | Browser dashboard to track neuroscience studies through lifecycle phases (ideation → data collection → analysis → writing → submission → review) with status badges and milestone notes | — | — | pending |
+| 5 | 2026-06-09 | A | solid | Running & Fitness Progress Dashboard | Browser-based dashboard for manually logging runs, strength sessions, and golf outings with a 30-day calendar heatmap and streak tracking | — | — | pending |
 
 ---
 

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Research Notes</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --watchlist-bg: #fef3c7;
+      --watchlist-text: #92400e;
+      --owned-bg: #dcfce7;
+      --owned-text: #166534;
+      --passed-bg: #f1f5f9;
+      --passed-text: #475569;
+      --danger: #ef4444;
+      --star-active: #f59e0b;
+      --star-inactive: #d1d5db;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.05);
+      --radius-sm: 4px;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .app-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .app-title span { color: var(--primary); }
+
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      white-space: nowrap;
+      font-family: inherit;
+      line-height: 1;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-ghost { background: transparent; color: var(--text-muted); border-color: var(--border); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+    .btn-inline-edit {
+      background: transparent; color: var(--text-muted); border: none;
+      padding: 4px 8px; font-size: 12px; cursor: pointer; border-radius: var(--radius-sm);
+      font-family: inherit;
+    }
+    .btn-inline-edit:hover { background: var(--bg); color: var(--primary); }
+
+    .btn-inline-delete {
+      background: transparent; color: var(--text-light); border: none;
+      padding: 4px 8px; font-size: 12px; cursor: pointer; border-radius: var(--radius-sm);
+      font-family: inherit;
+    }
+    .btn-inline-delete:hover { background: #fee2e2; color: var(--danger); }
+
+    /* ── Main layout ── */
+    .app-body { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+    /* ── Filter / stats bar ── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 2px solid transparent;
+      background: var(--surface);
+      color: var(--text-muted);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.12s;
+      font-family: inherit;
+    }
+    .stat-chip:hover { color: var(--text); border-color: var(--border); }
+    .stat-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .stat-chip .count {
+      font-weight: 700;
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.25);
+    }
+    .stat-chip:not(.active) .count { background: var(--bg); color: var(--text); }
+
+    /* ── Search ── */
+    .search-bar { margin-bottom: 20px; }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .search-input::placeholder { color: var(--text-light); }
+
+    /* ── Entry grid ── */
+    .entry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Entry card ── */
+    .entry-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow 0.12s, transform 0.12s;
+    }
+    .entry-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-symbol {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .card-badges {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-watchlist { background: var(--watchlist-bg); color: var(--watchlist-text); }
+    .badge-owned     { background: var(--owned-bg);     color: var(--owned-text); }
+    .badge-passed    { background: var(--passed-bg);    color: var(--passed-text); }
+
+    .conviction-stars { font-size: 15px; letter-spacing: 1px; }
+    .star-filled { color: var(--star-active); }
+    .star-empty  { color: var(--star-inactive); }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-name { font-weight: 600; font-size: 13px; color: var(--text); }
+    .card-sector {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+
+    .card-thesis {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      border-left: 3px solid var(--border);
+      padding-left: 10px;
+    }
+    .card-thesis.empty { font-style: italic; color: var(--text-light); border-left-color: var(--bg); }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .card-date { font-size: 11px; color: var(--text-light); }
+    .card-actions { display: flex; gap: 2px; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--text-muted);
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.35; }
+    .empty-state h3 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; max-width: 380px; margin: 0 auto; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 22px; color: var(--text); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"], select, textarea {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    input[type="text"]:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    input[type="text"]::placeholder { color: var(--text-light); }
+    textarea { resize: vertical; min-height: 110px; }
+
+    .form-error { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+    .form-error.visible { display: block; }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .app-header { padding: 0 16px; }
+      .app-body { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      .entry-grid { grid-template-columns: 1fr; }
+      .app-title { font-size: 15px; }
+      .modal { padding: 24px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">Investment <span>Research</span> Notes</div>
+  <div class="header-actions">
+    <label for="import-file-input" class="btn btn-ghost" style="cursor:pointer" title="Import from JSON backup">↑ Import</label>
+    <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImport(this)">
+    <button class="btn btn-ghost" data-testid="export-button" onclick="exportJSON()">↓ Export</button>
+    <button class="btn btn-primary" data-testid="add-button" onclick="openModal(null)">+ Add Entry</button>
+  </div>
+</header>
+
+<main class="app-body">
+  <div class="filter-bar">
+    <button class="stat-chip active" data-testid="filter-all" onclick="setFilter('all')">
+      All <span class="count" data-testid="stats-total">0</span>
+    </button>
+    <button class="stat-chip" data-testid="filter-watchlist" onclick="setFilter('watchlist')">
+      Watchlist <span class="count" data-testid="stats-watchlist">0</span>
+    </button>
+    <button class="stat-chip" data-testid="filter-owned" onclick="setFilter('owned')">
+      Owned <span class="count" data-testid="stats-owned">0</span>
+    </button>
+    <button class="stat-chip" data-testid="filter-passed" onclick="setFilter('passed')">
+      Passed <span class="count" data-testid="stats-passed">0</span>
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      class="search-input"
+      data-testid="search-input"
+      placeholder="Search by symbol, company, sector, or thesis…"
+      oninput="handleSearch(this.value)"
+    >
+  </div>
+
+  <div class="entry-grid" id="entry-grid"></div>
+</main>
+
+<!-- Add / Edit Modal -->
+<div class="modal-overlay" id="modal-overlay" data-testid="entry-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 class="modal-title" id="modal-title">Add Entry</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="modal-symbol">Symbol *</label>
+        <input type="text" id="modal-symbol" data-testid="modal-symbol" placeholder="e.g. AAPL"
+               oninput="this.value = this.value.toUpperCase()" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label for="modal-name">Company Name *</label>
+        <input type="text" id="modal-name" data-testid="modal-name" placeholder="e.g. Apple Inc.">
+      </div>
+      <div class="form-group">
+        <label for="modal-sector">Sector</label>
+        <select id="modal-sector" data-testid="modal-sector">
+          <option value="Technology">Technology</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Financials">Financials</option>
+          <option value="Consumer Discretionary">Consumer Discretionary</option>
+          <option value="Consumer Staples">Consumer Staples</option>
+          <option value="Energy">Energy</option>
+          <option value="Utilities">Utilities</option>
+          <option value="Materials">Materials</option>
+          <option value="Industrials">Industrials</option>
+          <option value="Real Estate">Real Estate</option>
+          <option value="Communication Services">Communication Services</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="modal-status">Status</label>
+        <select id="modal-status" data-testid="modal-status">
+          <option value="watchlist">Watchlist</option>
+          <option value="owned">Owned</option>
+          <option value="passed">Passed</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label for="modal-conviction">Conviction</label>
+        <select id="modal-conviction" data-testid="modal-conviction">
+          <option value="1">1 — Low</option>
+          <option value="2">2 — Below Average</option>
+          <option value="3" selected>3 — Neutral</option>
+          <option value="4">4 — High</option>
+          <option value="5">5 — Very High</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label for="modal-thesis">Thesis Notes</label>
+        <textarea id="modal-thesis" data-testid="modal-thesis"
+                  placeholder="Why is this interesting? Key catalysts, risks, valuation thoughts…"></textarea>
+      </div>
+    </div>
+    <div class="form-error" id="form-error">Symbol and Company Name are required.</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-testid="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" data-testid="modal-save" onclick="saveEntry()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'inv_research_entries';
+
+  const state = {
+    entries: [],
+    filter: 'all',
+    search: '',
+    editingId: null
+  };
+
+  function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      state.entries = raw ? JSON.parse(raw) : [];
+    } catch (_) {
+      state.entries = [];
+    }
+  }
+
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+  }
+
+  /* Returns entries filtered by the active status chip and search query. */
+  function getFilteredEntries() {
+    const q = state.search.toLowerCase().trim();
+    return state.entries.filter(e => {
+      if (state.filter !== 'all' && e.status !== state.filter) return false;
+      if (!q) return true;
+      return (
+        e.symbol.toLowerCase().includes(q) ||
+        e.name.toLowerCase().includes(q) ||
+        e.thesis.toLowerCase().includes(q) ||
+        e.sector.toLowerCase().includes(q)
+      );
+    });
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function renderStars(conviction) {
+    const n = Number(conviction) || 0;
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      html += `<span class="${i <= n ? 'star-filled' : 'star-empty'}" aria-hidden="true">★</span>`;
+    }
+    return html;
+  }
+
+  /* Escape user text before inserting into innerHTML */
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function updateStats() {
+    const w = state.entries.filter(e => e.status === 'watchlist').length;
+    const o = state.entries.filter(e => e.status === 'owned').length;
+    const p = state.entries.filter(e => e.status === 'passed').length;
+    document.querySelector('[data-testid="stats-total"]').textContent    = state.entries.length;
+    document.querySelector('[data-testid="stats-watchlist"]').textContent = w;
+    document.querySelector('[data-testid="stats-owned"]').textContent     = o;
+    document.querySelector('[data-testid="stats-passed"]').textContent    = p;
+  }
+
+  function updateFilterChips() {
+    document.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-testid="filter-${state.filter}"]`).classList.add('active');
+  }
+
+  /* Renders entry cards (or empty state) into the grid based on current filter and search. */
+  function renderEntries() {
+    const filtered = getFilteredEntries();
+    const grid = document.getElementById('entry-grid');
+
+    if (filtered.length === 0) {
+      const isFiltered = state.search || state.filter !== 'all';
+      grid.innerHTML = `
+        <div class="empty-state" data-testid="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>${isFiltered ? 'No results' : 'Start your research'}</h3>
+          <p>${isFiltered
+            ? 'No entries match your current filter or search.'
+            : 'Click <strong>+ Add Entry</strong> to capture your first investment thesis.'}</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(e => {
+      const thesis = e.thesis ? esc(e.thesis) : '';
+      const thesisClass = e.thesis ? '' : ' empty';
+      const thesisText  = e.thesis ? thesis : 'No thesis notes added yet.';
+      return `
+        <article class="entry-card" data-id="${esc(e.id)}">
+          <div class="card-top">
+            <div class="card-symbol" data-testid="entry-symbol">${esc(e.symbol)}</div>
+            <div class="card-badges">
+              <span class="status-badge badge-${esc(e.status)}" data-testid="entry-status">${esc(e.status.charAt(0).toUpperCase() + e.status.slice(1))}</span>
+              <div class="conviction-stars" title="Conviction ${esc(String(e.conviction))}/5">${renderStars(e.conviction)}</div>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="card-name" data-testid="entry-name">${esc(e.name)}</div>
+            <div class="card-sector">${esc(e.sector)}</div>
+          </div>
+          <div class="card-thesis${thesisClass}">${thesisText}</div>
+          <div class="card-footer">
+            <div class="card-date">Added ${formatDate(e.dateAdded)}</div>
+            <div class="card-actions">
+              <button class="btn-inline-edit" data-testid="entry-edit" onclick="openModal('${esc(e.id)}')">Edit</button>
+              <button class="btn-inline-delete" data-testid="entry-delete" onclick="deleteEntry('${esc(e.id)}')">Delete</button>
+            </div>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  function renderAll() {
+    updateStats();
+    updateFilterChips();
+    renderEntries();
+  }
+
+  function setFilter(filter) {
+    state.filter = filter;
+    renderAll();
+  }
+
+  function handleSearch(value) {
+    state.search = value;
+    renderEntries();
+  }
+
+  /* Opens the add/edit modal. Pass a string id to pre-populate fields for editing; null to add new. */
+  function openModal(id) {
+    state.editingId = id || null;
+    document.getElementById('form-error').classList.remove('visible');
+    document.getElementById('modal-title').textContent = id ? 'Edit Entry' : 'Add Entry';
+
+    if (id) {
+      const entry = state.entries.find(e => e.id === id);
+      if (!entry) return;
+      document.getElementById('modal-symbol').value    = entry.symbol;
+      document.getElementById('modal-name').value      = entry.name;
+      document.getElementById('modal-sector').value    = entry.sector;
+      document.getElementById('modal-status').value    = entry.status;
+      document.getElementById('modal-conviction').value = String(entry.conviction);
+      document.getElementById('modal-thesis').value    = entry.thesis;
+    } else {
+      document.getElementById('modal-symbol').value    = '';
+      document.getElementById('modal-name').value      = '';
+      document.getElementById('modal-sector').value    = 'Technology';
+      document.getElementById('modal-status').value    = 'watchlist';
+      document.getElementById('modal-conviction').value = '3';
+      document.getElementById('modal-thesis').value    = '';
+    }
+
+    document.getElementById('modal-overlay').classList.add('open');
+    document.getElementById('modal-symbol').focus();
+  }
+
+  function closeModal() {
+    state.editingId = null;
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  /* Validates the modal form and either creates a new entry or updates the one being edited. */
+  function saveEntry() {
+    const symbol = document.getElementById('modal-symbol').value.trim().toUpperCase();
+    const name   = document.getElementById('modal-name').value.trim();
+    const errorEl = document.getElementById('form-error');
+
+    if (!symbol || !name) {
+      errorEl.classList.add('visible');
+      return;
+    }
+    errorEl.classList.remove('visible');
+
+    const now       = new Date().toISOString();
+    const sector    = document.getElementById('modal-sector').value;
+    const status    = document.getElementById('modal-status').value;
+    const conviction = parseInt(document.getElementById('modal-conviction').value, 10);
+    const thesis    = document.getElementById('modal-thesis').value.trim();
+
+    if (state.editingId) {
+      const idx = state.entries.findIndex(e => e.id === state.editingId);
+      if (idx !== -1) {
+        state.entries[idx] = { ...state.entries[idx], symbol, name, sector, status, conviction, thesis, lastUpdated: now };
+      }
+    } else {
+      state.entries.unshift({ id: generateId(), symbol, name, sector, status, conviction, thesis, dateAdded: now, lastUpdated: now });
+    }
+
+    saveToStorage();
+    closeModal();
+    renderAll();
+  }
+
+  function deleteEntry(id) {
+    if (!window.confirm('Delete this entry? This cannot be undone.')) return;
+    state.entries = state.entries.filter(e => e.id !== id);
+    saveToStorage();
+    renderAll();
+  }
+
+  function exportJSON() {
+    const json = JSON.stringify(state.entries, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `investment-research-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImport(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data)) throw new Error('Expected array');
+        if (!window.confirm(`Import ${data.length} entries? This will replace your current ${state.entries.length} entries.`)) return;
+        state.entries = data;
+        saveToStorage();
+        renderAll();
+      } catch (_) {
+        alert('Import failed: the file must be a valid JSON array exported from this app.');
+      }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  }
+
+  /* Close modal on backdrop click */
+  document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  /* Close modal on Escape */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  /* Boot */
+  loadFromStorage();
+  renderAll();
+</script>
+</body>
+</html>
