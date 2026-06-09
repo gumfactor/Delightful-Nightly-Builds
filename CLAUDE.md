@@ -28,7 +28,7 @@ Make decisions confidently. When in doubt, choose the simpler, more reversible o
 
 Check for incomplete builds:
 ```bash
-ls builds/ | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort
+ls builds/ | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}-' | sort
 ```
 
 For the most recent dated folder found, examine its `BUILD_LOG.md`:
@@ -60,7 +60,7 @@ Read these three files IN ORDER before doing anything else:
 2. `builds/index.md` — what has already been built; avoid repeating categories
 3. `STANDARDS.md` — the non-negotiable quality and safety requirements
 
-Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD/`.
+Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD-title-slug/` where `title-slug` is the build title lowercased with spaces replaced by hyphens (e.g. `builds/2026-06-09-focus-timer/`).
 
 ---
 
@@ -204,7 +204,7 @@ Default toward the simpler option unless complexity genuinely requires more.
 
 ## Step 3 — Create the Build Folder
 
-Create: `builds/YYYY-MM-DD/`
+Create: `builds/YYYY-MM-DD-title-slug/` — lowercase the build title, replace spaces and special characters with hyphens. Example: "Focus Timer" → `builds/2026-06-09-focus-timer/`
 
 Create these files using the templates in `templates/` as starting points:
 
@@ -255,7 +255,7 @@ Follow `STANDARDS.md` throughout. Key rules:
 - Write tests alongside the code — not after (see Testing section below)
 - Log decisions and obstacles to `BUILD_LOG.md` as you go
 - Comment non-obvious logic; prefer readable over clever
-- Use `builds/YYYY-MM-DD/` as root; never reference paths outside it
+- Use `builds/YYYY-MM-DD-title-slug/` as root; never reference paths outside it
 
 **For HTML/CSS/JS:**
 - Single-file web apps: one `index.html` at the folder root with inlined CSS and JS
@@ -386,7 +386,7 @@ Do not rewrite or delete any existing rows.
 ## Step 10 — Commit and Push
 
 Stage only:
-- Everything in `builds/YYYY-MM-DD/`
+- Everything in `builds/YYYY-MM-DD-title-slug/`
 - `builds/index.md`
 
 Do not stage any other files.
@@ -407,13 +407,13 @@ Push to origin. If push fails, wait 4 seconds and retry once. If it fails again,
 If at any point a build cannot be completed safely and reversibly, stop immediately.
 
 **Abort if:**
-- The build would require modifying files outside `builds/YYYY-MM-DD/` and `builds/index.md`
+- The build would require modifying files outside `builds/YYYY-MM-DD-title-slug/` and `builds/index.md`
 - The build requires credentials not already in the environment
 - The build cannot be self-contained (requires external infrastructure to function)
 - A hard standard from `STANDARDS.md` cannot be met and there is no safe workaround
 
 **When aborting:**
-1. Create `builds/YYYY-MM-DD/ABORTED.md` with:
+1. Create `builds/YYYY-MM-DD-title-slug/ABORTED.md` with:
    - Date and time (UTC)
    - What you were attempting to build
    - The specific reason for aborting

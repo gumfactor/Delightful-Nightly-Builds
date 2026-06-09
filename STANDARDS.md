@@ -9,7 +9,7 @@
 ## Hard Standards (Violations Abort the Build)
 
 ### Safety & Reversibility
-- [ ] All build output is entirely within `builds/YYYY-MM-DD/`
+- [ ] All build output is entirely within `builds/YYYY-MM-DD-title-slug/`
 - [ ] The only file outside the build folder that is modified is `builds/index.md`
 - [ ] No build file imports from, references, or modifies another build's folder
 - [ ] No system-level operations (no `rm -rf`, no system file writes, no registry edits)
@@ -87,7 +87,7 @@
 ## Build Folder Structure Standard
 
 ```
-builds/YYYY-MM-DD/          ← Everything lives here
+builds/YYYY-MM-DD-title-slug/          ← Everything lives here
 ├── PRD.md                  ← Required always
 ├── WhyThis.md              ← Required always
 ├── BUILD_LOG.md            ← Required always
@@ -106,7 +106,7 @@ builds/YYYY-MM-DD/          ← Everything lives here
 
 For aborted builds:
 ```
-builds/YYYY-MM-DD/
+builds/YYYY-MM-DD-title-slug/
 └── ABORTED.md              ← This file only; no other files
 ```
 
