@@ -83,7 +83,7 @@ Tests cover:
 12. Entry persists after page reload (localStorage)
 
 ## Success Criteria
-1. All 12 Playwright tests pass with zero failures
+1. All 13 Playwright tests pass with zero failures
 2. Adding an entry saves it to `localStorage` and it survives a page reload
 3. Filtering and search correctly show/hide cards without affecting stored data
 4. Export produces a valid `.json` file containing all current entries
