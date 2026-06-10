@@ -1,6 +1,6 @@
 # Manual — Investment Portfolio Snapshot
 
-> **Version:** 1.0 (built 2026-06-10)
+> **Version:** 1.1 (updated 2026-06-10)
 > **Complexity:** Ambitious Project
 
 ---
@@ -15,7 +15,7 @@ A Python script that fetches current prices, key metrics, and 3-month price tren
 
 1. Edit `watchlist.json` with the tickers you want to track (Yahoo Finance symbols; append `.TO` for TSX-listed stocks)
 2. From the build folder: `python3 main.py`
-3. Open `report.html` in your browser
+3. Open `report.html` in your browser — or use `python3 main.py --open` to open it automatically
 
 ---
 
@@ -43,19 +43,27 @@ Edit `watchlist.json` to control which stocks appear:
 From the build folder root:
 
 ```bash
+# Generate report
 python3 main.py
+
+# Generate and open in browser immediately
+python3 main.py --open
+
+# Custom paths
+python3 main.py --watchlist ~/my-watchlist.json --output ~/Desktop/snapshot.html --open
 ```
 
-Progress is printed to the terminal as each ticker is fetched. The report is written to `report.html` in the same folder.
+Progress is printed to the terminal as each ticker is fetched.
 
-**Custom paths:**
-```bash
-python3 main.py --watchlist ~/my-watchlist.json --output ~/Desktop/snapshot.html
-```
+### Using the `/portfolio-check` Skill
+
+With the skill installed, typing `/portfolio-check` in any Claude Code session will fetch a fresh snapshot and open it — no need to navigate to the build folder manually.
+
+The skill file is at `.claude/skills/portfolio-check.md` in this repository and is available automatically when you open Claude Code from the repo root.
 
 ### Reading the Report
 
-The HTML report opens in any browser — double-click `report.html` or run `open report.html` (macOS) / `start report.html` (Windows). No internet connection required once the file is generated.
+The HTML report opens in any browser — double-click `report.html`, or use `--open` to launch it automatically. No internet connection required once the file is generated.
 
 **Summary row:** Shows total tickers, gainers, and losers for a quick glance.
 
@@ -81,6 +89,7 @@ Missing fields (P/E for ETFs, etc.) display as `—` — the tool never crashes 
 |---------|---------|-------------|
 | `--watchlist` | `watchlist.json` in build folder | Path to a valid watchlist JSON file |
 | `--output` | `report.html` in build folder | Path where the HTML report is written |
+| `--open` | off | Open the report in the default browser after generating |
 
 ---
 
