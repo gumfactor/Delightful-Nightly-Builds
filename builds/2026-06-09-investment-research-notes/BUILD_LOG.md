@@ -24,7 +24,7 @@ Full implementation: add/edit modal, entry cards with status badges + conviction
 
 ### [08:30 UTC] Tests written.
 
-12 Playwright tests in tests/research.spec.js covering: empty state, modal open/close, add entry, stats update, filter by status (watchlist, owned), search by symbol and thesis text, edit entry, delete with confirm dialog, localStorage persistence.
+13 Playwright tests in tests/research.spec.js covering: empty state, modal open/close, add entry, stats update, filter by status (watchlist, owned), search by symbol and thesis text, edit entry, delete with confirm dialog, localStorage persistence.
 
 ### [08:35 UTC] Running tests...
 
