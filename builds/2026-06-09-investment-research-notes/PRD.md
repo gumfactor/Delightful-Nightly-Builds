@@ -50,7 +50,7 @@ Each entry stored as a JSON object:
 All entries stored as a JSON array at `localStorage` key `inv_research_entries`.
 
 ## Folder Structure
-```
+~~~
 builds/2026-06-09-investment-research-notes/
 ├── PRD.md
 ├── WhyThis.md
@@ -60,15 +60,14 @@ builds/2026-06-09-investment-research-notes/
 ├── index.html                 ← single-file app with inlined CSS and JS
 ├── playwright.config.js
 └── tests/
-    └── research.spec.js       ← 12 Playwright tests
-```
+    └── research.spec.js       ← 13 Playwright tests
+~~~
 
 ## Testing Strategy
 - Framework: Playwright with Chromium
 - Test file: `tests/research.spec.js`
-- Approach: Each test navigates to `index.html` via `file://` URL and clears `localStorage` in `beforeEach` for isolation
+- Approach: Each test navigates to `index.html` via a `file://` URL and clears `localStorage` via the `loadFreshPage()` helper for isolation
 - Run command: `npx playwright test` (from build folder)
-
 Tests cover:
 1. Page loads with empty state message
 2. Add modal opens
