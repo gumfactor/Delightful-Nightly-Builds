@@ -704,8 +704,24 @@
       try {
         const data = JSON.parse(ev.target.result);
         if (!Array.isArray(data)) throw new Error('Expected array');
-        if (!window.confirm(`Import ${data.length} entries? This will replace your current ${state.entries.length} entries.`)) return;
-        state.entries = data;
+
+        const normalized = data
+          .filter(x => x && typeof x === 'object')
+          .map(x => ({
+            id: (typeof x.id === 'string' && x.id) ? x.id : generateId(),
+            symbol: String(x.symbol || '').trim().toUpperCase(),
+            name: String(x.name || '').trim(),
+            sector: String(x.sector || 'Other').trim() || 'Other',
+            status: ['watchlist', 'owned', 'passed'].includes(x.status) ? x.status : 'watchlist',
+            conviction: Math.max(1, Math.min(5, parseInt(x.conviction, 10) || 3)),
+            thesis: String(x.thesis || '').trim(),
+            dateAdded: (typeof x.dateAdded === 'string' && x.dateAdded) ? x.dateAdded : new Date().toISOString(),
+            lastUpdated: (typeof x.lastUpdated === 'string' && x.lastUpdated) ? x.lastUpdated : ((typeof x.dateAdded === 'string' && x.dateAdded) ? x.dateAdded : new Date().toISOString())
+          }))
+          .filter(x => x.symbol && x.name);
+
+        if (!window.confirm(`Import ${normalized.length} entries? This will replace your current ${state.entries.length} entries.`)) return;
+        state.entries = normalized;
         saveToStorage();
         renderAll();
       } catch (_) {
