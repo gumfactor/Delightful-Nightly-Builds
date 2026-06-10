@@ -587,8 +587,8 @@
           <div class="card-footer">
             <div class="card-date">Added ${formatDate(e.dateAdded)}</div>
             <div class="card-actions">
-              <button class="btn-inline-edit" data-testid="entry-edit" onclick="openModal('${esc(e.id)}')">Edit</button>
-              <button class="btn-inline-delete" data-testid="entry-delete" onclick="deleteEntry('${esc(e.id)}')">Delete</button>
+              <button class="btn-inline-edit" data-testid="entry-edit" onclick="openModal(this.closest('.entry-card').dataset.id)">Edit</button>
+              <button class="btn-inline-delete" data-testid="entry-delete" onclick="deleteEntry(this.closest('.entry-card').dataset.id)">Delete</button>
             </div>
           </div>
         </article>`;
