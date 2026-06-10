@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const { test, expect } = require('@playwright/test');
@@ -139,6 +140,56 @@ test('can delete an entry via confirm dialog', async ({ page }) => {
   page.once('dialog', dialog => dialog.accept());
   await page.click('[data-testid="entry-delete"]');
   await expect(page.locator('[data-testid="empty-state"]')).toBeVisible();
+});
+
+test('export downloads the current entries as JSON', async ({ page }) => {
+  await loadFreshPage(page);
+  await addEntry(page, { symbol: 'AAPL', name: 'Apple Inc.', status: 'watchlist', conviction: '4', thesis: 'Strong ecosystem moat.' });
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.click('[data-testid="export-button"]');
+  const download = await downloadPromise;
+  const downloadPath = await download.path();
+  const exportedEntries = JSON.parse(await fs.promises.readFile(downloadPath, 'utf8'));
+
+  await expect(download.suggestedFilename()).toMatch(/^investment-research-\d{4}-\d{2}-\d{2}\.json$/);
+  expect(exportedEntries).toHaveLength(1);
+  expect(exportedEntries[0]).toMatchObject({
+    symbol: 'AAPL',
+    name: 'Apple Inc.',
+    status: 'watchlist',
+    conviction: 4,
+    thesis: 'Strong ecosystem moat.',
+  });
+});
+
+test('import uploads JSON entries after confirmation and updates the UI', async ({ page }, testInfo) => {
+  await loadFreshPage(page);
+  await addEntry(page, { symbol: 'MSFT', name: 'Microsoft', status: 'owned' });
+
+  const importFilePath = testInfo.outputPath('import.json');
+  await fs.promises.writeFile(importFilePath, JSON.stringify([
+    {
+      id: 'imported-entry-1',
+      symbol: 'NVDA',
+      name: 'NVIDIA',
+      sector: 'Technology',
+      status: 'watchlist',
+      conviction: 5,
+      thesis: 'AI infrastructure demand.',
+      dateAdded: '2026-06-09T00:00:00.000Z',
+      lastUpdated: '2026-06-09T00:00:00.000Z',
+    }
+  ]));
+
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('#import-file-input').setInputFiles(importFilePath);
+
+  await expect(page.locator('[data-testid="entry-symbol"]')).toHaveCount(1);
+  await expect(page.locator('[data-testid="entry-symbol"]').first()).toHaveText('NVDA');
+  await expect(page.locator('[data-testid="entry-name"]').first()).toHaveText('NVIDIA');
+  await expect(page.locator('[data-testid="stats-total"]')).toHaveText('1');
+  await expect(page.locator('[data-testid="empty-state"]')).toBeHidden();
 });
 
 test('entry persists in localStorage after page reload', async ({ page }) => {
