@@ -1,0 +1,11 @@
+{
+  "tickers": [
+    {"symbol": "AAPL", "label": "Apple"},
+    {"symbol": "MSFT", "label": "Microsoft"},
+    {"symbol": "NVDA", "label": "NVIDIA"},
+    {"symbol": "BRK-B", "label": "Berkshire Hathaway B"},
+    {"symbol": "SPY", "label": "S&P 500 ETF"},
+    {"symbol": "VFV.TO", "label": "Vanguard S&P 500 (CAD)"},
+    {"symbol": "XIU.TO", "label": "iShares S&P/TSX 60"}
+  ]
+}

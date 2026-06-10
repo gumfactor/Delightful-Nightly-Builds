@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Snapshot — 2026-06-10 08:13 UTC</title>
+  <style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #263044;
+  --border: #334155;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --up: #4ade80;
+  --down: #f87171;
+  --accent: #38bdf8;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "SF Mono", "Fira Code", monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 24px 16px;
+}
+
+header {
+  margin-bottom: 24px;
+}
+
+header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+header .meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 20px;
+  min-width: 120px;
+}
+
+.summary-card .label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.summary-card .value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.summary-card .value.up { color: var(--up); }
+.summary-card .value.down { color: var(--down); }
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+thead th.num { text-align: right; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+tbody tr:last-child { border-bottom: none; }
+
+tbody tr:hover { background: var(--surface2); }
+
+tbody td {
+  padding: 10px 14px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+tbody td.num { text-align: right; font-family: var(--mono); font-size: 12px; }
+
+.ticker { font-weight: 600; color: var(--accent); font-family: var(--mono); }
+.name { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.price { font-weight: 600; font-family: var(--mono); }
+.change.up { color: var(--up); font-family: var(--mono); }
+.change.down { color: var(--down); font-family: var(--mono); }
+.change.flat { color: var(--muted); font-family: var(--mono); }
+.error-row td { color: var(--muted); font-style: italic; }
+.error-msg { font-size: 11px; color: var(--down); }
+
+footer {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .summary { gap: 12px; }
+  .summary-card { padding: 10px 14px; min-width: 90px; }
+  .summary-card .value { font-size: 18px; }
+  table { font-size: 12px; }
+  thead th, tbody td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Portfolio Snapshot</h1>
+    <p class="meta">Generated <time datetime="2026-06-10T08:13:54Z">2026-06-10 08:13 UTC</time> &nbsp;&middot;&nbsp; Data via Yahoo Finance</p>
+  </header>
+
+  <div class="summary"><div class="summary-card"><div class="label">Tickers</div><div class="value">7</div></div><div class="summary-card"><div class="label">Gainers</div><div class="value up">0</div></div><div class="summary-card"><div class="label">Losers</div><div class="value down">0</div></div></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th class="num">Price</th>
+          <th class="num">1D Change</th>
+          <th class="num">52W Range</th>
+          <th class="num">P/E</th>
+          <th class="num">Mkt Cap</th>
+          <th class="num">Volume</th>
+          <th>3M Trend</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="error-row"><td><span class="ticker">AAPL</span><div class="name">Apple</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+<tr class="error-row"><td><span class="ticker">MSFT</span><div class="name">Microsoft</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+<tr class="error-row"><td><span class="ticker">NVDA</span><div class="name">NVIDIA</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+<tr class="error-row"><td><span class="ticker">BRK-B</span><div class="name">Berkshire Hathaway B</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+<tr class="error-row"><td><span class="ticker">SPY</span><div class="name">S&P 500 ETF</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+<tr class="error-row"><td><span class="ticker">VFV.TO</span><div class="name">Vanguard S&P 500 (CAD)</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+<tr class="error-row"><td><span class="ticker">XIU.TO</span><div class="name">iShares S&P/TSX 60</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Data sourced from Yahoo Finance via yfinance. Prices may be delayed 15–20 minutes.
+    For personal research only — not financial advice.
+  </footer>
+</body>
+</html>
