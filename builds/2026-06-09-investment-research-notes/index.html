@@ -494,13 +494,14 @@
   function getFilteredEntries() {
     const q = state.search.toLowerCase().trim();
     return state.entries.filter(e => {
+      if (!e || typeof e !== 'object') return false;
       if (state.filter !== 'all' && e.status !== state.filter) return false;
       if (!q) return true;
       return (
-        e.symbol.toLowerCase().includes(q) ||
-        e.name.toLowerCase().includes(q) ||
-        e.thesis.toLowerCase().includes(q) ||
-        e.sector.toLowerCase().includes(q)
+        String(e.symbol || '').toLowerCase().includes(q) ||
+        String(e.name || '').toLowerCase().includes(q) ||
+        String(e.thesis || '').toLowerCase().includes(q) ||
+        String(e.sector || '').toLowerCase().includes(q)
       );
     });
   }
