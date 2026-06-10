@@ -1,8 +1,8 @@
 const path = require('path');
+const { pathToFileURL } = require('url');
 const { test, expect } = require('@playwright/test');
 
-const FILE_URL = 'file://' + path.resolve(__dirname, '../index.html');
-
+const FILE_URL = pathToFileURL(path.resolve(__dirname, '../index.html')).href;
 /* Helper: navigate to a fresh, empty app state */
 async function loadFreshPage(page) {
   await page.goto(FILE_URL);
