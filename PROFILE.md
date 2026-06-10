@@ -167,3 +167,60 @@ Eastern Time (Toronto, Canada)
 
 ## Services / APIs you already have credentials for
 OpenAI, Anthropic API, GitHub, Firebase / Google Cloud, Google Workspace, Gmail, Google Calendar, Interactive Brokers (IBKR), Brevo, Helcim, Teamwork.com, Coda, Flutter/Firebase development ecosystem, Microsoft 365, and the broader VS Code extension ecosystem.
+
+## Data Sources Available for Nightly Builds
+
+Claude should read this section when selecting and designing builds. Prefer builds that connect to real data over builds that require manual entry.
+
+### Available with no credentials (public APIs)
+- **Yahoo Finance** — stock prices, company info, historical OHLCV data, financials (`yfinance` Python package or direct API)
+- **SEC EDGAR** — US company filings, financial statements, insider transactions (REST API, no auth required)
+- **Open-Meteo** — weather and climate data (REST API, no auth required)
+- **Wikipedia / Wikidata** — encyclopedic and structured reference data (REST API, no auth required)
+- **Canadian government open data** — Statistics Canada, Health Canada datasets (relevant to Canada List work)
+- **GitHub public API** — public repo metadata, commits, releases, issues (no auth for public data; higher limits with token)
+
+### Available via environment variables already set in the build environment
+- **GitHub API** — full authenticated access via `GITHUB_TOKEN` (automatically available in GitHub Actions) — use for repo data, commit history, PR state, issue tracking
+- **Anthropic API** — via `ANTHROPIC_API_KEY` — use sparingly and only when AI processing is the core value of the build
+
+### Available if added as GitHub repo secrets
+The following credentials exist but must be added to repo secrets before Claude can use them in nightly builds. To add: github.com/gumfactor/Delightful-Nightly-Builds → Settings → Secrets and variables → Actions.
+- **OpenAI** — `OPENAI_API_KEY`
+- **Teamwork.com** — API token (`TEAMWORK_API_KEY`)
+- **Coda** — API token (`CODA_API_KEY`)
+
+### Local-only (not available in GitHub Actions; usable when running tools manually)
+- **IBKR TWS API** — requires a running TWS or IB Gateway instance on localhost; practical only for tools the user runs locally
+- **Firebase / Google Cloud** — service account credentials; can be set up for local use
+- Any file-based data (CSV exports, local databases, config files on the user's machine)
+
+### MCP Servers
+MCP (Model Context Protocol) servers extend Claude's reach into external systems without building bespoke API clients. Builds can target existing MCP servers, integrate through them, or be packaged as an MCP server themselves.
+
+Servers worth targeting or building against:
+- **GitHub MCP** — issues, PRs, code search, CI status (already in use in this repo)
+- **Filesystem MCP** — read/write local files without subprocess calls
+- **SQLite / database MCP** — query local databases as a tool call
+- **Fetch / browser MCP** — scraping and web content access
+- Custom MCP servers can wrap any service the user has credentials for (IBKR, Teamwork, Coda, etc.), turning them into Claude-callable tools
+
+A build that exposes functionality as an MCP server is reusable across all Claude contexts, not just the build it was shipped in.
+
+### Claude Code Automation (Routines, Skills, Hooks)
+These turn a push tool (user must remember to run it) into a pull tool (it comes to the user automatically). Consider these deployment targets whenever a build involves a recurring task or a response to an event:
+
+- **Routines** — scheduled tasks Claude runs automatically. A build can include a Routine definition so it runs on a cron without user initiation: morning briefings, weekly digests, automated checks.
+- **Skills** — reusable capabilities invoked via `/skill-name` in Claude Code. A build can ship as a skill the user calls on demand: `/standup`, `/portfolio-check`, `/canada-list-qa`. Skills persist across sessions.
+- **Hooks** — event-triggered automation that fires on specific Claude Code events (session start, tool use, file write, session end). A build can install a hook that runs automatically in response to developer workflow events: linting after edits, context summaries at session end, pre-commit checks.
+
+When a build idea involves a recurring task or a response to an event, prefer packaging it as a Routine, Skill, or Hook over shipping a standalone script the user must remember to invoke.
+
+### Design guidance
+- For investment/finance builds: start with Yahoo Finance or SEC EDGAR — free, reliable, no setup required
+- For developer workflow builds: GitHub API via `GITHUB_TOKEN` is always available and rich; GitHub MCP adds even richer access
+- For Canada List builds: Canadian open data APIs + local CSV processing are the natural starting point
+- For recurring/scheduled tasks: design as a Routine rather than a manual script
+- For on-demand tasks invoked in a coding session: design as a Skill
+- For event-driven automation: design as a Hook
+- `localStorage`-only browser tools are appropriate for games, creative tools, and learning aids — not for productivity or data tools where real data exists

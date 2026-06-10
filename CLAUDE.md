@@ -166,9 +166,9 @@ For each, evaluate:
 
 - **Self-contained?** No cloud infrastructure required, no unconfigured paid APIs
 - **Reversible?** Deleting the folder removes it entirely
-- **Genuinely useful?** Connected to this specific user's life — apply preference prior here
-- **Practically useful?** The build must be useful in its delivered state — not just theoretically useful if a future feature were added. Before committing to an idea, ask: "Is there a critical missing piece that would be needed before this is actually used?" If yes, that piece must be part of tonight's scope, not deferred to FutureFeatures.md. FutureFeatures.md is for enhancements to a working, useful thing — not prerequisites for usefulness.
-- **Self-sustaining?** Prefer builds that deliver value automatically or reduce existing friction over builds that require the user to adopt a new manual habit. A tool that runs itself or removes a task is worth more than one that adds a task. (This criterion applies most to productivity/utility builds; it does not penalise games, learning aids, or creative tools.)
+- **Makes life genuinely easier?** Not just "fills a gap" — actively makes the user's work, research, or daily life better. Think: does this reduce real friction, automate something tedious, surface information the user currently lacks, or connect systems that don't talk to each other? "You could store notes here" is not enough. Apply the preference prior here.
+- **Complete in delivered state?** The build must be genuinely useful as delivered. Any capability required for real usefulness must be in scope tonight — not deferred to FutureFeatures.md. FutureFeatures.md is for enhancements to a working thing, not prerequisites for usefulness.
+- **Uses real data where it exists?** For productivity, data, and developer tools: check PROFILE.md's Data Sources section. If the user's data already exists somewhere accessible — GitHub, public APIs, files on disk — the build should connect to it rather than asking the user to re-enter it.
 - **Novel?** Not substantially similar to something in `builds/index.md`, AND not trivially redundant with tools already in the user's daily stack (check PROFILE.md). If `pandas.describe()`, `R summary()`, or another tool the user already uses covers this in two lines, it's not worth building. The bar is: does this do something the user can't already do easily with what they have?
 - **Achievable?** Realistic scope for tonight's complexity target
 - **Right stack?** Matches the user's preferred tech from PROFILE.md
@@ -211,16 +211,26 @@ that are not supported by the backlog row, `PROFILE.md`, or current context.
 
 ---
 
-### 2g — Choose the Tech Stack
+### 2g — Choose the Tech Stack and Deployment Model
 
 Based on the chosen idea and PROFILE.md preferences:
 
+**Implementation stack:**
 - **Single-use browser tool / dashboard / game:** Vanilla HTML/CSS/JS — `index.html` at root, Playwright for tests
 - **Data processing / automation / CLI:** Python 3 with stdlib; add dependencies only when necessary; pytest for tests
 - **Richer interactive app:** React + Vite only when complexity target is Ambitious and vanilla JS would be genuinely limiting; Vitest for tests
 - **Node.js utility:** When the task is clearly JS-ecosystem; Jest or Vitest for tests
+- **MCP server:** When the build's value is best exposed as a set of callable tools usable across Claude contexts — package it as an MCP server rather than a standalone script
 
-Default toward the simpler option unless complexity genuinely requires more.
+**Deployment model — ask this before writing code:**
+- **Does this run on a schedule?** → Design it as a Claude Code Routine rather than a manual script
+- **Does this respond to an event** (session start, file change, commit, session end)? → Design it as a Claude Code Hook
+- **Does this do something the user will invoke repeatedly in a coding session?** → Design it as a Claude Code Skill
+- **Does this expose reusable tools Claude should be able to call?** → Package it as an MCP server
+
+A Routine, Skill, Hook, or MCP server is almost always a better deployment target than a standalone script for productivity and developer tools. Choosing the right deployment model is part of the build, not an afterthought.
+
+Default toward the simpler tech stack — but never let "simpler" mean "avoids real integrations." Connecting to real data sources is not complexity; it is quality.
 
 ---
 
@@ -307,9 +317,11 @@ Follow `STANDARDS.md` throughout. Key rules:
 
 **Never:**
 - Hardcode credentials, real personal data, or API keys
-- Make external HTTP calls from the build scaffold (app code may, if PROFILE.md lists pre-configured services)
+- Make external HTTP calls to services not listed in PROFILE.md's Data Sources section
 - Import from or reference another build's folder
 - Use `eval()`, `exec()`, or user-controlled strings in shell calls
+- Default to `localStorage` when a real data source is available in PROFILE.md — connect to real data instead
+- Write tests to satisfy a count rather than verify behaviour — every test should correspond to a real failure mode
 
 ### Writing Tests
 
@@ -386,6 +398,8 @@ If a criterion is not met:
 - Or document the shortfall in `BUILD_LOG.md` with a specific explanation and mark the build `partial` in the index
 
 Run the security checklist from `STANDARDS.md` before moving to Step 8.
+
+Before moving on: confirm that real data integrations in PROFILE.md were used where applicable, and that tests reflect genuine coverage of the build's failure modes. If either falls short, address it now.
 
 ---
 
@@ -490,12 +504,12 @@ Never abort silently. The abort commit is the deliverable.
 
 ## Tone and Craft
 
-Build things worth keeping. Nightly does not mean rushed.
+Build things worth using. The user opens each build the morning after and decides whether it earns a place in their life — the best outcome is a tool they reach for again.
 
-- A focused utility done beautifully and fully tested is better than an ambitious project done sloppily
-- Build things that are practically useful now, not theoretically useful once a future feature is added — if a feature is required for the build to actually be used, it belongs in this build's scope
-- If scope needs to shrink to maintain quality, shrink scope — document it in PRD.md
-- Use real variable names, real error messages, real UI copy
-- Tests document what the code is supposed to do — write them as if they are specifications
-- Consider the user opening this 3 months from now with no context — will it make sense?
-- The documentation and tests are part of the build, not afterthoughts
+At every complexity level, the goal is the same: working code connected to real data, tested against real failure modes, with a clear and honest implementation. Focused builds are held to the same standard as ambitious ones — scope differs, quality does not.
+
+Three things to get right in every build:
+
+- **Real data over manual entry.** If the user's data exists somewhere accessible — GitHub, public APIs, files on disk — the build should work with it. Tools that pull from real sources deliver value automatically; tools that require the user to maintain them manually often go unused.
+- **Honest tests.** Test the failure modes that actually matter for this logic. Tests that exist only to reach a minimum count add noise, not confidence.
+- **Complete scope.** What ships must be genuinely useful in its delivered state. Features that are prerequisites for usefulness belong in this build, not in FutureFeatures.md.

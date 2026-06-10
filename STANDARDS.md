@@ -69,7 +69,7 @@
 
 ### Testing
 - Tests cover the happy path through the main user flow
-- Tests include at least one edge case (empty input, boundary values, invalid data)
+- Edge case coverage reflects the actual complexity and risk of the logic — all meaningful failure modes have a test
 - Test names are descriptive — reading them explains what the code does
 - Tests are independent — each test sets up and tears down its own state
 - Playwright tests use stable selectors (`data-testid` attributes preferred over CSS classes)
@@ -78,10 +78,11 @@
 - Tests live in `tests/` and can be run with a single command documented in `Manual.md`
 
 ### Scope Discipline
-- If scope had to shrink mid-build, add a "Scope Changes" subsection to PRD.md explaining what was dropped and why
-- A partial build done well is better than an ambitious build done poorly
-- If a feature can't be done correctly, remove it rather than shipping it broken
-- **Practical usefulness over theoretical usefulness** — FutureFeatures.md is for enhancements to a working, valuable thing. If a feature is required to make the build genuinely useful (not just interesting in concept), it must be part of the current build's scope. Ship something the user will actually open again, not something that requires a sequel to be worth using.
+- If scope changed mid-build, document what was cut and why in a "Scope Changes" subsection of PRD.md
+- Scope decisions must be deliberate. What ships must be complete and genuinely useful — a narrower build executed well beats a broader build half-finished
+- Remove features that cannot be done correctly rather than shipping them broken
+- FutureFeatures.md is for enhancements to a working, valuable thing — not for features required to make the build worth using. Those belong in tonight's scope
+- Meeting the checklist is the floor. The goal is a build that is genuinely useful and well-executed
 
 ---
 
@@ -137,3 +138,4 @@ A build is complete when ALL of the following are true:
 4. `BUILD_LOG.md` final entry reads: `Build complete. Success criteria reviewed. All tests passing.`
 5. `builds/index.md` has been updated with this build's row
 6. All changes are committed and pushed to the remote
+7. The build delivers genuine value — the implementation is clean, real integrations are used where available, and tests verify meaningful behaviour
