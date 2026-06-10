@@ -2,7 +2,7 @@
 Investment Portfolio Snapshot — entry point.
 
 Usage:
-  python3 main.py [--watchlist path/to/watchlist.json] [--output report.html]
+  python3 main.py [--watchlist path/to/watchlist.json] [--output report.html] [--open]
 """
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import webbrowser
 from pathlib import Path
 
 from src.fetcher import fetch_ticker
@@ -53,6 +54,12 @@ def main() -> None:
         default=str(build_dir / "report.html"),
         help="Output path for the HTML report (default: report.html in build folder)",
     )
+    parser.add_argument(
+        "--open",
+        action="store_true",
+        dest="open_browser",
+        help="Open the report in the default browser after generating",
+    )
     args = parser.parse_args()
 
     watchlist = load_watchlist(Path(args.watchlist))
@@ -79,6 +86,9 @@ def main() -> None:
     output_path.write_text(html, encoding="utf-8")
     print(f"\nReport written to: {output_path}")
     print(f"File size: {output_path.stat().st_size:,} bytes")
+
+    if args.open_browser:
+        webbrowser.open(output_path.resolve().as_uri())
 
 
 if __name__ == "__main__":
