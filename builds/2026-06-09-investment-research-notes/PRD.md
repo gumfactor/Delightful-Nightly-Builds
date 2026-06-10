@@ -60,7 +60,7 @@ builds/2026-06-09-investment-research-notes/
 ├── index.html                 ← single-file app with inlined CSS and JS
 ├── playwright.config.js
 └── tests/
-    └── research.spec.js       ← 13 Playwright tests
+    └── research.spec.js       ← 15 Playwright tests
 ~~~
 
 ## Testing Strategy
@@ -80,10 +80,12 @@ Tests cover:
 9. Search filters entries by thesis text
 10. Can edit an existing entry
 11. Can delete an entry via confirm dialog
-12. Entry persists after page reload (localStorage)
+12. Export downloads the current entries as JSON
+13. Import uploads JSON, confirms replacement, and updates the UI
+14. Entry persists after page reload (localStorage)
 
 ## Success Criteria
-1. All 13 Playwright tests pass with zero failures
+1. All 15 Playwright tests pass with zero failures
 2. Adding an entry saves it to `localStorage` and it survives a page reload
 3. Filtering and search correctly show/hide cards without affecting stored data
 4. Export produces a valid `.json` file containing all current entries

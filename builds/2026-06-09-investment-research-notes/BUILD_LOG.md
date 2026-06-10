@@ -55,3 +55,8 @@ FutureFeatures.md: 10 concrete suggestions (5 quick, 2 medium, 3 ambitious).
 Manual.md: opening instructions, all features documented, test run command included.
 
 Build complete. Success criteria reviewed. All tests passing.
+
+### [04:10 UTC] Review follow-up: import/export coverage added.
+
+Added 2 Playwright tests for the previously untested JSON export download and JSON import upload/confirm/UI-update flows.
+Current suite: **15 passed, 0 failed.**

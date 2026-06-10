@@ -64,7 +64,7 @@ Requires Node.js and the local `@playwright/test` package (installed in `node_mo
 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers npx playwright test
 ```
 
-Expected result: **13 passed, 0 failed**
+Expected result: **15 passed, 0 failed**
 
 To run a single test:
 ```bash
