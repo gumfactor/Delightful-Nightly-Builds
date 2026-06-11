@@ -42,6 +42,8 @@ always generates fresh ideas.
 | 2 | 2026-06-06 | A | ambitious | Investment Research Dashboard | Comprehensive personal finance dashboard — portfolio tracking, watchlist, research notes, and performance over time; not just an investing-interest toy but a genuinely useful daily tool | — | 6 | Love the idea of a comprehensive investment dashboard, but not just for investing interest — that framing is less exciting | pending |
 | 3 | 2026-06-06 | A | ambitious | Lab Research Project Tracker | Dashboard for tracking neuroscience lab projects, milestones, team tasks, and publication status | — | 4 | No need — already use Teamwork.com for project tracking | pending |
 | 4 | 2026-06-09 | B | ambitious | Cross-Agent Project Activity Workstreams | Automatically correlate Git, GitHub, and AI-agent activity into evidence-backed workstreams that can generate accurate standups, resumptions, handoffs, timelines, and decision histories across tools | [Brief](idea-briefs/cross-agent-project-activity-workstreams.md) | 9 | — | pending |
+| 5 | 2026-06-11 | A | focused | Stock Watchlist Morning Snapshot | Python CLI using Yahoo Finance (yfinance) to show current price, % change today, % change from 52-week high/low, and volume for a configurable list of tickers | — | — | — | pending |
+| 6 | 2026-06-11 | I | focused | Outdoor Activity Weather Planner | Python CLI using Open-Meteo to fetch a 7-day forecast for Toronto and score each day for running, golf, and boating based on temperature, wind, precipitation, and UV criteria | — | — | — | pending |
 
 ---
 
