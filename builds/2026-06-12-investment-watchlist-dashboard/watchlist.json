@@ -1,0 +1,9 @@
+[
+  { "symbol": "AAPL",  "label": "Apple",     "notes": "" },
+  { "symbol": "MSFT",  "label": "Microsoft",  "notes": "" },
+  { "symbol": "NVDA",  "label": "NVIDIA",     "notes": "AI infrastructure play" },
+  { "symbol": "GOOGL", "label": "Alphabet",   "notes": "" },
+  { "symbol": "BRK-B", "label": "Berkshire",  "notes": "Value benchmark" },
+  { "symbol": "SPY",   "label": "S&P 500 ETF","notes": "Market benchmark" },
+  { "symbol": "TSM",   "label": "TSMC",       "notes": "Semiconductor supply chain" }
+]

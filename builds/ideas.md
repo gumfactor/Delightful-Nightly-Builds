@@ -43,6 +43,8 @@ always generates fresh ideas.
 | 3 | 2026-06-06 | A | ambitious | Lab Research Project Tracker | Dashboard for tracking neuroscience lab projects, milestones, team tasks, and publication status | — | 4 | No need — already use Teamwork.com for project tracking | pending |
 | 4 | 2026-06-09 | B | ambitious | Cross-Agent Project Activity Workstreams | Automatically correlate Git, GitHub, and AI-agent activity into evidence-backed workstreams that can generate accurate standups, resumptions, handoffs, timelines, and decision histories across tools | [Brief](idea-briefs/cross-agent-project-activity-workstreams.md) | 9 | — | pending |
 | 5 | 2026-06-11 | B | focused | Morning Briefing | Unified daily digest that combines the Git Standup Reporter, Investment Portfolio Snapshot, and GitHub Repository Health Dashboard into a single morning report — commits from yesterday, portfolio overnight moves, and any repos that have gone quiet | — | 8 | — | pending |
+| 6 | 2026-06-12 | A | solid | GitHub Repository Activity Dashboard | HTML dashboard that fetches commit history and repo metadata via GITHUB_TOKEN for a user-specified set of repos, rendering a contribution-style activity heatmap plus per-repo health metrics (open issues, last push, PR count) | — | — | — | pending |
+| 7 | 2026-06-12 | A | focused | Open-Meteo Weather Dashboard | Browser-based daily and weekly weather dashboard using the Open-Meteo free API — temperature, precipitation probability, wind, and UV index in a clean visual layout; location configurable via lat/lon | — | — | — | pending |
 
 ---
 
