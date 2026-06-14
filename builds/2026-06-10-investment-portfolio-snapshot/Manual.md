@@ -1,21 +1,22 @@
-# Manual — Investment Portfolio Snapshot
+# Manual — Investment Research Platform
 
-> **Version:** 1.1 (updated 2026-06-10)
+> **Version:** 2.0 (updated 2026-06-14)
 > **Complexity:** Ambitious Project
 
 ---
 
 ## What This Is
 
-A Python script that fetches current prices, key metrics, and 3-month price trends for a configurable stock watchlist and generates a self-contained HTML report you can open in any browser. Run it once to get a snapshot; run it each morning as part of your routine. No server, no login, no browser extension — one command, one file.
+A unified investment research platform. One command fetches live market data for your watchlist and generates a self-contained HTML report — prices, key metrics, 3-month sparklines, and your own thesis notes per ticker including the price when each note was written and the % move since. A built-in thesis journal CLI lets you add and review investment notes that automatically appear in every subsequent report.
 
 ---
 
 ## Quick Start
 
 1. Edit `watchlist.json` with the tickers you want to track (Yahoo Finance symbols; append `.TO` for TSX-listed stocks)
-2. From the build folder: `python3 main.py`
-3. Open `report.html` in your browser — or use `python3 main.py --open` to open it automatically
+2. Optionally add some thesis notes: `python3 main.py add NVDA "AI infrastructure play."`
+3. From the build folder: `python3 main.py`
+4. Open `report.html` in your browser — or use `python3 main.py --open` to open it automatically
 
 ---
 
@@ -38,7 +39,7 @@ Edit `watchlist.json` to control which stocks appear:
 - `symbol` — Yahoo Finance ticker. US stocks: plain symbol (e.g. `MSFT`). TSX: append `.TO` (e.g. `VFV.TO`).
 - `label` — Display name in the report. Optional; defaults to the symbol if omitted.
 
-### Running the Tool
+### Generating the Report
 
 From the build folder root:
 
@@ -55,11 +56,28 @@ python3 main.py --watchlist ~/my-watchlist.json --output ~/Desktop/snapshot.html
 
 Progress is printed to the terminal as each ticker is fetched.
 
-### Using the `/portfolio-check` Skill
+### Managing Thesis Notes
 
-With the skill installed, typing `/portfolio-check` in any Claude Code session will fetch a fresh snapshot and open it — no need to navigate to the build folder manually.
+Notes are stored in `theses.json` in the build folder and automatically appear in the Thesis column of every report.
 
-The skill file is at `.claude/skills/portfolio-check.md` in this repository and is available automatically when you open Claude Code from the repo root.
+```bash
+# Add a note (fetches and records today's live price automatically)
+python3 main.py add NVDA "AI infrastructure play — datacenter capex cycle still early."
+
+# View all notes for a ticker with live price and % change since each note
+python3 main.py show NVDA
+
+# List all tickers that have notes
+python3 main.py list
+
+# Search notes by keyword (case-insensitive)
+python3 main.py search "infrastructure"
+
+# Delete a specific note by ID
+python3 main.py delete NVDA 1
+```
+
+Notes that have a recorded price show the % move since the note was written — in `show` output and in the report's Thesis column.
 
 ### Reading the Report
 
@@ -78,8 +96,9 @@ The HTML report opens in any browser — double-click `report.html`, or use `--o
 | Mkt Cap | Market capitalization with T/B/M suffix |
 | Volume | Daily volume with M/K suffix |
 | 3M Trend | 90-day SVG sparkline; green=uptrend from 90d ago, red=downtrend, gray=flat |
+| Thesis | Latest note text, price at time of writing, and % move since (green=up, red=down) |
 
-Missing fields (P/E for ETFs, etc.) display as `—` — the tool never crashes on missing data.
+Missing fields display as `—` — the tool never crashes on missing data. If no thesis note exists for a ticker, the Thesis column shows `—`.
 
 ---
 
@@ -103,7 +122,7 @@ python -m pytest tests/ -v
 
 All tests run without network access — Yahoo Finance is mocked so the test suite is fast and portable.
 
-**Expected output:** 65 tests, 0 failures.
+**Expected output:** 93 tests, 0 failures.
 
 ---
 

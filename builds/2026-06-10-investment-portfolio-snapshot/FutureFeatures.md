@@ -1,4 +1,4 @@
-# Future Features — Investment Portfolio Snapshot
+# Future Features — Investment Research Platform
 
 > Ideas for extending this build. Claude generates these based on what was built.
 > The user decides whether to pursue them in future builds or manually.
@@ -7,15 +7,15 @@
 
 ## Quick Wins (under 1 hour to add)
 
-1. **Open report automatically** — Add `--open` flag to `main.py` that calls `webbrowser.open(output_path)` after writing the file, so the report opens in the default browser immediately without a manual step.
+1. **Currency column** — Add a "Currency" column to the table (USD/CAD) so mixed watchlists (US + TSX tickers) are visually clear without inferring from the ticker suffix.
 
-2. **Currency column** — Add a "Currency" column to the table (USD/CAD) so mixed watchlists (US + TSX tickers) are visually clear without inferring from the ticker suffix.
+2. **Sortable table** — Add a small inline JavaScript snippet (no CDN) to make table columns sortable on click by 1D Change or Market Cap — one `<script>` block of ~30 lines; useful for quickly scanning biggest movers.
 
-3. **Sortable table** — Add a small inline JavaScript snippet (no CDN) to make table columns sortable on click by 1D Change or Market Cap — one `<script>` block of ~30 lines; useful for quickly scanning biggest movers.
+3. **Configurable output path via watchlist.json** — Add an optional `"output"` key to `watchlist.json` so users can specify the output path without a CLI flag, making it easier to use as a cron job.
 
-4. **Configurable output path via watchlist.json** — Add an optional `"output"` key to `watchlist.json` so users can specify the output path without a CLI flag, making it easier to use as a cron job.
+4. **Ticker grouping** — Add optional `"group"` field to each watchlist entry so rows can be visually separated into sections (e.g. "Core Positions", "Watchlist", "ETFs") with a group header row in the table.
 
-5. **Ticker grouping** — Add optional `"group"` field to each watchlist entry so rows can be visually separated into sections (e.g. "Core Positions", "Watchlist", "ETFs") with a group header row in the table.
+5. **Multi-note thesis view** — The report currently shows only the latest thesis note per ticker. An expandable UI (click to reveal) or secondary section could show all historical notes, making it easy to track how your thesis evolved over time.
 
 ---
 
@@ -23,7 +23,7 @@
 
 6. **Historical snapshot archive** — When generating a report, save a timestamped copy to `snapshots/YYYY-MM-DD.html` in addition to overwriting `report.html`. Add a simple index HTML listing all past snapshots, so price changes can be reviewed over time even without a database.
 
-7. **Claude Code Skill: `/portfolio-check`** — Package this tool as a Claude Code Skill so the user can type `/portfolio-check` in any coding session to instantly generate and open a fresh portfolio snapshot. Involves creating a skill definition in `~/.claude/skills/portfolio-check.md` that runs `python3 main.py --open` in the build folder.
+7. **Thesis export** — `python3 main.py export` writes a Markdown or CSV summary of all thesis notes, suitable for pasting into a research journal or sharing with a collaborator.
 
 ---
 
@@ -38,7 +38,7 @@
 ## Possible Integration Points
 
 - **2026-06-06 — AI Session Context Bridge (ctxlog):** A daily portfolio snapshot could be automatically included in ctxlog's session context document — so every AI coding session starts with awareness of that day's market state. Link the two tools via a daily hook that regenerates the snapshot and updates the context bridge.
-- **Future investment research builds:** The `TickerData` dataclass and `fetch_ticker()` function in `src/fetcher.py` are clean enough to import as a data layer in future investment-related builds — screeners, performance trackers, or earnings calendars could all reuse this fetching layer.
+- **The `TickerData` dataclass and `fetch_ticker()` in `src/fetcher.py`** are clean enough to import as a data layer in future investment-related builds — screeners, performance trackers, or earnings calendars could all reuse this fetching layer without duplicating the yfinance wrapper.
 
 ---
 
@@ -47,6 +47,6 @@
 | Limitation | Suggested Fix |
 |------------|---------------|
 | Yahoo Finance API is blocked in the nightly build environment (HTTP 403) | The tool works correctly when run from the user's machine; no code fix needed, but a note in the Manual explains this |
-| Fetch errors produce a low-information "argument of type 'NoneType' is not iterable" message | Add more specific exception handling in `fetch_ticker()` to surface yfinance-specific errors more clearly |
 | No rate limiting between ticker fetches | Add a short `time.sleep(0.5)` between requests to avoid being throttled on large watchlists |
-| Canadian tickers (`.TO`) may return CAD prices, which the formatter correctly handles, but the 52W range doesn't label currency | Add currency suffix to the 52W range string for non-USD tickers |
+| Canadian tickers (`.TO`) may return CAD prices, but the 52W range doesn't label currency | Add currency suffix to the 52W range string for non-USD tickers |
+| Thesis column in report shows only the latest note | See Future Feature #5 for multi-note expansion |

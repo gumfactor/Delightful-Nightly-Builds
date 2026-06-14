@@ -1,19 +1,18 @@
-# PRD — Investment Portfolio Snapshot
+# PRD — Investment Research Platform
 
-> **Build date:** 2026-06-10
+> **Build date:** 2026-06-10 (extended 2026-06-14)
 > **Category:** A — Dashboard / Visualizer
 > **Complexity:** Ambitious Project
-> **Day of week:** Wednesday → Ambitious Project
 
 ---
 
 ## Goal
 
-Generate a self-contained HTML snapshot of a configurable stock watchlist — prices, key metrics, and 3-month sparklines — from a single `python3 main.py` command.
+A unified investment research platform: one command generates a self-contained HTML report showing live watchlist metrics alongside your own thesis notes per ticker, including the price when each note was written and the percentage move since.
 
 ## User Story
 
-As an academic and solo founder who actively researches investments and needs a fast daily pulse on a personal watchlist, I want to run one command and get a clean, information-dense HTML report showing current prices, 1-day changes, 52-week ranges, P/E ratios, and 3-month price trends, so that I can orient myself in under 30 seconds without opening a brokerage platform.
+As an academic and solo founder who actively researches investments, I want a single tool that combines a live market snapshot with my running investment thesis journal — so I can open one HTML file in the morning and immediately see both what the market did and how each position has moved since I wrote my thesis.
 
 ## Scope
 
@@ -22,16 +21,17 @@ As an academic and solo founder who actively researches investments and needs a 
 - Fetch per-ticker data via `yfinance`: current price, 1-day % change, 52-week high/low, P/E ratio, market cap, volume, 3-month daily closing prices
 - Generate SVG sparklines (90-day price trend) for each ticker — colored green (uptrend), red (downtrend), or gray (flat)
 - Generate a self-contained `report.html` with no external dependencies (no CDN, no build step)
-- HTML report includes: summary header (date/time, count of gainers vs. losers), sortable-by-eye metrics table, inline sparklines
+- HTML report includes: summary header (date/time, gainers/losers), metrics table with inline sparklines, and a **Thesis column** showing the latest note and % move since it was written
+- **Thesis journal CLI** — `add`, `show`, `list`, `search`, `delete` subcommands via `main.py`
+- Thesis notes stored in `theses.json` (local JSON, persists across runs)
+- Each note records the live price at time of writing (fetched automatically)
 - Graceful handling of unavailable data (N/A fields, fetch errors per ticker)
-- Output file written to the build folder root as `report.html`
-- Formatters for market cap (T/B/M suffixes), price, and % change
+- `html.escape()` applied to all user-supplied content rendered into HTML (XSS-safe)
 
 ### Out of Scope
-- Real-time / live data (this is a snapshot — run it when you want it)
-- Portfolio position tracking (shares held, cost basis, total P&L)
+- Real-time / live data (snapshot on demand)
+- Portfolio position tracking (shares held, cost basis, P&L)
 - Alert system or price notifications
-- Persistence between runs (each run overwrites `report.html`)
 - Authentication or multi-user support
 - Any server or background process
 - Options, crypto, or alternative asset data
@@ -41,7 +41,7 @@ As an academic and solo founder who actively researches investments and needs a 
 - **Language:** Python 3.10+
 - **Framework:** None
 - **Dependencies:** `yfinance` (data), `pytest` (tests)
-- **Runtime requirement:** `python3 main.py` — generates `report.html` in the build folder; open in any browser
+- **Runtime:** `python3 main.py` — generates `report.html`; `python3 main.py add TICKER "note"` — adds a thesis note
 
 ## Data Structure
 
@@ -54,10 +54,22 @@ As an academic and solo founder who actively researches investments and needs a 
   ]
 }
 ```
-- `symbol`: Yahoo Finance ticker string (e.g. `BRK-B`, `VFV.TO`)
-- `label`: Display name; falls back to `symbol` if omitted
 
-**Runtime data: `TickerData` dataclass (src/fetcher.py)**
+**Persisted: `theses.json`** (written by `ThesisStore`)
+```json
+{
+  "NVDA": [
+    {
+      "id": 1,
+      "date": "2026-06-14T20:00:00+00:00",
+      "note": "AI infrastructure play.",
+      "price_at_note": 1100.0
+    }
+  ]
+}
+```
+
+**Runtime: `TickerData` dataclass (src/fetcher.py)**
 ```python
 @dataclass
 class TickerData:
@@ -68,16 +80,14 @@ class TickerData:
     week52_high: float | None
     week52_low: float | None
     pe_ratio: float | None
-    market_cap: int | None         # raw integer
+    market_cap: int | None
     volume: int | None
     history: list[float]           # 90 daily closes, oldest first
-    currency: str                  # "USD" or "CAD" etc.
-    error: str | None              # non-None if fetch failed
+    currency: str
+    error: str | None
 ```
 
-**Output: `report.html`**
-- Single file, all CSS and SVG inline
-- No JavaScript dependencies; static HTML
+**Output: `report.html`** — single file, all CSS and SVG inline, no JavaScript
 
 ## Folder Structure
 
@@ -89,17 +99,20 @@ builds/2026-06-10-investment-portfolio-snapshot/
 ├── FutureFeatures.md
 ├── Manual.md
 ├── watchlist.json
+├── theses.json          ← created on first `add` command (gitignored)
 ├── requirements.txt
-├── main.py
+├── main.py              ← report mode + thesis subcommands
 ├── src/
 │   ├── __init__.py
-│   ├── fetcher.py          ← yfinance wrapper + TickerData + formatters
-│   ├── charts.py           ← SVG sparkline generation
-│   └── report.py           ← HTML report assembly
+│   ├── fetcher.py       ← yfinance wrapper + TickerData + formatters
+│   ├── charts.py        ← SVG sparkline generation
+│   ├── report.py        ← HTML report assembly (includes thesis column)
+│   └── theses.py        ← ThesisStore: JSON persistence + CRUD
 └── tests/
-    ├── test_fetcher.py     ← normalization + formatter unit tests
-    ├── test_charts.py      ← sparkline SVG unit tests
-    └── test_report.py      ← HTML output unit tests
+    ├── test_fetcher.py  ← normalization + formatter unit tests
+    ├── test_charts.py   ← sparkline SVG unit tests
+    ├── test_report.py   ← HTML output unit tests (incl. thesis column)
+    └── test_theses.py   ← ThesisStore CRUD and persistence tests
 ```
 
 ## Testing Strategy
@@ -107,23 +120,34 @@ builds/2026-06-10-investment-portfolio-snapshot/
 - **Framework:** pytest
 - **Test file location:** `tests/test_*.py`
 - **Run command:** `python -m pytest tests/ -v`
-- **What will be tested:**
-  - SVG sparkline generation: uptrend/downtrend/flat/single-point/empty data
-  - Formatter functions: market cap suffixes, price display, % change sign/sign coloring
-  - TickerData normalization from raw yfinance dicts (mocked — no network calls in tests)
-  - HTML report structure: all symbols present, timestamp present, error tickers handled
-  - Edge cases: empty watchlist, all-None fields, zero-price ticker
+- **What is tested:**
+  - SVG sparkline generation: uptrend/downtrend/flat/single-point/empty
+  - Formatter functions: market cap suffixes, price display, % change
+  - TickerData normalization (no network calls — pure functions)
+  - HTML report structure: symbols, timestamp, error rows, thesis column
+  - Thesis cell rendering: note text, price-at-note, ±% since, truncation, empty state
+  - ThesisStore: add/get/get_latest/list/search/delete, ID sequencing, persistence, copy isolation
 
 ## Success Criteria
 
-1. All tests pass (zero failures)
-2. `python3 main.py` runs without error and writes `report.html` — verified by checking the file exists and has non-trivial content (>1000 bytes)
-3. `report.html` contains all ticker symbols from `watchlist.json` and a generated-at timestamp
-4. Tickers with partial/missing data (e.g. no P/E for an ETF) render cleanly with `—` placeholders rather than crashing
-5. The HTML file opens correctly in a browser with no broken layout — table and sparklines visible
+1. All 93 tests pass (zero failures)
+2. `python3 main.py` runs without error and writes `report.html`
+3. `report.html` contains all ticker symbols and a generated-at timestamp
+4. Tickers with partial/missing data render cleanly with `—` placeholders rather than crashing
+5. Thesis notes added via `python3 main.py add TICKER "note"` appear in the next report run
+6. All user-supplied content rendered into HTML is escaped (XSS-safe)
 
 ---
 
 ## Scope Changes
 
-<!-- Leave blank; updated if scope changes during build. -->
+**2026-06-14 — Extended from Portfolio Snapshot to Investment Research Platform**
+
+The original build (2026-06-10, PR #2) delivered the watchlist snapshot and sparklines. A separate thesis journal (PR #6) was built on 2026-06-14 but kept the journal isolated from the report. This extension merges them:
+
+- Added `src/theses.py` — `ThesisStore` with full CRUD + JSON persistence
+- Extended `src/report.py` — added Thesis column, `_format_thesis_cell()`, price-at-note + % since calculation
+- Rewrote `main.py` — unified entry point routing report mode and five thesis subcommands
+- Added `tests/test_theses.py` — 17 new tests
+- Added 11 new thesis-related tests to `tests/test_report.py`
+- Applied `html.escape()` throughout report generation (XSS hardening from adversarial review)

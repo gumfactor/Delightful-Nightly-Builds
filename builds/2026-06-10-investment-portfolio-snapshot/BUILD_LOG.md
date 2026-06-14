@@ -72,3 +72,44 @@ Network note: Yahoo Finance is not in the environment's outbound network allowli
 - builds/ideas.md updated: GitHub Repository Health Scorecard and Open-Meteo Activity Planner appended as non-winning fresh ideas
 
 Build complete. Success criteria reviewed. All tests passing.
+
+---
+
+### [2026-06-14] Extension — Investment Research Platform
+
+#### Session 1: Thesis Journal Integration
+
+Context: four investment dashboard builds existed (PRs #1, #2, #4, #6). After audit, PRs #1 and #4 were closed as redundant; PR #2 (this build) was kept as the more sophisticated base. PR #6 (Thesis Journal) was merged into this build rather than kept separate.
+
+A feature branch `feature/investment-research-platform` was created off the PR #2 branch.
+
+**Changes made:**
+
+- Added `src/theses.py` — `ThesisStore` class: JSON persistence at `theses.json`, CRUD operations (`add`, `get`, `get_latest`, `list_tickers`, `search`, `delete`), `all_data()` for report integration. Each note records ID, ISO date, note text, and optional price at time of writing.
+- Extended `src/report.py` — added `.thesis-cell`, `.thesis-text`, `.thesis-meta`, `.since-up`, `.since-down`, `.since-flat` CSS; new `_format_thesis_cell()` function (note truncation at 80 chars, price-at-note, ±% since calculation, note count); added Thesis column to table header and `_build_row()`; `generate_report()` now accepts `theses` dict.
+- Rewrote `main.py` — unified entry point: `run_report()` passes `theses=store.all_data()` to `generate_report()`; added five thesis subcommands (`add`, `show`, `list`, `search`, `delete`) with a dispatch dict; `cmd_add` fetches live price automatically.
+- Added `tests/test_theses.py` — 17 tests covering all ThesisStore methods, persistence across instances, and copy isolation.
+- Extended `tests/test_report.py` — 11 new tests for thesis cell rendering and report integration.
+
+Test results: 93 passed, 0 failed (up from 65).
+
+#### Session 2: Adversarial Review and Security Fixes
+
+An adversarial code review was run on the combined platform. Findings addressed:
+
+1. **XSS (critical)** — `html.escape()` applied to `note_text` in `_format_thesis_cell()`, and to `ticker.symbol`, `ticker.name`, `ticker.error` in `_build_row()`. `import html` added.
+2. **CSS class** — replaced inline `style="color:var(--muted)"` on empty thesis cell with `.thesis-empty` CSS class.
+3. **Falsy-zero bug** — `if price:` changed to `if price is not None:` in `cmd_add` and `run_report` so zero-priced instruments are handled correctly.
+4. **Deep copy** — `ThesisStore.all_data()` now returns `{k: [dict(e) for e in v] ...}` to prevent callers from mutating internal entry dicts.
+5. **OSError handling** — `_load()` now only catches `json.JSONDecodeError`; `OSError` propagates so permission failures are visible.
+
+Test results after fixes: 93 passed, 0 failed.
+
+#### Documentation Update (~20:20 UTC)
+
+- PRD.md updated: new title, goal, user story, scope, folder structure, success criteria, Scope Changes section.
+- Manual.md updated: thesis workflow in Quick Start, "Managing Thesis Notes" CLI section, Thesis column in table reference, test count corrected to 93.
+- FutureFeatures.md updated: removed implemented items (thesis journal, portfolio-check skill), added multi-note view and thesis export.
+- BUILD_LOG.md: this entry.
+
+Build complete. Success criteria reviewed. All tests passing (93/93). PR #7 open targeting main.
