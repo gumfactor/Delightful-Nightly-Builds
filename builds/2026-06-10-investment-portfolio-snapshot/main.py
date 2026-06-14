@@ -70,7 +70,7 @@ def run_report(args: argparse.Namespace, store: ThesisStore) -> None:
         if data.error:
             print(f"FAILED ({data.error})")
         else:
-            price_display = f"${data.price:.2f}" if data.price else "no price"
+            price_display = f"${data.price:.2f}" if data.price is not None else "no price"
             print(f"ok ({price_display})")
         ticker_data.append(data)
 
@@ -103,7 +103,7 @@ def cmd_add(store: ThesisStore, argv: list[str]) -> None:
     print(f"Fetching live price for {ticker}... ", end="", flush=True)
     td = fetch_ticker(ticker)
     price = td.price if not td.error else None
-    if price:
+    if price is not None:
         print(f"${price:.2f}")
     else:
         print("unavailable")

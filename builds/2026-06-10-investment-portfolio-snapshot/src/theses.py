@@ -19,7 +19,7 @@ class ThesisStore:
         if self.path.exists():
             try:
                 return json.loads(self.path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError):
+            except json.JSONDecodeError:
                 return {}
         return {}
 
@@ -84,5 +84,5 @@ class ThesisStore:
         return removed
 
     def all_data(self) -> dict[str, list[dict]]:
-        """Return a copy of the full data dict (ticker → entries)."""
-        return {k: list(v) for k, v in self._data.items()}
+        """Return a deep copy of the full data dict (ticker → entries)."""
+        return {k: [dict(e) for e in v] for k, v in self._data.items()}

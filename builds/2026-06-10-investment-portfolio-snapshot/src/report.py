@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 from datetime import datetime, timezone
 
 from .fetcher import (
@@ -55,6 +56,7 @@ _CSS = """
 .since-up { color: var(--up); }
 .since-down { color: var(--down); }
 .since-flat { color: var(--muted); }
+.thesis-empty { color: var(--muted); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -186,12 +188,13 @@ footer {
 def _format_thesis_cell(entries: list[dict] | None, current_price: float | None) -> str:
     """Render the thesis table cell for one ticker."""
     if not entries:
-        return '<td class="thesis-cell"><span style="color:var(--muted)">—</span></td>'
+        return '<td class="thesis-cell"><span class="thesis-empty">—</span></td>'
 
     latest = entries[-1]
     note_text = latest["note"]
     if len(note_text) > 80:
         note_text = note_text[:77] + "…"
+    note_text = html.escape(note_text)
 
     price_at_note: float | None = latest.get("price_at_note")
     note_date: str = latest.get("date", "")[:10]  # YYYY-MM-DD
@@ -258,9 +261,9 @@ def _build_row(ticker: TickerData, thesis_entries: list[dict] | None = None) -> 
     if ticker.error:
         return (
             f'<tr class="error-row">'
-            f'<td><span class="ticker">{ticker.symbol}</span>'
-            f'<div class="name">{ticker.name}</div></td>'
-            f'<td colspan="7"><span class="error-msg">Fetch error: {ticker.error}</span></td>'
+            f'<td><span class="ticker">{html.escape(ticker.symbol)}</span>'
+            f'<div class="name">{html.escape(ticker.name)}</div></td>'
+            f'<td colspan="7"><span class="error-msg">Fetch error: {html.escape(ticker.error)}</span></td>'
             f"{thesis_html}"
             f"</tr>"
         )
@@ -276,8 +279,8 @@ def _build_row(ticker: TickerData, thesis_entries: list[dict] | None = None) -> 
 
     return (
         f"<tr>"
-        f'<td><span class="ticker">{ticker.symbol}</span>'
-        f'<div class="name">{ticker.name}</div></td>'
+        f'<td><span class="ticker">{html.escape(ticker.symbol)}</span>'
+        f'<div class="name">{html.escape(ticker.name)}</div></td>'
         f'<td class="num price">{price_str}</td>'
         f'<td class="num"><span class="change {change_cls}">{change_str}</span></td>'
         f'<td class="num">{range_str}</td>'
