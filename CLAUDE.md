@@ -432,7 +432,20 @@ After tests pass and success criteria are verified:
 
 ## Step 9 — Update builds/index.md
 
-Append one new row to the Full Catalog table. Update the Stats block and Last 7 Builds section.
+Because each build branch starts from `main` (which may be weeks behind), first resync `builds/index.md` from the most recent open PR branch before appending tonight's row:
+
+```bash
+RECENT_BRANCH=$(gh pr list --state open --json headRefName,createdAt \
+  --jq 'sort_by(.createdAt) | reverse | .[0].headRefName' 2>/dev/null)
+if [ -n "$RECENT_BRANCH" ]; then
+  git fetch origin "$RECENT_BRANCH" 2>/dev/null
+  git show "origin/$RECENT_BRANCH:builds/index.md" > builds/index.md 2>/dev/null || true
+fi
+```
+
+This ensures the index accumulates across all nightly builds — each branch carries the full history forward, regardless of how many PRs are unmerged.
+
+Now append one new row to the Full Catalog table and update the Stats block.
 
 Table columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
 
