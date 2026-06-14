@@ -43,6 +43,8 @@ always generates fresh ideas.
 | 3 | 2026-06-06 | A | ambitious | Lab Research Project Tracker | Dashboard for tracking neuroscience lab projects, milestones, team tasks, and publication status | — | 4 | No need — already use Teamwork.com for project tracking | pending |
 | 4 | 2026-06-09 | B | ambitious | Cross-Agent Project Activity Workstreams | Automatically correlate Git, GitHub, and AI-agent activity into evidence-backed workstreams that can generate accurate standups, resumptions, handoffs, timelines, and decision histories across tools | [Brief](idea-briefs/cross-agent-project-activity-workstreams.md) | 9 | — | pending |
 | 5 | 2026-06-11 | B | focused | Morning Briefing | Unified daily digest that combines the Git Standup Reporter, Investment Portfolio Snapshot, and GitHub Repository Health Dashboard into a single morning report — commits from yesterday, portfolio overnight moves, and any repos that have gone quiet | — | 8 | — | pending |
+| 6 | 2026-06-14 | C | focused | Research Paper Tracker | CLI tool to track academic papers by read status, organized by topic/project, with add/list/search/tag commands and a local JSON store | — | — | — | pending |
+| 7 | 2026-06-14 | C | focused | GitHub Stars Organizer | CLI tool to annotate and search GitHub starred repositories using the GitHub API — add personal notes to stars, filter by language or tag, and surface useful repos quickly | — | — | — | pending |
 
 ---
 
