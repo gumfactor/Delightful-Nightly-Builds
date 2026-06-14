@@ -54,10 +54,21 @@ Only resume the single most recent incomplete build. If somehow multiple exist, 
 
 ## Step 1 — Orient Yourself
 
-Read these three files IN ORDER before doing anything else:
+Read these files IN ORDER before doing anything else:
 
 1. `PROFILE.md` — who you are building for; their interests, job, preferences
-2. `builds/index.md` — what has already been built; avoid repeating categories
+2. `builds/index.md` — what has already been built. Nightly builds land on branches before merging, so the copy on `main` may be weeks behind. Always read the most current version by checking for open PRs first:
+   ```bash
+   RECENT_BRANCH=$(gh pr list --state open --json headRefName,createdAt \
+     --jq 'sort_by(.createdAt) | reverse | .[0].headRefName' 2>/dev/null)
+   if [ -n "$RECENT_BRANCH" ]; then
+     git fetch origin "$RECENT_BRANCH" 2>/dev/null
+     git show "origin/$RECENT_BRANCH:builds/index.md" 2>/dev/null || cat builds/index.md
+   else
+     cat builds/index.md
+   fi
+   ```
+   The most recent branch's `builds/index.md` contains all prior entries (each session appends before opening its PR), giving you an accurate picture of recent builds, themes, and ratings even when PRs have not been merged.
 3. `STANDARDS.md` — the non-negotiable quality and safety requirements
 
 Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD-title-slug/` where `title-slug` is the build title lowercased with spaces replaced by hyphens (e.g. `builds/2026-06-09-focus-timer/`).
@@ -109,25 +120,29 @@ scored as it did and are more actionable than the number alone. Hold this as a s
 
 ---
 
-### 2c — Choose Tonight's Category
+### 2c — Determine Tonight's Category
 
-Check the "Last 7 Builds" section of `builds/index.md`. Choose a category not recently used.
-If the preference prior (Step 2b) revealed strong category preferences, factor that in —
-but don't let it override the rotation entirely. Variety matters.
+Category follows a fixed 9-day rotation based on day of year. This is independent of which builds have been merged — no need to check `builds/index.md` for category selection.
 
-| ID | Category | Examples |
-|----|----------|---------|
-| A  | Dashboard / Visualizer | Data display, charts, live stats, status boards |
-| B  | Productivity Utility | Automation scripts, workflow tools, batch processors |
-| C  | Personal Knowledge Tool | Note capture, knowledge base, reading tracker, index |
-| D  | Creative / Generative | Writing prompts, generators, art tools, randomizers |
-| E  | Learning Aid | Flashcards, reference sheets, interactive explainers |
-| F  | Data Explorer | CSV/JSON processor, log analyzer, stats calculator |
-| G  | Game / Puzzle | Browser game, logic puzzle, word game, quiz |
-| H  | Developer Tool | Code formatter, schema inspector, diff tool, snippet library |
-| I  | Life Admin Helper | Budget tracker, meal planner, habit log, checklist |
+```bash
+date +%j   # day of year, 1–365
+```
 
-Choose the category now. Both the lottery and fresh idea generation use it.
+`category_index = (day_of_year - 1) % 9`
+
+| Index | Category | Examples |
+|-------|----------|---------|
+| 0 | A — Dashboard / Visualizer | Data display, charts, live stats, status boards |
+| 1 | B — Productivity Utility | Automation scripts, workflow tools, batch processors |
+| 2 | C — Personal Knowledge Tool | Note capture, knowledge base, reading tracker, index |
+| 3 | D — Creative / Generative | Writing prompts, generators, art tools, randomizers |
+| 4 | E — Learning Aid | Flashcards, reference sheets, interactive explainers |
+| 5 | F — Data Explorer | CSV/JSON processor, log analyzer, stats calculator |
+| 6 | G — Game / Puzzle | Browser game, logic puzzle, word game, quiz |
+| 7 | H — Developer Tool | Code formatter, schema inspector, diff tool, snippet library |
+| 8 | I — Life Admin Helper | Budget tracker, meal planner, habit log, checklist |
+
+The lottery and fresh idea generation both use tonight's category. The preference prior (Step 2b) informs idea evaluation within the category but does not override the rotation.
 
 ---
 
@@ -160,6 +175,8 @@ Record in `WhyThis.md` whether tonight's build came from the lottery or fresh ge
 ---
 
 ### 2e — Generate and Evaluate Fresh Ideas (Fresh Path Only)
+
+Before generating ideas, scan `builds/index.md` (the version read in Step 1) for the themes and topics of the last 7 builds. Note which subject areas are overrepresented — investing, git tooling, dashboards, etc. Fresh ideas should diversify away from recently covered ground, not just recently covered categories. The category rotation handles category diversity; you are responsible for topic diversity within the category.
 
 Generate at least 3 candidate ideas within tonight's chosen category and complexity target.
 For each, evaluate:
@@ -415,7 +432,20 @@ After tests pass and success criteria are verified:
 
 ## Step 9 — Update builds/index.md
 
-Append one new row to the Full Catalog table. Update the Stats block and Last 7 Builds section.
+Because each build branch starts from `main` (which may be weeks behind), first resync `builds/index.md` from the most recent open PR branch before appending tonight's row:
+
+```bash
+RECENT_BRANCH=$(gh pr list --state open --json headRefName,createdAt \
+  --jq 'sort_by(.createdAt) | reverse | .[0].headRefName' 2>/dev/null)
+if [ -n "$RECENT_BRANCH" ]; then
+  git fetch origin "$RECENT_BRANCH" 2>/dev/null
+  git show "origin/$RECENT_BRANCH:builds/index.md" > builds/index.md 2>/dev/null || true
+fi
+```
+
+This ensures the index accumulates across all nightly builds — each branch carries the full history forward, regardless of how many PRs are unmerged.
+
+Now append one new row to the Full Catalog table and update the Stats block.
 
 Table columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
 

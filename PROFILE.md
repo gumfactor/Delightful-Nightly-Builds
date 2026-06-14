@@ -164,6 +164,7 @@ Eastern Time (Toronto, Canada)
 - I often use AI as a collaborative engineering and thinking partner.
 - I am comfortable with ambitious ideas as long as they have a practical implementation path.
 - I tend to run many projects simultaneously and benefit enormously from tools that preserve context across sessions.
+- When there is a clearly correct approach and a convenient shortcut, recommend the correct approach. Do not offer the shortcut as a valid alternative to avoid complexity.
 
 ## Services / APIs you already have credentials for
 OpenAI, Anthropic API, GitHub, Firebase / Google Cloud, Google Workspace, Gmail, Google Calendar, Interactive Brokers (IBKR), Brevo, Helcim, Teamwork.com, Coda, Flutter/Firebase development ecosystem, Microsoft 365, and the broader VS Code extension ecosystem.
