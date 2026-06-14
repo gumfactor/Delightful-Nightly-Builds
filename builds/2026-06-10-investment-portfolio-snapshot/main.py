@@ -59,6 +59,7 @@ def run_report(args: argparse.Namespace, store: ThesisStore) -> None:
 
     print(f"Fetching data for {len(watchlist)} ticker(s)...")
     ticker_data = []
+    groups: dict[str, str] = {}
     for entry in watchlist:
         if not isinstance(entry, dict):
             print(f"Warning: skipping non-object watchlist entry: {entry!r}", file=sys.stderr)
@@ -72,6 +73,9 @@ def run_report(args: argparse.Namespace, store: ThesisStore) -> None:
         if not symbol:
             print("Warning: skipping entry with no symbol", file=sys.stderr)
             continue
+        group = entry.get("group", "")
+        if group and isinstance(group, str):
+            groups[symbol] = group
         print(f"  {symbol}... ", end="", flush=True)
         data = fetch_ticker(symbol, label=label)
         if data.error:
@@ -80,8 +84,12 @@ def run_report(args: argparse.Namespace, store: ThesisStore) -> None:
             print(f"ok ({format_price(data.price, data.currency)})")
         ticker_data.append(data)
 
-    html = generate_report(ticker_data, theses=store.all_data())
-    output_path.write_text(html, encoding="utf-8")
+    report_html = generate_report(
+        ticker_data,
+        theses=store.all_data(),
+        groups=groups or None,
+    )
+    output_path.write_text(report_html, encoding="utf-8")
     print(f"\nReport written to: {output_path}")
     print(f"File size: {output_path.stat().st_size:,} bytes")
 

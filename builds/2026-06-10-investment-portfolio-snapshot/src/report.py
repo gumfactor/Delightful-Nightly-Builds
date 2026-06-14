@@ -58,6 +58,20 @@ _CSS = """
 .since-flat { color: var(--muted); }
 .thesis-empty { color: var(--muted); }
 
+.group-header td {
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 14px;
+  border-top: 2px solid var(--border);
+}
+
+thead th[data-sort] { cursor: pointer; user-select: none; }
+thead th[data-sort]:hover { color: var(--text); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -255,6 +269,14 @@ def _build_summary(tickers: list[TickerData]) -> str:
     return html
 
 
+def _build_group_header(name: str) -> str:
+    return (
+        f'<tr class="group-header">'
+        f'<td colspan="10">{html.escape(name)}</td>'
+        f'</tr>'
+    )
+
+
 def _build_row(ticker: TickerData, thesis_entries: list[dict] | None = None) -> str:
     thesis_html = _format_thesis_cell(thesis_entries, ticker.price)
 
@@ -263,7 +285,7 @@ def _build_row(ticker: TickerData, thesis_entries: list[dict] | None = None) -> 
             f'<tr class="error-row">'
             f'<td><span class="ticker">{html.escape(ticker.symbol)}</span>'
             f'<div class="name">{html.escape(ticker.name)}</div></td>'
-            f'<td colspan="7"><span class="error-msg">Fetch error: {html.escape(ticker.error)}</span></td>'
+            f'<td colspan="8"><span class="error-msg">Fetch error: {html.escape(ticker.error)}</span></td>'
             f"{thesis_html}"
             f"</tr>"
         )
@@ -287,20 +309,82 @@ def _build_row(ticker: TickerData, thesis_entries: list[dict] | None = None) -> 
         f'<td class="num">{pe_str}</td>'
         f'<td class="num">{cap_str}</td>'
         f'<td class="num">{vol_str}</td>'
+        f'<td class="num">{html.escape(ticker.currency)}</td>'
         f'<td>{sparkline}</td>'
         f"{thesis_html}"
         f"</tr>"
     )
 
 
+_SORT_JS = """
+<script>
+(function () {
+  var table = document.querySelector('table');
+  if (!table) return;
+  var tbody = table.querySelector('tbody');
+  var sortCol = -1, sortAsc = true;
+
+  function parseNum(t) {
+    t = (t || '').trim();
+    if (!t || t === '—') return null;
+    t = t.replace(/^\\+/, '').replace(/\\$/g, '').replace(/,/g, '').replace(/%$/, '');
+    var sfx = {T: 1e12, B: 1e9, M: 1e6, K: 1e3};
+    if (sfx[t.slice(-1)]) return parseFloat(t) * sfx[t.slice(-1)];
+    var n = parseFloat(t);
+    return isNaN(n) ? null : n;
+  }
+
+  table.querySelectorAll('thead th[data-sort]').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var col = parseInt(th.dataset.col, 10);
+      sortAsc = (sortCol === col) ? !sortAsc : true;
+      sortCol = col;
+
+      tbody.querySelectorAll('.group-header').forEach(function (r) {
+        r.style.display = 'none';
+      });
+
+      var rows = Array.from(tbody.querySelectorAll('tr:not(.group-header)'));
+      var isNum = th.dataset.sort === 'num';
+
+      rows.sort(function (a, b) {
+        var av = (a.cells[col] ? a.cells[col].innerText : '').trim();
+        var bv = (b.cells[col] ? b.cells[col].innerText : '').trim();
+        var cmp;
+        if (isNum) {
+          var an = parseNum(av), bn = parseNum(bv);
+          if (an === null && bn === null) cmp = 0;
+          else if (an === null) cmp = 1;
+          else if (bn === null) cmp = -1;
+          else cmp = an - bn;
+        } else {
+          cmp = av.localeCompare(bv);
+        }
+        return sortAsc ? cmp : -cmp;
+      });
+
+      table.querySelectorAll('thead th[data-sort]').forEach(function (h) {
+        h.textContent = h.dataset.label;
+      });
+      th.textContent = th.dataset.label + (sortAsc ? ' ↑' : ' ↓');
+
+      rows.forEach(function (r) { tbody.appendChild(r); });
+    });
+  });
+}());
+</script>"""
+
+
 def generate_report(
     tickers: list[TickerData],
     theses: dict[str, list[dict]] | None = None,
     generated_at: datetime | None = None,
+    groups: dict[str, str] | None = None,
 ) -> str:
     """
     Produce a complete, self-contained HTML string.
     theses maps ticker symbol → list of note entries from ThesisStore.
+    groups maps ticker symbol → group label for visual grouping in the table.
     generated_at defaults to now (UTC) if not provided.
     """
     if generated_at is None:
@@ -310,9 +394,27 @@ def generate_report(
     ts_iso = generated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     summary_html = _build_summary(tickers)
-    rows_html = "\n".join(
-        _build_row(t, theses.get(t.symbol) if theses else None) for t in tickers
-    )
+
+    if groups:
+        seen: list[str] = []
+        buckets: dict[str, list[TickerData]] = {}
+        for t in tickers:
+            g = groups.get(t.symbol, "")
+            if g not in buckets:
+                seen.append(g)
+                buckets[g] = []
+            buckets[g].append(t)
+        parts: list[str] = []
+        for g in seen:
+            if g:
+                parts.append(_build_group_header(g))
+            for t in buckets[g]:
+                parts.append(_build_row(t, theses.get(t.symbol) if theses else None))
+        rows_html = "\n".join(parts)
+    else:
+        rows_html = "\n".join(
+            _build_row(t, theses.get(t.symbol) if theses else None) for t in tickers
+        )
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -334,13 +436,14 @@ def generate_report(
     <table>
       <thead>
         <tr>
-          <th>Symbol</th>
-          <th class="num">Price</th>
-          <th class="num">1D Change</th>
+          <th data-sort="str" data-col="0" data-label="Symbol">Symbol</th>
+          <th class="num" data-sort="num" data-col="1" data-label="Price">Price</th>
+          <th class="num" data-sort="num" data-col="2" data-label="1D Change">1D Change</th>
           <th class="num">52W Range</th>
-          <th class="num">P/E</th>
-          <th class="num">Mkt Cap</th>
-          <th class="num">Volume</th>
+          <th class="num" data-sort="num" data-col="4" data-label="P/E">P/E</th>
+          <th class="num" data-sort="num" data-col="5" data-label="Mkt Cap">Mkt Cap</th>
+          <th class="num" data-sort="num" data-col="6" data-label="Volume">Volume</th>
+          <th class="num" data-sort="str" data-col="7" data-label="Currency">Currency</th>
           <th>3M Trend</th>
           <th>Thesis</th>
         </tr>
@@ -355,5 +458,6 @@ def generate_report(
     Data sourced from Yahoo Finance via yfinance. Prices may be delayed 15–20 minutes.
     For personal research only — not financial advice.
   </footer>
+  {_SORT_JS}
 </body>
 </html>"""

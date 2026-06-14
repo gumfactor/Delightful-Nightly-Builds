@@ -29,15 +29,17 @@ Edit `watchlist.json` to control which stocks appear:
 ```json
 {
   "tickers": [
-    {"symbol": "AAPL", "label": "Apple"},
-    {"symbol": "BRK-B", "label": "Berkshire B"},
-    {"symbol": "XIU.TO", "label": "iShares S&P/TSX 60"}
+    {"symbol": "AAPL", "label": "Apple", "group": "Core Positions"},
+    {"symbol": "BRK-B", "label": "Berkshire B", "group": "Core Positions"},
+    {"symbol": "SPY", "label": "S&P 500 ETF", "group": "ETFs"},
+    {"symbol": "XIU.TO", "label": "iShares S&P/TSX 60", "group": "ETFs"}
   ]
 }
 ```
 
 - `symbol` — Yahoo Finance ticker. US stocks: plain symbol (e.g. `MSFT`). TSX: append `.TO` (e.g. `VFV.TO`).
 - `label` — Display name in the report. Optional; defaults to the symbol if omitted.
+- `group` — Optional section label. Tickers that share a group value are rendered together under a group header row. Tickers without a `group` field appear ungrouped at the top or bottom depending on their position in the list.
 
 ### Generating the Report
 
@@ -95,10 +97,13 @@ The HTML report opens in any browser — double-click `report.html`, or use `--o
 | P/E | Trailing P/E ratio (blank for ETFs and non-profitable companies) |
 | Mkt Cap | Market capitalization with T/B/M suffix |
 | Volume | Daily volume with M/K suffix |
+| Currency | Trading currency (USD, CAD, etc.) — useful for mixed US/TSX watchlists |
 | 3M Trend | 90-day SVG sparkline; green=uptrend from 90d ago, red=downtrend, gray=flat |
 | Thesis | Latest note text, price at time of writing, and % move since (green=up, red=down) |
 
 Missing fields display as `—` — the tool never crashes on missing data. If no thesis note exists for a ticker, the Thesis column shows `—`.
+
+**Sorting:** Click any column header with an arrow cursor to sort the table by that column. Click again to reverse. Group headers are hidden while a sort is active (they reappear on page reload). The 52W Range and 3M Trend columns are not sortable.
 
 ---
 
@@ -122,7 +127,7 @@ python -m pytest tests/ -v
 
 All tests run without network access — Yahoo Finance is mocked so the test suite is fast and portable.
 
-**Expected output:** 93 tests, 0 failures.
+**Expected output:** 103 tests, 0 failures.
 
 ---
 

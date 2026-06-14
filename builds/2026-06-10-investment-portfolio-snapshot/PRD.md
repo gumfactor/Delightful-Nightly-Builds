@@ -21,7 +21,9 @@ As an academic and solo founder who actively researches investments, I want a si
 - Fetch per-ticker data via `yfinance`: current price, 1-day % change, 52-week high/low, P/E ratio, market cap, volume, 3-month daily closing prices
 - Generate SVG sparklines (90-day price trend) for each ticker — colored green (uptrend), red (downtrend), or gray (flat)
 - Generate a self-contained `report.html` with no external dependencies (no CDN, no build step)
-- HTML report includes: summary header (date/time, gainers/losers), metrics table with inline sparklines, and a **Thesis column** showing the latest note and % move since it was written
+- HTML report includes: summary header (date/time, gainers/losers), metrics table with inline sparklines, **Currency column**, **Thesis column** showing the latest note and % move since it was written
+- Table columns are **sortable** via an inline `<script>` block (no CDN); handles numeric values with T/B/M/K suffixes and $/%/+ prefixes
+- Optional `"group"` field per watchlist entry enables **visual grouping** of tickers under labeled section headers in the table
 - **Thesis journal CLI** — `add`, `show`, `list`, `search`, `delete` subcommands via `main.py`
 - Thesis notes stored in `theses.json` (local JSON, persists across runs)
 - Each note records the live price at time of writing (fetched automatically)
@@ -49,11 +51,13 @@ As an academic and solo founder who actively researches investments, I want a si
 ```json
 {
   "tickers": [
-    {"symbol": "AAPL", "label": "Apple"},
-    {"symbol": "MSFT", "label": "Microsoft"}
+    {"symbol": "AAPL", "label": "Apple", "group": "Core Positions"},
+    {"symbol": "MSFT", "label": "Microsoft", "group": "Core Positions"},
+    {"symbol": "SPY", "label": "S&P 500 ETF", "group": "ETFs"}
   ]
 }
 ```
+`group` is optional; omitting it places the ticker in the ungrouped flow.
 
 **Persisted: `theses.json`** (written by `ThesisStore`)
 ```json
@@ -87,7 +91,7 @@ class TickerData:
     error: str | None
 ```
 
-**Output: `report.html`** — single file, all CSS and SVG inline, no JavaScript
+**Output: `report.html`** — single file, all CSS, SVG, and sort JS inline, no external dependencies
 
 ## Folder Structure
 
@@ -130,7 +134,7 @@ builds/2026-06-10-investment-portfolio-snapshot/
 
 ## Success Criteria
 
-1. All 93 tests pass (zero failures)
+1. All 103 tests pass (zero failures)
 2. `python3 main.py` runs without error and writes `report.html`
 3. `report.html` contains all ticker symbols and a generated-at timestamp
 4. Tickers with partial/missing data render cleanly with `—` placeholders rather than crashing

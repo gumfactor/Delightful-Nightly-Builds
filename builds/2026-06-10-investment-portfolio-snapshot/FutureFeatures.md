@@ -7,31 +7,25 @@
 
 ## Quick Wins (under 1 hour to add)
 
-1. **Currency column** — Add a "Currency" column to the table (USD/CAD) so mixed watchlists (US + TSX tickers) are visually clear without inferring from the ticker suffix.
+1. **Configurable output path via watchlist.json** — Add an optional `"output"` key to `watchlist.json` so users can specify the output path without a CLI flag, making it easier to use as a cron job.
 
-2. **Sortable table** — Add a small inline JavaScript snippet (no CDN) to make table columns sortable on click by 1D Change or Market Cap — one `<script>` block of ~30 lines; useful for quickly scanning biggest movers.
-
-3. **Configurable output path via watchlist.json** — Add an optional `"output"` key to `watchlist.json` so users can specify the output path without a CLI flag, making it easier to use as a cron job.
-
-4. **Ticker grouping** — Add optional `"group"` field to each watchlist entry so rows can be visually separated into sections (e.g. "Core Positions", "Watchlist", "ETFs") with a group header row in the table.
-
-5. **Multi-note thesis view** — The report currently shows only the latest thesis note per ticker. An expandable UI (click to reveal) or secondary section could show all historical notes, making it easy to track how your thesis evolved over time.
+2. **Multi-note thesis view** — The report currently shows only the latest thesis note per ticker. An expandable UI (click to reveal) or secondary section could show all historical notes, making it easy to track how your thesis evolved over time.
 
 ---
 
 ## Medium Effort (roughly one nightly build session)
 
-6. **Historical snapshot archive** — When generating a report, save a timestamped copy to `snapshots/YYYY-MM-DD.html` in addition to overwriting `report.html`. Add a simple index HTML listing all past snapshots, so price changes can be reviewed over time even without a database.
+3. **Historical snapshot archive** — When generating a report, save a timestamped copy to `snapshots/YYYY-MM-DD.html` in addition to overwriting `report.html`. Add a simple index HTML listing all past snapshots, so price changes can be reviewed over time even without a database.
 
-7. **Thesis export** — `python3 main.py export` writes a Markdown or CSV summary of all thesis notes, suitable for pasting into a research journal or sharing with a collaborator.
+4. **Thesis export** — `python3 main.py export` writes a Markdown or CSV summary of all thesis notes, suitable for pasting into a research journal or sharing with a collaborator.
 
 ---
 
 ## Ambitious Extensions (multi-session effort)
 
-8. **Week-over-week delta view** — Compare today's snapshot to a saved previous snapshot and add a "vs. last week" column showing price change since the last archived snapshot. Requires the snapshot archive (feature 6) and a diff function between two report datasets.
+5. **Week-over-week delta view** — Compare today's snapshot to a saved previous snapshot and add a "vs. last week" column showing price change since the last archived snapshot. Requires the snapshot archive (feature 6) and a diff function between two report datasets.
 
-9. **Analyst target price and news integration** — Pull analyst consensus target price and the 3 most recent news headlines for each ticker via the Yahoo Finance API (both available via yfinance). Add a collapsible "news" row under each ticker in the report, giving the snapshot a morning briefing character rather than just price data.
+6. **Analyst target price and news integration** — Pull analyst consensus target price and the 3 most recent news headlines for each ticker via the Yahoo Finance API (both available via yfinance). Add a collapsible "news" row under each ticker in the report, giving the snapshot a morning briefing character rather than just price data.
 
 ---
 

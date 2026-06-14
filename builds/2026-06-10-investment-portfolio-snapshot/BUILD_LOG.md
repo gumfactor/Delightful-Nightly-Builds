@@ -113,3 +113,24 @@ Test results after fixes: 93 passed, 0 failed.
 - BUILD_LOG.md: this entry.
 
 Build complete. Success criteria reviewed. All tests passing (93/93). PR #7 open targeting main.
+
+#### Quick Wins: Currency Column, Sortable Table, Ticker Grouping (2026-06-14)
+
+Three quick wins from FutureFeatures.md implemented in a follow-up session:
+
+**QW1 — Currency column:** Added `currency` field to `TickerData` (populated from yfinance `currency` key, defaulting to `"USD"`). New `Currency` column in the report table. `format_price()` now accepts a `currency` parameter and returns e.g. `$180.00 CAD` for non-USD. 10 new tests in `test_report.py` cover the column header, USD, and CAD rendering.
+
+**QW2 — Sortable table:** Added `_SORT_JS` constant — an inline `<script>` block (~55 lines, no CDN) implementing client-side column sorting. `parseNum()` strips $, %, +, and T/B/M/K suffixes before comparing. Numeric columns carry `data-sort="num"` and string columns `data-sort="str"`. Group header rows hide themselves when a sort is active. 2 new tests verify the `data-sort` attributes and script presence.
+
+**QW4 — Ticker grouping:** Added optional `"group"` field to `watchlist.json` entries. `run_report()` extracts a `groups: dict[str, str]` map and passes it to `generate_report()`. `_build_group_header()` renders a full-width `<tr class="group-header">` with `html.escape()`-safe label. `generate_report()` accepts optional `groups` parameter and uses order-preserving bucket logic to emit group headers before each section. 4 new tests in `test_report.py` cover header rendering, multi-group output, ungrouped fallback, and XSS escape.
+
+Also fixed a `DeprecationWarning` in `_SORT_JS`: `\+` and `\$` in the Python string were unrecognised escape sequences; replaced with `\\+` and `\\$`.
+
+Test results: 103 passed, 0 failed (up from 93).
+
+FutureFeatures.md updated: QW1, QW2, QW4 removed (implemented); remaining items renumbered 1–6.
+Manual.md updated: group field documented, Currency column added to table reference, sort behaviour documented, test count corrected to 103.
+PRD.md updated: scope additions for Currency/sort/grouping, watchlist.json example updated, success criteria test count corrected to 103.
+watchlist.json updated: all entries now include `"group"` to demonstrate the feature.
+
+Build complete. Success criteria reviewed. All tests passing (103/103).

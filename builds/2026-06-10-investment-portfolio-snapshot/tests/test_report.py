@@ -9,7 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.fetcher import TickerData
-from src.report import generate_report, _change_class, _build_summary, _format_thesis_cell
+from src.report import generate_report, _change_class, _build_summary, _format_thesis_cell, _build_group_header
 
 
 def _make_ticker(
@@ -223,3 +223,71 @@ def test_report_no_thesis_data_renders_dash():
     ticker = _make_ticker("AAPL")
     html = generate_report([ticker], theses={}, generated_at=_fixed_time())
     assert "—" in html
+
+
+# ── Currency column ───────────────────────────────────────────────────────────
+
+def test_report_includes_currency_column_header():
+    html = generate_report([_make_ticker()], generated_at=_fixed_time())
+    assert "Currency" in html
+
+
+def test_report_currency_usd_appears_in_row():
+    ticker = _make_ticker(currency="USD")
+    html = generate_report([ticker], generated_at=_fixed_time())
+    assert "USD" in html
+
+
+def test_report_currency_cad_appears_in_row():
+    ticker = _make_ticker(symbol="VFV.TO", currency="CAD")
+    html = generate_report([ticker], generated_at=_fixed_time())
+    assert "CAD" in html
+
+
+# ── Sortable table ────────────────────────────────────────────────────────────
+
+def test_report_includes_sort_attributes_on_headers():
+    html = generate_report([_make_ticker()], generated_at=_fixed_time())
+    assert 'data-sort="num"' in html
+    assert 'data-sort="str"' in html
+
+
+def test_report_includes_sort_script():
+    html = generate_report([_make_ticker()], generated_at=_fixed_time())
+    assert "<script>" in html
+    assert "parseNum" in html
+
+
+# ── Ticker grouping ───────────────────────────────────────────────────────────
+
+def test_group_header_renders_name():
+    html = _build_group_header("Core Holdings")
+    assert "Core Holdings" in html
+    assert 'class="group-header"' in html
+
+
+def test_report_group_header_appears_in_output():
+    tickers = [_make_ticker("AAPL"), _make_ticker("MSFT")]
+    groups = {"AAPL": "Core Holdings", "MSFT": "Core Holdings"}
+    html = generate_report(tickers, groups=groups, generated_at=_fixed_time())
+    assert "Core Holdings" in html
+
+
+def test_report_multiple_groups_all_appear():
+    tickers = [_make_ticker("AAPL"), _make_ticker("MSFT"), _make_ticker("NVDA")]
+    groups = {"AAPL": "Core", "MSFT": "Core", "NVDA": "Speculative"}
+    html = generate_report(tickers, groups=groups, generated_at=_fixed_time())
+    assert "Core" in html
+    assert "Speculative" in html
+
+
+def test_report_ungrouped_tickers_render_without_header():
+    tickers = [_make_ticker("AAPL"), _make_ticker("MSFT")]
+    html = generate_report(tickers, groups=None, generated_at=_fixed_time())
+    assert '<tr class="group-header">' not in html
+
+
+def test_group_header_escapes_html():
+    html = _build_group_header('<script>alert(1)</script>')
+    assert "<script>" not in html
+    assert "&lt;script&gt;" in html
