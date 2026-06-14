@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 
@@ -30,6 +30,15 @@ def _nan_to_none(value: Any) -> Any:
     return value
 
 
+def _pick(info: dict[str, Any], *keys: str) -> Any:
+    """Return the first non-None, non-NaN value from info for the given keys."""
+    for key in keys:
+        val = _nan_to_none(info.get(key))
+        if val is not None:
+            return val
+    return None
+
+
 def normalize_info(info: dict[str, Any], history_closes: list[float], label: str | None = None) -> TickerData:
     """
     Build a TickerData from a yfinance info dict and a list of closing prices.
@@ -37,20 +46,20 @@ def normalize_info(info: dict[str, Any], history_closes: list[float], label: str
     """
     symbol = info.get("symbol", "")
     name = label or info.get("longName") or info.get("shortName") or symbol
-    price = _nan_to_none(info.get("currentPrice") or info.get("regularMarketPrice"))
+    price = _pick(info, "currentPrice", "regularMarketPrice")
     currency = info.get("currency", "USD") or "USD"
 
     # 1-day % change: (currentPrice - previousClose) / previousClose * 100
-    prev_close = _nan_to_none(info.get("previousClose") or info.get("regularMarketPreviousClose"))
+    prev_close = _pick(info, "previousClose", "regularMarketPreviousClose")
     change_pct: float | None = None
-    if price is not None and prev_close and prev_close != 0:
+    if price is not None and prev_close is not None and prev_close != 0:
         change_pct = (price - prev_close) / prev_close * 100.0
 
     week52_high = _nan_to_none(info.get("fiftyTwoWeekHigh"))
     week52_low = _nan_to_none(info.get("fiftyTwoWeekLow"))
-    pe_ratio = _nan_to_none(info.get("trailingPE") or info.get("forwardPE"))
+    pe_ratio = _pick(info, "trailingPE", "forwardPE")
     market_cap = _nan_to_none(info.get("marketCap"))
-    volume = _nan_to_none(info.get("volume") or info.get("regularMarketVolume"))
+    volume = _pick(info, "volume", "regularMarketVolume")
 
     if market_cap is not None:
         market_cap = int(market_cap)

@@ -18,7 +18,7 @@ import argparse
 import json
 import sys
 import webbrowser
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 from src.fetcher import fetch_ticker, format_price
@@ -60,7 +60,14 @@ def run_report(args: argparse.Namespace, store: ThesisStore) -> None:
     print(f"Fetching data for {len(watchlist)} ticker(s)...")
     ticker_data = []
     for entry in watchlist:
-        symbol = entry.get("symbol", "").strip().upper()
+        if not isinstance(entry, dict):
+            print(f"Warning: skipping non-object watchlist entry: {entry!r}", file=sys.stderr)
+            continue
+        symbol = entry.get("symbol", "")
+        if not isinstance(symbol, str):
+            print(f"Warning: skipping entry with non-string symbol: {entry!r}", file=sys.stderr)
+            continue
+        symbol = symbol.strip().upper()
         label = entry.get("label") or symbol
         if not symbol:
             print("Warning: skipping entry with no symbol", file=sys.stderr)
@@ -70,8 +77,7 @@ def run_report(args: argparse.Namespace, store: ThesisStore) -> None:
         if data.error:
             print(f"FAILED ({data.error})")
         else:
-            price_display = f"${data.price:.2f}" if data.price is not None else "no price"
-            print(f"ok ({price_display})")
+            print(f"ok ({format_price(data.price, data.currency)})")
         ticker_data.append(data)
 
     html = generate_report(ticker_data, theses=store.all_data())
@@ -219,7 +225,16 @@ def main() -> None:
         return
 
     parser = argparse.ArgumentParser(
-        description="Investment Research Platform — watchlist report + thesis journal."
+        description="Investment Research Platform — watchlist report + thesis journal.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "thesis commands:\n"
+            '  python3 main.py add TICKER "note"   record an investment thesis note\n'
+            "  python3 main.py show TICKER          show all notes with live price context\n"
+            "  python3 main.py list                 list all tickers that have notes\n"
+            "  python3 main.py search QUERY         search notes by keyword\n"
+            "  python3 main.py delete TICKER ID     delete a specific note by ID"
+        ),
     )
     parser.add_argument(
         "--watchlist",

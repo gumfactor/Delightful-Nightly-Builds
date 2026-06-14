@@ -20,6 +20,12 @@ class ThesisStore:
             try:
                 return json.loads(self.path.read_text(encoding="utf-8"))
             except json.JSONDecodeError:
+                # Back up the malformed file before starting fresh so no notes are lost silently.
+                backup = self.path.with_suffix(".json.bak")
+                try:
+                    backup.write_bytes(self.path.read_bytes())
+                except OSError:
+                    pass
                 return {}
         return {}
 
@@ -45,12 +51,12 @@ class ThesisStore:
 
     def get(self, ticker: str) -> list[dict]:
         """Return all notes for a ticker, oldest first."""
-        return list(self._data.get(ticker.upper(), []))
+        return [dict(e) for e in self._data.get(ticker.upper(), [])]
 
     def get_latest(self, ticker: str) -> Optional[dict]:
         """Return the most recent note for a ticker, or None."""
         entries = self._data.get(ticker.upper(), [])
-        return entries[-1] if entries else None
+        return dict(entries[-1]) if entries else None
 
     def list_tickers(self) -> list[tuple[str, int, str]]:
         """Return (ticker, note_count, last_date_iso) sorted alphabetically."""
@@ -68,7 +74,7 @@ class ThesisStore:
         for ticker, entries in sorted(self._data.items()):
             for entry in entries:
                 if q in entry["note"].lower():
-                    results.append((ticker, entry))
+                    results.append((ticker, dict(entry)))
         return results
 
     def delete(self, ticker: str, entry_id: int) -> bool:

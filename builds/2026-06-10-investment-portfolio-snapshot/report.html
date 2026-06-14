@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio Snapshot — 2026-06-10 08:13 UTC</title>
+  <title>Investment Research Platform — 2026-06-14 20:27 UTC</title>
   <style>
 :root {
   --bg: #0f172a;
@@ -18,6 +18,32 @@
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "SF Mono", "Fira Code", monospace;
 }
+
+.thesis-cell {
+  white-space: normal;
+  max-width: 260px;
+  min-width: 160px;
+  vertical-align: top;
+  padding-top: 12px;
+}
+
+.thesis-text {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.thesis-meta {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.since-up { color: var(--up); }
+.since-down { color: var(--down); }
+.since-flat { color: var(--muted); }
+.thesis-empty { color: var(--muted); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -147,8 +173,8 @@ footer {
 </head>
 <body>
   <header>
-    <h1>Portfolio Snapshot</h1>
-    <p class="meta">Generated <time datetime="2026-06-10T08:13:54Z">2026-06-10 08:13 UTC</time> &nbsp;&middot;&nbsp; Data via Yahoo Finance</p>
+    <h1>Investment Research Platform</h1>
+    <p class="meta">Generated <time datetime="2026-06-14T20:27:25Z">2026-06-14 20:27 UTC</time> &nbsp;&middot;&nbsp; Data via Yahoo Finance</p>
   </header>
 
   <div class="summary"><div class="summary-card"><div class="label">Tickers</div><div class="value">7</div></div><div class="summary-card"><div class="label">Gainers</div><div class="value up">0</div></div><div class="summary-card"><div class="label">Losers</div><div class="value down">0</div></div></div>
@@ -165,16 +191,17 @@ footer {
           <th class="num">Mkt Cap</th>
           <th class="num">Volume</th>
           <th>3M Trend</th>
+          <th>Thesis</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="error-row"><td><span class="ticker">AAPL</span><div class="name">Apple</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
-<tr class="error-row"><td><span class="ticker">MSFT</span><div class="name">Microsoft</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
-<tr class="error-row"><td><span class="ticker">NVDA</span><div class="name">NVIDIA</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
-<tr class="error-row"><td><span class="ticker">BRK-B</span><div class="name">Berkshire Hathaway B</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
-<tr class="error-row"><td><span class="ticker">SPY</span><div class="name">S&P 500 ETF</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
-<tr class="error-row"><td><span class="ticker">VFV.TO</span><div class="name">Vanguard S&P 500 (CAD)</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
-<tr class="error-row"><td><span class="ticker">XIU.TO</span><div class="name">iShares S&P/TSX 60</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type 'NoneType' is not iterable</span></td></tr>
+        <tr class="error-row"><td><span class="ticker">AAPL</span><div class="name">Apple</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type &#x27;NoneType&#x27; is not iterable</span></td><td class="thesis-cell"><span class="thesis-empty">—</span></td></tr>
+<tr class="error-row"><td><span class="ticker">MSFT</span><div class="name">Microsoft</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type &#x27;NoneType&#x27; is not iterable</span></td><td class="thesis-cell"><span class="thesis-empty">—</span></td></tr>
+<tr class="error-row"><td><span class="ticker">NVDA</span><div class="name">NVIDIA</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type &#x27;NoneType&#x27; is not iterable</span></td><td class="thesis-cell"><span class="thesis-empty">—</span></td></tr>
+<tr class="error-row"><td><span class="ticker">BRK-B</span><div class="name">Berkshire Hathaway B</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type &#x27;NoneType&#x27; is not iterable</span></td><td class="thesis-cell"><span class="thesis-empty">—</span></td></tr>
+<tr class="error-row"><td><span class="ticker">SPY</span><div class="name">S&amp;P 500 ETF</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type &#x27;NoneType&#x27; is not iterable</span></td><td class="thesis-cell"><span class="thesis-empty">—</span></td></tr>
+<tr class="error-row"><td><span class="ticker">VFV.TO</span><div class="name">Vanguard S&amp;P 500 (CAD)</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type &#x27;NoneType&#x27; is not iterable</span></td><td class="thesis-cell"><span class="thesis-empty">—</span></td></tr>
+<tr class="error-row"><td><span class="ticker">XIU.TO</span><div class="name">iShares S&amp;P/TSX 60</div></td><td colspan="7"><span class="error-msg">Fetch error: argument of type &#x27;NoneType&#x27; is not iterable</span></td><td class="thesis-cell"><span class="thesis-empty">—</span></td></tr>
       </tbody>
     </table>
   </div>
