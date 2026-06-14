@@ -31,6 +31,31 @@ _CSS = """
   --mono: "SF Mono", "Fira Code", monospace;
 }
 
+.thesis-cell {
+  white-space: normal;
+  max-width: 260px;
+  min-width: 160px;
+  vertical-align: top;
+  padding-top: 12px;
+}
+
+.thesis-text {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.thesis-meta {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.since-up { color: var(--up); }
+.since-down { color: var(--down); }
+.since-flat { color: var(--muted); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -158,6 +183,41 @@ footer {
 """
 
 
+def _format_thesis_cell(entries: list[dict] | None, current_price: float | None) -> str:
+    """Render the thesis table cell for one ticker."""
+    if not entries:
+        return '<td class="thesis-cell"><span style="color:var(--muted)">—</span></td>'
+
+    latest = entries[-1]
+    note_text = latest["note"]
+    if len(note_text) > 80:
+        note_text = note_text[:77] + "…"
+
+    price_at_note: float | None = latest.get("price_at_note")
+    note_date: str = latest.get("date", "")[:10]  # YYYY-MM-DD
+
+    meta_parts = []
+    if price_at_note is not None:
+        meta_parts.append(f"@ ${price_at_note:,.2f}")
+        if current_price is not None and price_at_note > 0:
+            pct = (current_price - price_at_note) / price_at_note * 100.0
+            sign = "+" if pct >= 0 else ""
+            css = "since-up" if pct > 0 else ("since-down" if pct < 0 else "since-flat")
+            meta_parts.append(f'<span class="{css}">{sign}{pct:.1f}% since</span>')
+    if len(entries) > 1:
+        meta_parts.append(f"{len(entries)} notes")
+    if note_date:
+        meta_parts.append(note_date)
+
+    meta_html = " · ".join(meta_parts)
+    return (
+        f'<td class="thesis-cell">'
+        f'<div class="thesis-text">{note_text}</div>'
+        f'<div class="thesis-meta">{meta_html}</div>'
+        f"</td>"
+    )
+
+
 def _change_class(change_pct: float | None) -> str:
     if change_pct is None:
         return "flat"
@@ -192,13 +252,16 @@ def _build_summary(tickers: list[TickerData]) -> str:
     return html
 
 
-def _build_row(ticker: TickerData) -> str:
+def _build_row(ticker: TickerData, thesis_entries: list[dict] | None = None) -> str:
+    thesis_html = _format_thesis_cell(thesis_entries, ticker.price)
+
     if ticker.error:
         return (
             f'<tr class="error-row">'
             f'<td><span class="ticker">{ticker.symbol}</span>'
             f'<div class="name">{ticker.name}</div></td>'
             f'<td colspan="7"><span class="error-msg">Fetch error: {ticker.error}</span></td>'
+            f"{thesis_html}"
             f"</tr>"
         )
 
@@ -222,13 +285,19 @@ def _build_row(ticker: TickerData) -> str:
         f'<td class="num">{cap_str}</td>'
         f'<td class="num">{vol_str}</td>'
         f'<td>{sparkline}</td>'
+        f"{thesis_html}"
         f"</tr>"
     )
 
 
-def generate_report(tickers: list[TickerData], generated_at: datetime | None = None) -> str:
+def generate_report(
+    tickers: list[TickerData],
+    theses: dict[str, list[dict]] | None = None,
+    generated_at: datetime | None = None,
+) -> str:
     """
     Produce a complete, self-contained HTML string.
+    theses maps ticker symbol → list of note entries from ThesisStore.
     generated_at defaults to now (UTC) if not provided.
     """
     if generated_at is None:
@@ -238,19 +307,21 @@ def generate_report(tickers: list[TickerData], generated_at: datetime | None = N
     ts_iso = generated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     summary_html = _build_summary(tickers)
-    rows_html = "\n".join(_build_row(t) for t in tickers)
+    rows_html = "\n".join(
+        _build_row(t, theses.get(t.symbol) if theses else None) for t in tickers
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio Snapshot — {ts_display}</title>
+  <title>Investment Research Platform — {ts_display}</title>
   <style>{_CSS}</style>
 </head>
 <body>
   <header>
-    <h1>Portfolio Snapshot</h1>
+    <h1>Investment Research Platform</h1>
     <p class="meta">Generated <time datetime="{ts_iso}">{ts_display}</time> &nbsp;&middot;&nbsp; Data via Yahoo Finance</p>
   </header>
 
@@ -268,6 +339,7 @@ def generate_report(tickers: list[TickerData], generated_at: datetime | None = N
           <th class="num">Mkt Cap</th>
           <th class="num">Volume</th>
           <th>3M Trend</th>
+          <th>Thesis</th>
         </tr>
       </thead>
       <tbody>

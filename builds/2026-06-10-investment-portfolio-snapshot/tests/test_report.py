@@ -9,7 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.fetcher import TickerData
-from src.report import generate_report, _change_class, _build_summary
+from src.report import generate_report, _change_class, _build_summary, _format_thesis_cell
 
 
 def _make_ticker(
@@ -156,3 +156,70 @@ def test_report_includes_sparkline_svg():
 def test_report_includes_footer():
     html = generate_report([_make_ticker()], generated_at=_fixed_time())
     assert "Yahoo Finance" in html
+
+
+# ── Thesis column ─────────────────────────────────────────────────────────────
+
+def test_thesis_cell_no_entries_renders_dash():
+    html = _format_thesis_cell(None, 180.0)
+    assert "—" in html
+
+
+def test_thesis_cell_shows_note_text():
+    entries = [{"id": 1, "date": "2026-06-01T10:00:00+00:00", "note": "Strong moat.", "price_at_note": 150.0}]
+    html = _format_thesis_cell(entries, 180.0)
+    assert "Strong moat." in html
+
+
+def test_thesis_cell_shows_price_at_note():
+    entries = [{"id": 1, "date": "2026-06-01T10:00:00+00:00", "note": "Thesis.", "price_at_note": 150.0}]
+    html = _format_thesis_cell(entries, 180.0)
+    assert "150.00" in html
+
+
+def test_thesis_cell_shows_positive_since_change():
+    entries = [{"id": 1, "date": "2026-06-01T10:00:00+00:00", "note": "Thesis.", "price_at_note": 100.0}]
+    html = _format_thesis_cell(entries, 120.0)
+    assert "since-up" in html
+    assert "+20.0%" in html
+
+
+def test_thesis_cell_shows_negative_since_change():
+    entries = [{"id": 1, "date": "2026-06-01T10:00:00+00:00", "note": "Thesis.", "price_at_note": 100.0}]
+    html = _format_thesis_cell(entries, 80.0)
+    assert "since-down" in html
+    assert "-20.0%" in html
+
+
+def test_thesis_cell_no_price_at_note_omits_since():
+    entries = [{"id": 1, "date": "2026-06-01T10:00:00+00:00", "note": "Thesis.", "price_at_note": None}]
+    html = _format_thesis_cell(entries, 180.0)
+    assert "since" not in html
+
+
+def test_thesis_cell_long_note_truncated():
+    long_note = "A" * 100
+    entries = [{"id": 1, "date": "2026-06-01T10:00:00+00:00", "note": long_note, "price_at_note": None}]
+    html = _format_thesis_cell(entries, None)
+    assert "…" in html
+
+
+def test_report_includes_thesis_column_header():
+    html = generate_report([_make_ticker()], generated_at=_fixed_time())
+    assert "Thesis" in html
+
+
+def test_report_thesis_data_appears_in_output():
+    ticker = _make_ticker("NVDA", price=1100.0)
+    theses = {
+        "NVDA": [{"id": 1, "date": "2026-01-01T00:00:00+00:00", "note": "AI infrastructure play.", "price_at_note": 850.0}]
+    }
+    html = generate_report([ticker], theses=theses, generated_at=_fixed_time())
+    assert "AI infrastructure play." in html
+    assert "850.00" in html
+
+
+def test_report_no_thesis_data_renders_dash():
+    ticker = _make_ticker("AAPL")
+    html = generate_report([ticker], theses={}, generated_at=_fixed_time())
+    assert "—" in html
