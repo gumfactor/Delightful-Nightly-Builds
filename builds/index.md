@@ -24,7 +24,7 @@
 - 2026-06-07 — [H] — focused — Git Standup Reporter (complete)
 - 2026-06-08 — [F] — focused — Quick Data Profiler (discarded)
 - 2026-06-09 — [A] — focused — Investment Research Notes (discarded)
-- 2026-06-10 — [A] — ambitious — Investment Portfolio Snapshot (complete)
+- 2026-06-10 — [A] — ambitious — Investment Research Platform (complete)
 - 2026-06-12 — [A] — solid — Investment Watchlist Dashboard (discarded)
 - 2026-06-14 — [C] — focused — Investment Thesis Journal (complete)
 
@@ -38,7 +38,7 @@
 | 2026-06-07 | H | focused | Git Standup Reporter | Python CLI to summarise recent git commits as a standup report; extended to pull GitHub pushed commits and local unpushed commits automatically | Python 3, stdlib, pytest | complete | — | — |
 | 2026-06-08 | F | focused | Quick Data Profiler | Python CLI that profiles CSV and JSON/JSONL files — infers column types, shows null rates, computes numeric distributions, and lists top-value frequencies | Python 3, stdlib, pytest | discarded | 1 | Totally redundant with pandas df.describe() and R summary() — trivially handled by existing tools in the user's stack. No reason to build this. |
 | 2026-06-09 | A | focused | Investment Research Notes | Browser app for capturing investment thesis notes per ticker with conviction rating, status lifecycle, and JSON export — localStorage only, no live data | HTML/CSS/JS, Playwright | discarded | 2 | Good field design (conviction rating, watchlist/owned/passed lifecycle) but localStorage only with no real data integration makes it hollow. The right ideas in the wrong shell. |
-| 2026-06-10 | A | ambitious | Investment Portfolio Snapshot | Python CLI that fetches live yfinance data for a configurable watchlist and generates a self-contained HTML report with SVG sparklines and key fundamentals | Python 3, yfinance, pytest | complete | 5 | Solid execution — SVG sparklines and /portfolio-check skill are genuinely useful. Static snapshot model limits daily utility; no connection to actual positions or thesis history. Worth extending rather than replacing. |
+| 2026-06-10 | A | ambitious | Investment Research Platform | Python CLI combining live watchlist metrics (prices, sparklines, 52W range, P/E, market cap) with a persistent thesis journal — per-ticker notes with price-at-note capture, % move since, and full CLI for add/show/list/search/delete | Python 3, yfinance, pytest | complete | — | — |
 | 2026-06-12 | A | solid | Investment Watchlist Dashboard | Python CLI that fetches yfinance data for a watchlist and renders an HTML dashboard with 52-week progress bars, dark/light mode, and terminal text output | Python 3, yfinance, pytest | discarded | 3 | Near-duplicate of the Jun 10 build — same data sources, similar output, marginal rendering differences. 52-week progress bar and --text mode are slightly better than Jun 10 equivalents but not enough to justify keeping both. |
 | 2026-06-14 | C | focused | Investment Thesis Journal | Python CLI to record investment research notes per ticker with live price capture at time of writing for later accountability | Python 3, yfinance, pytest | complete | 4 | Good core concept — price-at-time-of-note creates genuine accountability over time. Delivered as a bare CLI with no view layer; value is real but half-realized. Needs dashboard integration to be worth reaching for daily. |
 

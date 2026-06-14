@@ -1,0 +1,463 @@
+"""Assemble a self-contained HTML report from a list of TickerData."""
+
+from __future__ import annotations
+
+import html
+from datetime import datetime, timezone
+
+from .fetcher import (
+    TickerData,
+    format_change,
+    format_market_cap,
+    format_pe,
+    format_price,
+    format_volume,
+    format_52w_range,
+)
+from .charts import make_sparkline
+
+
+_CSS = """
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #263044;
+  --border: #334155;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --up: #4ade80;
+  --down: #f87171;
+  --accent: #38bdf8;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "SF Mono", "Fira Code", monospace;
+}
+
+.thesis-cell {
+  white-space: normal;
+  max-width: 260px;
+  min-width: 160px;
+  vertical-align: top;
+  padding-top: 12px;
+}
+
+.thesis-text {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.thesis-meta {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.since-up { color: var(--up); }
+.since-down { color: var(--down); }
+.since-flat { color: var(--muted); }
+.thesis-empty { color: var(--muted); }
+
+.group-header td {
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 14px;
+  border-top: 2px solid var(--border);
+}
+
+thead th[data-sort] { cursor: pointer; user-select: none; }
+thead th[data-sort]:hover { color: var(--text); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 24px 16px;
+}
+
+header {
+  margin-bottom: 24px;
+}
+
+header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+header .meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 20px;
+  min-width: 120px;
+}
+
+.summary-card .label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.summary-card .value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.summary-card .value.up { color: var(--up); }
+.summary-card .value.down { color: var(--down); }
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+thead th.num { text-align: right; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+tbody tr:last-child { border-bottom: none; }
+
+tbody tr:hover { background: var(--surface2); }
+
+tbody td {
+  padding: 10px 14px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+tbody td.num { text-align: right; font-family: var(--mono); font-size: 12px; }
+
+.ticker { font-weight: 600; color: var(--accent); font-family: var(--mono); }
+.name { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.price { font-weight: 600; font-family: var(--mono); }
+.change.up { color: var(--up); font-family: var(--mono); }
+.change.down { color: var(--down); font-family: var(--mono); }
+.change.flat { color: var(--muted); font-family: var(--mono); }
+.error-row td { color: var(--muted); font-style: italic; }
+.error-msg { font-size: 11px; color: var(--down); }
+
+footer {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .summary { gap: 12px; }
+  .summary-card { padding: 10px 14px; min-width: 90px; }
+  .summary-card .value { font-size: 18px; }
+  table { font-size: 12px; }
+  thead th, tbody td { padding: 8px 10px; }
+}
+"""
+
+
+def _format_thesis_cell(entries: list[dict] | None, current_price: float | None) -> str:
+    """Render the thesis table cell for one ticker."""
+    if not entries:
+        return '<td class="thesis-cell"><span class="thesis-empty">—</span></td>'
+
+    latest = entries[-1]
+    note_text = latest["note"]
+    if len(note_text) > 80:
+        note_text = note_text[:77] + "…"
+    note_text = html.escape(note_text)
+
+    price_at_note: float | None = latest.get("price_at_note")
+    note_date: str = latest.get("date", "")[:10]  # YYYY-MM-DD
+
+    meta_parts = []
+    if price_at_note is not None:
+        meta_parts.append(f"@ ${price_at_note:,.2f}")
+        if current_price is not None and price_at_note > 0:
+            pct = (current_price - price_at_note) / price_at_note * 100.0
+            sign = "+" if pct >= 0 else ""
+            css = "since-up" if pct > 0 else ("since-down" if pct < 0 else "since-flat")
+            meta_parts.append(f'<span class="{css}">{sign}{pct:.1f}% since</span>')
+    if len(entries) > 1:
+        meta_parts.append(f"{len(entries)} notes")
+    if note_date:
+        meta_parts.append(note_date)
+
+    meta_html = " · ".join(meta_parts)
+    return (
+        f'<td class="thesis-cell">'
+        f'<div class="thesis-text">{note_text}</div>'
+        f'<div class="thesis-meta">{meta_html}</div>'
+        f"</td>"
+    )
+
+
+def _change_class(change_pct: float | None) -> str:
+    if change_pct is None:
+        return "flat"
+    if change_pct > 0:
+        return "up"
+    if change_pct < 0:
+        return "down"
+    return "flat"
+
+
+def _build_summary(tickers: list[TickerData]) -> str:
+    total = len(tickers)
+    ok = [t for t in tickers if t.error is None]
+    gainers = sum(1 for t in ok if t.change_pct is not None and t.change_pct > 0)
+    losers = sum(1 for t in ok if t.change_pct is not None and t.change_pct < 0)
+
+    cards = [
+        ("Tickers", str(total), ""),
+        ("Gainers", str(gainers), "up"),
+        ("Losers", str(losers), "down"),
+    ]
+    html = '<div class="summary">'
+    for label, value, css_class in cards:
+        cls = f' class="value {css_class}"' if css_class else ' class="value"'
+        html += (
+            f'<div class="summary-card">'
+            f'<div class="label">{label}</div>'
+            f'<div{cls}>{value}</div>'
+            f"</div>"
+        )
+    html += "</div>"
+    return html
+
+
+def _build_group_header(name: str) -> str:
+    return (
+        f'<tr class="group-header">'
+        f'<td colspan="10">{html.escape(name)}</td>'
+        f'</tr>'
+    )
+
+
+def _build_row(ticker: TickerData, thesis_entries: list[dict] | None = None) -> str:
+    thesis_html = _format_thesis_cell(thesis_entries, ticker.price)
+
+    if ticker.error:
+        return (
+            f'<tr class="error-row">'
+            f'<td><span class="ticker">{html.escape(ticker.symbol)}</span>'
+            f'<div class="name">{html.escape(ticker.name)}</div></td>'
+            f'<td colspan="8"><span class="error-msg">Fetch error: {html.escape(ticker.error)}</span></td>'
+            f"{thesis_html}"
+            f"</tr>"
+        )
+
+    sparkline = make_sparkline(ticker.history)
+    price_str = format_price(ticker.price, ticker.currency)
+    change_str = format_change(ticker.change_pct)
+    change_cls = _change_class(ticker.change_pct)
+    range_str = format_52w_range(ticker.week52_low, ticker.week52_high)
+    pe_str = format_pe(ticker.pe_ratio)
+    cap_str = format_market_cap(ticker.market_cap)
+    vol_str = format_volume(ticker.volume)
+
+    return (
+        f"<tr>"
+        f'<td><span class="ticker">{html.escape(ticker.symbol)}</span>'
+        f'<div class="name">{html.escape(ticker.name)}</div></td>'
+        f'<td class="num price">{price_str}</td>'
+        f'<td class="num"><span class="change {change_cls}">{change_str}</span></td>'
+        f'<td class="num">{range_str}</td>'
+        f'<td class="num">{pe_str}</td>'
+        f'<td class="num">{cap_str}</td>'
+        f'<td class="num">{vol_str}</td>'
+        f'<td class="num">{html.escape(ticker.currency)}</td>'
+        f'<td>{sparkline}</td>'
+        f"{thesis_html}"
+        f"</tr>"
+    )
+
+
+_SORT_JS = """
+<script>
+(function () {
+  var table = document.querySelector('table');
+  if (!table) return;
+  var tbody = table.querySelector('tbody');
+  var sortCol = -1, sortAsc = true;
+
+  function parseNum(t) {
+    t = (t || '').trim();
+    if (!t || t === '—') return null;
+    t = t.replace(/^\\+/, '').replace(/\\$/g, '').replace(/,/g, '').replace(/%$/, '');
+    var sfx = {T: 1e12, B: 1e9, M: 1e6, K: 1e3};
+    if (sfx[t.slice(-1)]) return parseFloat(t) * sfx[t.slice(-1)];
+    var n = parseFloat(t);
+    return isNaN(n) ? null : n;
+  }
+
+  table.querySelectorAll('thead th[data-sort]').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var col = parseInt(th.dataset.col, 10);
+      sortAsc = (sortCol === col) ? !sortAsc : true;
+      sortCol = col;
+
+      tbody.querySelectorAll('.group-header').forEach(function (r) {
+        r.style.display = 'none';
+      });
+
+      var rows = Array.from(tbody.querySelectorAll('tr:not(.group-header)'));
+      var isNum = th.dataset.sort === 'num';
+
+      rows.sort(function (a, b) {
+        var av = (a.cells[col] ? a.cells[col].innerText : '').trim();
+        var bv = (b.cells[col] ? b.cells[col].innerText : '').trim();
+        var cmp;
+        if (isNum) {
+          var an = parseNum(av), bn = parseNum(bv);
+          if (an === null && bn === null) cmp = 0;
+          else if (an === null) cmp = 1;
+          else if (bn === null) cmp = -1;
+          else cmp = an - bn;
+        } else {
+          cmp = av.localeCompare(bv);
+        }
+        return sortAsc ? cmp : -cmp;
+      });
+
+      table.querySelectorAll('thead th[data-sort]').forEach(function (h) {
+        h.textContent = h.dataset.label;
+      });
+      th.textContent = th.dataset.label + (sortAsc ? ' ↑' : ' ↓');
+
+      rows.forEach(function (r) { tbody.appendChild(r); });
+    });
+  });
+}());
+</script>"""
+
+
+def generate_report(
+    tickers: list[TickerData],
+    theses: dict[str, list[dict]] | None = None,
+    generated_at: datetime | None = None,
+    groups: dict[str, str] | None = None,
+) -> str:
+    """
+    Produce a complete, self-contained HTML string.
+    theses maps ticker symbol → list of note entries from ThesisStore.
+    groups maps ticker symbol → group label for visual grouping in the table.
+    generated_at defaults to now (UTC) if not provided.
+    """
+    if generated_at is None:
+        generated_at = datetime.now(timezone.utc)
+
+    ts_display = generated_at.strftime("%Y-%m-%d %H:%M UTC")
+    ts_iso = generated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    summary_html = _build_summary(tickers)
+
+    if groups:
+        seen: list[str] = []
+        buckets: dict[str, list[TickerData]] = {}
+        for t in tickers:
+            g = groups.get(t.symbol, "")
+            if g not in buckets:
+                seen.append(g)
+                buckets[g] = []
+            buckets[g].append(t)
+        parts: list[str] = []
+        for g in seen:
+            if g:
+                parts.append(_build_group_header(g))
+            for t in buckets[g]:
+                parts.append(_build_row(t, theses.get(t.symbol) if theses else None))
+        rows_html = "\n".join(parts)
+    else:
+        rows_html = "\n".join(
+            _build_row(t, theses.get(t.symbol) if theses else None) for t in tickers
+        )
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Research Platform — {ts_display}</title>
+  <style>{_CSS}</style>
+</head>
+<body>
+  <header>
+    <h1>Investment Research Platform</h1>
+    <p class="meta">Generated <time datetime="{ts_iso}">{ts_display}</time> &nbsp;&middot;&nbsp; Data via Yahoo Finance</p>
+  </header>
+
+  {summary_html}
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="str" data-col="0" data-label="Symbol">Symbol</th>
+          <th class="num" data-sort="num" data-col="1" data-label="Price">Price</th>
+          <th class="num" data-sort="num" data-col="2" data-label="1D Change">1D Change</th>
+          <th class="num">52W Range</th>
+          <th class="num" data-sort="num" data-col="4" data-label="P/E">P/E</th>
+          <th class="num" data-sort="num" data-col="5" data-label="Mkt Cap">Mkt Cap</th>
+          <th class="num" data-sort="num" data-col="6" data-label="Volume">Volume</th>
+          <th class="num" data-sort="str" data-col="7" data-label="Currency">Currency</th>
+          <th>3M Trend</th>
+          <th>Thesis</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows_html}
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    Data sourced from Yahoo Finance via yfinance. Prices may be delayed 15–20 minutes.
+    For personal research only — not financial advice.
+  </footer>
+  {_SORT_JS}
+</body>
+</html>"""

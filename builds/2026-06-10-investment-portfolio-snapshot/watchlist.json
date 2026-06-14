@@ -1,0 +1,11 @@
+{
+  "tickers": [
+    {"symbol": "AAPL", "label": "Apple", "group": "Core Positions"},
+    {"symbol": "MSFT", "label": "Microsoft", "group": "Core Positions"},
+    {"symbol": "NVDA", "label": "NVIDIA", "group": "Core Positions"},
+    {"symbol": "BRK-B", "label": "Berkshire Hathaway B", "group": "Core Positions"},
+    {"symbol": "SPY", "label": "S&P 500 ETF", "group": "ETFs"},
+    {"symbol": "VFV.TO", "label": "Vanguard S&P 500 (CAD)", "group": "ETFs"},
+    {"symbol": "XIU.TO", "label": "iShares S&P/TSX 60", "group": "ETFs"}
+  ]
+}
