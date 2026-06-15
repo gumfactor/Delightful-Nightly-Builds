@@ -57,7 +57,7 @@ Get today's date in UTC. Your build folder: `builds/YYYY-MM-DD-title-slug/`
 
 ### 2a — Read the Preference Prior
 
-Read `builds/index.md` for rows where `Your Rating` is a number. If 3 or more rated builds exist, read the ratings and notes together — the notes explain *why* a build scored as it did and are more actionable than the number alone. Use this as a soft prior when evaluating ideas: give weight to patterns the user has rated highly, and be skeptical of patterns they've rated poorly.
+Read the ratings and notes in `builds/index.md`. The notes explain *why* a build scored as it did and are more actionable than the number alone. Use this as a soft prior: give weight to patterns the user has rated highly, be skeptical of patterns they've rated poorly.
 
 ### 2b — Determine Tonight's Category
 
@@ -100,14 +100,7 @@ Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
 Scan `builds/index.md` for the last 7 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
-Generate at least 3 candidate ideas in tonight's category. For each, ask:
-
-- Is it genuinely useful — does it actively make the user's work or life better, or does it just fill a gap?
-- Is it self-contained and reversible? No cloud infrastructure, no unconfigured paid APIs.
-- Is it complete as delivered? Anything required for real usefulness must ship tonight.
-- Does it connect to real data where available? Check PROFILE.md's Data Sources section.
-- Is it novel? Not in `builds/index.md`, not trivially covered by tools already in the user's stack.
-- Is it achievable tonight, with the right stack from PROFILE.md, with testable core logic?
+Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained (no cloud infrastructure, no unconfigured paid APIs); complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
 
 Pick the strongest idea. Append non-winners to `builds/ideas.md` (new sequential ID, today's date, tonight's category, complexity `ambitious`, status `pending`, rating `—`). Do not add the winning idea.
 
