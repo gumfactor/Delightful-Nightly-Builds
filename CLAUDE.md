@@ -81,9 +81,13 @@ Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD-title-slug
 
 Every night is **Ambitious Project**. There is no rotation and no override.
 
-**Ambitious Project** — Genuinely complex: rich UI, deep logic, or meaningful data architecture. Feels like something you'd publish or share. Requires real design decisions, not just implementation. Multiple interacting components, non-trivial data model, and a complete user flow. Not a script — a tool.
+**Ambitious Project** — The goal is not to complete a build. The goal is to make the user pause when they open it in the morning and think *"huh, that's genuinely cool"* or *"huh, I didn't know you could do that"* or *"huh, that's actually really useful."* That reaction is the success criterion. Everything else is in service of it.
 
-File count is not a measure of complexity. Judge by depth, scope, and value delivered. When in doubt, go deeper on the idea you chose rather than shipping something smaller.
+Ambitious means: the idea is interesting enough that a competent developer would find it worth building. The implementation has depth — not just more files, but real design decisions, real tradeoffs, real cleverness in how the pieces fit together. It connects to real data where possible. It produces output that feels like a product, not a demo. It does something that would take a human multiple hours and does it in one command or one page load.
+
+The failure mode is building the obvious version of the idea. The obvious investment dashboard, the obvious note-taking CLI, the obvious vignette generator. Push past the first interpretation. Ask: what would make this surprising? What angle on this problem is non-obvious? What would make someone who builds software for a living stop and look twice?
+
+File count is not a measure of ambition. Judge by the quality of the reaction it would produce.
 
 ---
 
@@ -162,20 +166,24 @@ Record in `WhyThis.md` whether tonight's build came from the lottery or fresh ge
 
 Before generating ideas, scan `builds/index.md` (the version read in Step 1) for the themes and topics of the last 7 builds. Note which subject areas are overrepresented — investing, git tooling, dashboards, etc. Fresh ideas should diversify away from recently covered ground, not just recently covered categories. The category rotation handles category diversity; you are responsible for topic diversity within the category.
 
-Generate at least 3 candidate ideas within tonight's chosen category and complexity target.
-For each, evaluate:
+Generate at least 3 candidate ideas within tonight's chosen category.
 
+**Before evaluating anything, apply the "obvious version" filter.** For each idea, name the most obvious way to implement it — the version a developer would build in an afternoon without much thought. If that's what you'd build, the idea needs a better angle or should be dropped. The goal is to find the version that makes someone say *"oh, I hadn't thought of it that way"* — not the version that just gets the job done.
+
+For each idea, evaluate:
+
+- **Impressive?** If this were working and in front of the user tomorrow morning, would they pause and think "huh, that's genuinely cool / impressive / useful"? Be honest. If the answer is "probably not," this idea does not win regardless of how well it scores elsewhere.
+- **Non-obvious angle?** Is this the first idea that comes to mind, or did it take real thought to find? The best builds often reframe the problem — connecting two things that don't normally connect, surfacing data the user has but never sees, automating something they do manually without realizing it could be automated.
 - **Self-contained?** No cloud infrastructure required, no unconfigured paid APIs
 - **Reversible?** Deleting the folder removes it entirely
-- **Makes life genuinely easier?** Not just "fills a gap" — actively makes the user's work, research, or daily life better. Think: does this reduce real friction, automate something tedious, surface information the user currently lacks, or connect systems that don't talk to each other? "You could store notes here" is not enough. Apply the preference prior here.
 - **Complete in delivered state?** The build must be genuinely useful as delivered. Any capability required for real usefulness must be in scope tonight — not deferred to FutureFeatures.md. FutureFeatures.md is for enhancements to a working thing, not prerequisites for usefulness.
-- **Uses real data where it exists?** For productivity, data, and developer tools: check PROFILE.md's Data Sources section. If the user's data already exists somewhere accessible — GitHub, public APIs, files on disk — the build should connect to it rather than asking the user to re-enter it.
-- **Novel?** Not substantially similar to something in `builds/index.md`, AND not trivially redundant with tools already in the user's daily stack (check PROFILE.md). If `pandas.describe()`, `R summary()`, or another tool the user already uses covers this in two lines, it's not worth building. The bar is: does this do something the user can't already do easily with what they have?
-- **Achievable?** Realistic scope for tonight's complexity target
+- **Uses real data where it exists?** For productivity, data, and developer tools: check PROFILE.md's Data Sources section. If the user's data already exists somewhere accessible — GitHub, public APIs, files on disk — the build should connect to it rather than asking the user to re-enter it. Tools that pull from real sources deliver value automatically; tools that require manual maintenance often go unused.
+- **Novel?** Not substantially similar to something in `builds/index.md`, AND not trivially redundant with tools already in the user's daily stack (check PROFILE.md). Also: could this be replicated by a single ChatGPT or Claude prompt? If yes, the build has no durable value — find a version that requires code, persistence, real data integration, or automation that a prompt can't provide.
+- **Achievable?** Realistic scope for one night
 - **Right stack?** Matches the user's preferred tech from PROFILE.md
 - **Testable?** Core logic can be verified with automated tests
 
-Pick the idea that scores best overall. If no idea scores well, choose the simplest genuinely useful thing in the selected category.
+Pick the idea that scores best overall. When two ideas are close, pick the one that would produce the more surprising result — surprising is better than safe. If no idea scores well on "impressive," generate more ideas rather than settling.
 
 **After choosing, append every non-winning candidate to `builds/ideas.md`** with:
 - A new sequential ID (increment from the last row)
@@ -518,12 +526,15 @@ Never abort silently. The abort commit is the deliverable.
 
 ## Tone and Craft
 
-Build things worth using. The user opens each build the morning after and decides whether it earns a place in their life — the best outcome is a tool they reach for again.
+The user opens each build the morning after. The question they're asking is not "does this work?" — it's "huh, is this interesting?" The best outcome is that they pause, look at what was built, and feel something: impressed, delighted, genuinely glad it exists. That's the bar.
 
-At every complexity level, the goal is the same: working code connected to real data, tested against real failure modes, with a clear and honest implementation. Focused builds are held to the same standard as ambitious ones — scope differs, quality does not.
+This does not mean flashy. It means *considered*. A build that makes one thing unexpectedly easy, or surfaces something the user has but never sees clearly, or automates something they do manually without realizing it could be automated — that's a win. A technically complete build that produces a "yeah, okay" reaction is not.
 
-Three things to get right in every build:
+The enemy is the obvious version. The obvious dashboard, the obvious CLI, the obvious generator. Push past it. Ask what angle on the problem is non-obvious. Ask what the user would not have thought to ask for but would immediately want once they saw it. Ask what this could do that a quick prompt to an LLM couldn't.
 
+Four things to get right in every build:
+
+- **The idea.** This is where most of the value comes from. A mediocre implementation of a great idea beats a polished implementation of a dull one. Spend real time on idea selection. Don't settle.
 - **Real data over manual entry.** If the user's data exists somewhere accessible — GitHub, public APIs, files on disk — the build should work with it. Tools that pull from real sources deliver value automatically; tools that require the user to maintain them manually often go unused.
 - **Honest tests.** Test the failure modes that actually matter for this logic. Tests that exist only to reach a minimum count add noise, not confidence.
 - **Complete scope.** What ships must be genuinely useful in its delivered state. Features that are prerequisites for usefulness belong in this build, not in FutureFeatures.md.
