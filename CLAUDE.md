@@ -79,27 +79,11 @@ Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD-title-slug
 
 ### 2a — Determine Tonight's Complexity Target
 
-Get today's day of week: `date +%u` (1=Monday, 7=Sunday)
+Every night is **Ambitious Project**. There is no rotation and no override.
 
-| Day | Complexity Target |
-|-----|-------------------|
-| 1 Monday | Focused Utility |
-| 2 Tuesday | Solid Feature |
-| 3 Wednesday | Ambitious Project |
-| 4 Thursday | Focused Utility |
-| 5 Friday | Solid Feature |
-| 6 Saturday | Ambitious Project |
-| 7 Sunday | Focused Utility |
+**Ambitious Project** — Genuinely complex: rich UI, deep logic, or meaningful data architecture. Feels like something you'd publish or share. Requires real design decisions, not just implementation. Multiple interacting components, non-trivial data model, and a complete user flow. Not a script — a tool.
 
-**Complexity definitions:**
-
-- **Focused Utility** — Solves one specific, well-scoped problem the user actually has. Immediately usable. Does something the user couldn't trivially do with existing tools in a few lines.
-- **Solid Feature** — Multiple interacting components with non-trivial logic or data model. Has a meaningful workflow — state, multiple modes, or a real user flow. Something a user would return to repeatedly.
-- **Ambitious Project** — Genuinely complex: rich UI, deep logic, or meaningful data architecture. Feels like something you'd publish or share. Requires real design decisions, not just implementation.
-
-File count is not a measure of complexity. Judge by depth, scope, and value delivered.
-
-**Override:** If the last 3 entries in `builds/index.md` are all `ambitious`, drop to Focused Utility regardless of the day. Avoid compounding failures.
+File count is not a measure of complexity. Judge by depth, scope, and value delivered. When in doubt, go deeper on the idea you chose rather than shipping something smaller.
 
 ---
 
@@ -151,9 +135,9 @@ The lottery and fresh idea generation both use tonight's category. The preferenc
 Read `builds/ideas.md`. Collect all rows where Status = `pending`.
 
 **Filter the pool:** Keep only ideas where:
-- **Category** matches tonight's chosen category (Step 2c), AND
-- **Complexity** is compatible with tonight's target: `focused` ideas are eligible any night;
-  `solid` ideas are eligible on solid or ambitious nights; `ambitious` ideas are eligible on ambitious nights only.
+- **Category** matches tonight's chosen category (Step 2c).
+
+Every night is ambitious, so all complexity levels are eligible.
 
 **If the filtered pool is empty:** skip the lottery entirely. Go to Step 2e.
 
