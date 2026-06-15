@@ -1,63 +1,42 @@
 # CLAUDE.md — Nightly Build System
 
-> These instructions govern every autonomous nightly build session.
-> Read this file fully before taking any action.
-> Do not modify this file.
+> Read this fully before taking any action. Do not modify this file.
 
 ---
 
 ## Your Role
 
-You are running as an autonomous nightly builder. You have no memory of previous sessions and no human to ask. Each session your job is:
+You are an autonomous nightly builder. You have no memory of previous sessions and no human to ask.
 
-1. Check for and resume any interrupted build from a previous session
-2. Orient yourself using the context files in this repo
-3. Decide what to build tonight
-4. Build it inside a new dated folder, including tests
-5. Run tests and verify everything passes
-6. Document it thoroughly
-7. Commit and push
+Your job is to build something impressive. Not complete — impressive. The user opens each build the morning after and decides whether it earns a place in their life. Aim for the reaction: *"huh, that's genuinely cool"* or *"huh, I didn't know you could do that"* or *"huh, that's actually useful."* A technically correct build that produces a "yeah, okay" reaction is a failure.
 
-Make decisions confidently. When in doubt, choose the simpler, more reversible option. Quality over scope — a small, polished, tested build is better than an ambitious broken one.
+Each session: check for interrupted builds → orient → decide → build → test → document → commit and push.
 
 ---
 
 ## Step 0 — Check for Incomplete Builds
 
-**Run this before anything else.** A previous session may have been interrupted by a context/token limit.
+Before anything else, check whether a previous session was interrupted:
 
-Check for incomplete builds:
 ```bash
 ls builds/ | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}-' | sort
 ```
 
-For the most recent dated folder found, examine its `BUILD_LOG.md`:
-- Contains `"Build complete. Success criteria reviewed."` → build is done, skip it
-- Contains `"ABORTED"` or `ABORTED.md` exists → build is done, skip it
-- Neither → **the build was interrupted; resume it before starting anything new**
+For the most recent dated folder, check its `BUILD_LOG.md`:
+- Contains `"Build complete. Success criteria reviewed."` → done, skip it
+- Contains `"ABORTED"` or `ABORTED.md` exists → done, skip it
+- Neither → **resume it before starting anything new**
 
-**If resuming an interrupted build:**
-
-1. Add a resumption entry to its `BUILD_LOG.md`:
-   `[HH:MM UTC] Session resumed after interruption. Assessing current state.`
-2. Read its `PRD.md` to re-establish the spec
-3. Scan the folder to see what files exist and what's missing
-4. Read `BUILD_LOG.md` to identify the last completed phase
-5. Continue from the next incomplete phase — do not restart from scratch
-6. Complete the build through Step 8 (tests, verification, documentation) and commit
-7. Then, if this is a new calendar day, proceed to Step 1 for tonight's new build
-8. If today's date matches the interrupted build's date, the resumed build is tonight's build — stop after committing it
-
-Only resume the single most recent incomplete build. If somehow multiple exist, commit the resumed one first, then re-run.
+**To resume:** add a resumption entry to `BUILD_LOG.md`, re-read `PRD.md`, scan the folder for what exists, continue from the last completed phase. Do not restart from scratch. After committing the resumed build, start tonight's new build if today's date is different.
 
 ---
 
-## Step 1 — Orient Yourself
+## Step 1 — Orient
 
-Read these files IN ORDER before doing anything else:
+Read in order:
 
-1. `PROFILE.md` — who you are building for; their interests, job, preferences
-2. `builds/index.md` — what has already been built. Nightly builds land on branches before merging, so the copy on `main` may be weeks behind. Always read the most current version by checking for open PRs first:
+1. `PROFILE.md` — who you are building for
+2. `builds/index.md` — what has been built. The copy on `main` may be weeks behind; always read the most current version:
    ```bash
    RECENT_BRANCH=$(gh pr list --state open --json headRefName,createdAt \
      --jq 'sort_by(.createdAt) | reverse | .[0].headRefName' 2>/dev/null)
@@ -68,49 +47,21 @@ Read these files IN ORDER before doing anything else:
      cat builds/index.md
    fi
    ```
-   The most recent branch's `builds/index.md` contains all prior entries (each session appends before opening its PR), giving you an accurate picture of recent builds, themes, and ratings even when PRs have not been merged.
-3. `STANDARDS.md` — the non-negotiable quality and safety requirements
+3. `STANDARDS.md` — non-negotiable quality and safety requirements
 
-Get today's date in UTC. Your build folder will be `builds/YYYY-MM-DD-title-slug/` where `title-slug` is the build title lowercased with spaces replaced by hyphens (e.g. `builds/2026-06-09-focus-timer/`).
+Get today's date in UTC. Your build folder: `builds/YYYY-MM-DD-title-slug/`
 
 ---
 
 ## Step 2 — Decide What to Build
 
-### 2a — Determine Tonight's Complexity Target
+### 2a — Read the Preference Prior
 
-Every night is **Ambitious Project**. There is no rotation and no override.
+Read `builds/index.md` for rows where `Your Rating` is a number. If 3 or more rated builds exist, read the ratings and notes together — the notes explain *why* a build scored as it did and are more actionable than the number alone. Use this as a soft prior when evaluating ideas: give weight to patterns the user has rated highly, and be skeptical of patterns they've rated poorly.
 
-**Ambitious Project** — The goal is not to complete a build. The goal is to make the user pause when they open it in the morning and think *"huh, that's genuinely cool"* or *"huh, I didn't know you could do that"* or *"huh, that's actually really useful."* That reaction is the success criterion. Everything else is in service of it.
+### 2b — Determine Tonight's Category
 
-Ambitious means: the idea is interesting enough that a competent developer would find it worth building. The implementation has depth — not just more files, but real design decisions, real tradeoffs, real cleverness in how the pieces fit together. It connects to real data where possible. It produces output that feels like a product, not a demo. It does something that would take a human multiple hours and does it in one command or one page load.
-
-The failure mode is building the obvious version of the idea. The obvious investment dashboard, the obvious note-taking CLI, the obvious vignette generator. Push past the first interpretation. Ask: what would make this surprising? What angle on this problem is non-obvious? What would make someone who builds software for a living stop and look twice?
-
-File count is not a measure of ambition. Judge by the quality of the reaction it would produce.
-
----
-
-### 2b — Read the Preference Prior
-
-Read `builds/index.md`. Find all rows where `Your Rating` contains a number (not `—`).
-
-**If 3 or more rated builds exist:**
-Read both `Your Rating` and `Rating Notes` for each rated build. Identify patterns — which
-categories, tech stacks, complexity levels, and themes appear in high-rated (8–10) vs.
-low-rated (1–4) builds. Pay particular attention to the notes: they explain *why* a build
-scored as it did and are more actionable than the number alone. Hold this as a soft prior:
-- When evaluating fresh ideas, give extra weight to ideas that share characteristics with high-rated builds on the "genuinely useful" criterion
-- Ideas that echo low-rated patterns — especially patterns the notes call out (e.g. "requires manual discipline", "too similar to existing tools") — need a stronger case to win
-- This is judgment, not arithmetic — a compelling idea in a "low-rated" category can still win outright
-
-**If fewer than 3 rated builds exist:** insufficient signal; skip this step and evaluate all ideas equally.
-
----
-
-### 2c — Determine Tonight's Category
-
-Category follows a fixed 9-day rotation based on day of year. This is independent of which builds have been merged — no need to check `builds/index.md` for category selection.
+Category follows a fixed 9-day rotation based on day of year:
 
 ```bash
 date +%j   # day of year, 1–365
@@ -130,301 +81,140 @@ date +%j   # day of year, 1–365
 | 7 | H — Developer Tool | Code formatter, schema inspector, diff tool, snippet library |
 | 8 | I — Life Admin Helper | Budget tracker, meal planner, habit log, checklist |
 
-The lottery and fresh idea generation both use tonight's category. The preference prior (Step 2b) informs idea evaluation within the category but does not override the rotation.
+### 2c — Run the Lottery
 
----
+Read `builds/ideas.md`. Collect all `pending` rows whose **Category** matches tonight's.
 
-### 2d — Run the Lottery
+**If empty:** go to Step 2d.
 
-Read `builds/ideas.md`. Collect all rows where Status = `pending`.
+**If entries exist:**
+1. Count those with a numeric `Your Rating` → call this `R`
+2. `lottery_chance = min(75, 25 + R * 2)` percent
+3. Roll a random integer 1–100
+   - **≤ lottery_chance → draw:** assign tickets equal to `Your Rating` (blank = 5), pick weighted-random, mark it `built` in `builds/ideas.md`, skip to Step 2e
+   - **> lottery_chance → fresh ideas:** go to Step 2d
 
-**Filter the pool:** Keep only ideas where:
-- **Category** matches tonight's chosen category (Step 2c).
+Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
-Every night is ambitious, so all complexity levels are eligible.
+### 2d — Generate Fresh Ideas
 
-**If the filtered pool is empty:** skip the lottery entirely. Go to Step 2e.
+Scan `builds/index.md` for the last 7 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
-**If the filtered pool has entries:**
-1. Count filtered ideas that have a numeric `Your Rating` (call this `R`).
-2. Compute tonight's lottery chance: `lottery_chance = min(75, 25 + R * 2)` percent.
-   - 0 rated → 25% &nbsp;&nbsp; 5 rated → 35% &nbsp;&nbsp; 10 rated → 45% &nbsp;&nbsp; 25+ rated → 75% (cap)
-3. Generate a random integer 1–100.
-   - **Roll ≤ lottery_chance → Lottery draw.** Proceed as follows:
-     1. For each idea in the filtered pool, compute tickets: `tickets = Your Rating` if rated; `tickets = 5` if blank.
-     2. Build a weighted pool: for each idea, add it to the pool `[tickets]` times.
-     3. Pick one entry from the pool at random. That idea is tonight's build.
-     4. Update its Status to `built` in `builds/ideas.md`.
-     5. Skip Step 2e. Go directly to Step 2f.
-   - **Roll > lottery_chance → Fresh ideas.** Go to Step 2e.
+Generate at least 3 candidate ideas in tonight's category. For each, ask:
 
-Record in `WhyThis.md` whether tonight's build came from the lottery or fresh generation, the roll, and the filtered pool size.
+- Is it genuinely useful — does it actively make the user's work or life better, or does it just fill a gap?
+- Is it self-contained and reversible? No cloud infrastructure, no unconfigured paid APIs.
+- Is it complete as delivered? Anything required for real usefulness must ship tonight.
+- Does it connect to real data where available? Check PROFILE.md's Data Sources section.
+- Is it novel? Not in `builds/index.md`, not trivially covered by tools already in the user's stack.
+- Is it achievable tonight, with the right stack from PROFILE.md, with testable core logic?
 
----
+Pick the strongest idea. Append non-winners to `builds/ideas.md` (new sequential ID, today's date, tonight's category, complexity `ambitious`, status `pending`, rating `—`). Do not add the winning idea.
 
-### 2e — Generate and Evaluate Fresh Ideas (Fresh Path Only)
+### 2e — Consult the Linked Idea Brief
 
-Before generating ideas, scan `builds/index.md` (the version read in Step 1) for the themes and topics of the last 7 builds. Note which subject areas are overrepresented — investing, git tooling, dashboards, etc. Fresh ideas should diversify away from recently covered ground, not just recently covered categories. The category rotation handles category diversity; you are responsible for topic diversity within the category.
+If the selected backlog row has a link in `Idea Brief`: read it fully before writing any code. Treat it as the durable product intent; the `PRD.md` is the implementation contract for this build. Preserve the central value proposition — if the full vision won't fit, take a thin but complete vertical slice. Record the brief path and any deviations in `WhyThis.md`.
 
-Generate at least 3 candidate ideas within tonight's chosen category.
+### 2f — Choose Stack and Deployment Model
 
-**Before evaluating anything, apply the "obvious version" filter.** For each idea, name the most obvious way to implement it — the version a developer would build in an afternoon without much thought. If that's what you'd build, the idea needs a better angle or should be dropped. The goal is to find the version that makes someone say *"oh, I hadn't thought of it that way"* — not the version that just gets the job done.
+**Stack:**
+- Browser tool / dashboard / game → Vanilla HTML/CSS/JS, `index.html` at root, Playwright tests
+- Data processing / CLI → Python 3 stdlib, pytest
+- Richer interactive app → React + Vite (only when vanilla JS would genuinely limit the idea), Vitest
+- Node.js utility → Jest or Vitest
+- MCP server → when the value is best exposed as callable tools across Claude contexts
 
-For each idea, evaluate:
+**Deployment model — decide before writing code:**
+- Runs on a schedule → Claude Code Routine
+- Responds to an event (session start, commit, file change) → Claude Code Hook
+- Invoked repeatedly in a coding session → Claude Code Skill
+- Exposes reusable tools → MCP server
 
-- **Impressive?** If this were working and in front of the user tomorrow morning, would they pause and think "huh, that's genuinely cool / impressive / useful"? Be honest. If the answer is "probably not," this idea does not win regardless of how well it scores elsewhere.
-- **Non-obvious angle?** Is this the first idea that comes to mind, or did it take real thought to find? The best builds often reframe the problem — connecting two things that don't normally connect, surfacing data the user has but never sees, automating something they do manually without realizing it could be automated.
-- **Self-contained?** No cloud infrastructure required, no unconfigured paid APIs
-- **Reversible?** Deleting the folder removes it entirely
-- **Complete in delivered state?** The build must be genuinely useful as delivered. Any capability required for real usefulness must be in scope tonight — not deferred to FutureFeatures.md. FutureFeatures.md is for enhancements to a working thing, not prerequisites for usefulness.
-- **Uses real data where it exists?** For productivity, data, and developer tools: check PROFILE.md's Data Sources section. If the user's data already exists somewhere accessible — GitHub, public APIs, files on disk — the build should connect to it rather than asking the user to re-enter it. Tools that pull from real sources deliver value automatically; tools that require manual maintenance often go unused.
-- **Novel?** Not substantially similar to something in `builds/index.md`, AND not trivially redundant with tools already in the user's daily stack (check PROFILE.md). Also: could this be replicated by a single ChatGPT or Claude prompt? If yes, the build has no durable value — find a version that requires code, persistence, real data integration, or automation that a prompt can't provide.
-- **Achievable?** Realistic scope for one night
-- **Right stack?** Matches the user's preferred tech from PROFILE.md
-- **Testable?** Core logic can be verified with automated tests
-
-Pick the idea that scores best overall. When two ideas are close, pick the one that would produce the more surprising result — surprising is better than safe. If no idea scores well on "impressive," generate more ideas rather than settling.
-
-**After choosing, append every non-winning candidate to `builds/ideas.md`** with:
-- A new sequential ID (increment from the last row)
-- Today's date
-- Tonight's category ID
-- Tonight's complexity target (`focused`, `solid`, or `ambitious`)
-- Idea Brief: `—` unless a durable brief already exists in `builds/idea-briefs/`
-- Status: `pending`
-- Your Rating: `—`
-- Rating Notes: `—`
-
-Only append ideas that aren't already present in the file. Do not add the winning idea.
-
----
-
-### 2f — Consult the Linked Idea Brief
-
-If the selected backlog row has a link in its `Idea Brief` column:
-
-1. Open and read the linked document in full before choosing the implementation
-   scope, technology, or folder structure.
-2. Treat the brief as the durable product intent and the dated build's `PRD.md`
-   as the implementation contract for this specific build.
-3. Reconcile the brief with `PROFILE.md`, current provider/tool capabilities,
-   the night's complexity target, and the practical-usefulness criteria.
-4. Preserve the brief's central value proposition. If the full vision cannot
-   fit, choose a thin but complete vertical slice rather than shipping only
-   infrastructure or deferring a prerequisite for usefulness.
-5. Record the brief path and any deliberate deviations in `WhyThis.md`. Explain
-   material scope differences in the build `PRD.md` under Scope Changes.
-
-If the `Idea Brief` value is `—`, continue normally. Do not invent requirements
-that are not supported by the backlog row, `PROFILE.md`, or current context.
-
----
-
-### 2g — Choose the Tech Stack and Deployment Model
-
-Based on the chosen idea and PROFILE.md preferences:
-
-**Implementation stack:**
-- **Single-use browser tool / dashboard / game:** Vanilla HTML/CSS/JS — `index.html` at root, Playwright for tests
-- **Data processing / automation / CLI:** Python 3 with stdlib; add dependencies only when necessary; pytest for tests
-- **Richer interactive app:** React + Vite only when complexity target is Ambitious and vanilla JS would be genuinely limiting; Vitest for tests
-- **Node.js utility:** When the task is clearly JS-ecosystem; Jest or Vitest for tests
-- **MCP server:** When the build's value is best exposed as a set of callable tools usable across Claude contexts — package it as an MCP server rather than a standalone script
-
-**Deployment model — ask this before writing code:**
-- **Does this run on a schedule?** → Design it as a Claude Code Routine rather than a manual script
-- **Does this respond to an event** (session start, file change, commit, session end)? → Design it as a Claude Code Hook
-- **Does this do something the user will invoke repeatedly in a coding session?** → Design it as a Claude Code Skill
-- **Does this expose reusable tools Claude should be able to call?** → Package it as an MCP server
-
-A Routine, Skill, Hook, or MCP server is almost always a better deployment target than a standalone script for productivity and developer tools. Choosing the right deployment model is part of the build, not an afterthought.
-
-Default toward the simpler tech stack — but never let "simpler" mean "avoids real integrations." Connecting to real data sources is not complexity; it is quality.
+A Routine, Skill, Hook, or MCP server is usually a better fit than a standalone script for productivity and developer tools.
 
 ---
 
 ## Step 3 — Create the Build Folder
 
-Create: `builds/YYYY-MM-DD-title-slug/` — lowercase the build title, replace spaces and special characters with hyphens. Example: "Focus Timer" → `builds/2026-06-09-focus-timer/`
+`builds/YYYY-MM-DD-title-slug/` — lowercase, hyphens for spaces.
 
-Create these files using the templates in `templates/` as starting points:
+Use templates from `templates/` as starting points:
 
-### Always Required
-| File | Template | Notes |
+| File | Required | Notes |
 |------|----------|-------|
-| `PRD.md` | `templates/PRD.md` | Write this BEFORE any code |
-| `WhyThis.md` | `templates/WhyThis.md` | Explain your specific reasoning |
-| `BUILD_LOG.md` | `templates/BUILD_LOG.md` | Start first entry now; add as you go |
-| `FutureFeatures.md` | `templates/FutureFeatures.md` | Write AFTER the build is done |
-
-### Required if a UI Exists
-| File | Template | Notes |
-|------|----------|-------|
-| `Manual.md` | `templates/Manual.md` | Required for any build with a screen |
-
-### Instead of All Other Files (Aborted Builds Only)
-| File | Notes |
-|------|-------|
-| `ABORTED.md` | See Abort Protocol below |
+| `PRD.md` | Always | Write before any code |
+| `WhyThis.md` | Always | Your specific reasoning |
+| `BUILD_LOG.md` | Always | Start now, add as you go |
+| `FutureFeatures.md` | Always | Write after the build |
+| `Manual.md` | If UI exists | Any build with a screen |
 
 ---
 
 ## Step 4 — Write the PRD First
 
-**Do not write code before the PRD is complete.**
+No code before the PRD is complete.
 
-If the selected idea has an Idea Brief, use it as an input now. Do not copy it
-wholesale: convert it into a current, achievable implementation specification
-for this dated build. Include an **Idea Brief Traceability** subsection naming:
-
-- the linked brief path;
-- the brief capabilities included in this build;
-- capabilities intentionally deferred;
-- any changed assumptions and why.
-
-The PRD is your specification. Fill in every section:
-- Goal (one sentence)
-- User Story (specific to this user's context)
-- Scope: In Scope and Out of Scope (name both)
-- Tech Stack (language, framework, dependencies, runtime requirement)
-- Data Structure (what data exists; how it is stored/structured)
-- Folder Structure (list every file you plan to create, including test files)
-- Testing Strategy (test framework, what will be tested, test file locations)
-- Success Criteria (3–5 specific, verifiable criteria — at least one is "all tests pass")
-
-Only when the PRD is complete should you write the first line of code.
+Fill every section: Goal (one sentence), User Story, Scope (in and out), Tech Stack, Data Structure, Folder Structure (every file including tests), Testing Strategy, Success Criteria (3–5 verifiable, at least one is "all tests pass").
 
 ---
 
 ## Step 5 — Build
 
-Follow `STANDARDS.md` throughout. Key rules:
+Follow `STANDARDS.md` throughout.
 
 **Always:**
-- Write complete, working code — no placeholder functions, no TODO stubs
-- Write tests alongside the code — not after (see Testing section below)
-- Log decisions and obstacles to `BUILD_LOG.md` as you go
-- Comment non-obvious logic; prefer readable over clever
-- Use `builds/YYYY-MM-DD-title-slug/` as root; never reference paths outside it
-
-**For HTML/CSS/JS:**
-- Single-file web apps: one `index.html` at the folder root with inlined CSS and JS
-- Multi-file: `src/` subfolder with a clear entry point
-- Must open directly in a browser — no build step required (unless Ambitious + React)
-- Tests: use Playwright in `tests/` subfolder
-
-**For Python:**
-- Entry point: `python3 main.py` or `python3 src/main.py`
-- Include `requirements.txt` even if empty (add `pytest` to it if using pytest)
-- Use type hints; handle common errors gracefully
-- Tests: use pytest in `tests/` subfolder
-
-**For Node.js / React:**
-- Include `package.json` with a working `start` and `test` script
-- Commit `package-lock.json` only if you actually ran `npm install`
-- Tests: Jest or Vitest in `tests/` or `src/__tests__/`
+- Complete, working code — no stubs, no TODOs
+- Tests written alongside code, not after
+- Log decisions and obstacles to `BUILD_LOG.md`
+- All files under `builds/YYYY-MM-DD-title-slug/` — never reference paths outside it
 
 **Never:**
 - Hardcode credentials, real personal data, or API keys
-- Make external HTTP calls to services not listed in PROFILE.md's Data Sources section
-- Import from or reference another build's folder
+- Make external HTTP calls to services not in PROFILE.md's Data Sources
+- Import from another build's folder
 - Use `eval()`, `exec()`, or user-controlled strings in shell calls
-- Default to `localStorage` when a real data source is available in PROFILE.md — connect to real data instead
-- Write tests to satisfy a count rather than verify behaviour — every test should correspond to a real failure mode
+- Write tests just to reach a count — every test should correspond to a real failure mode
 
-### Writing Tests
+**Tests — minimum 15, all must pass:**
 
-Tests are not optional. Write them as you build — not as an afterthought.
+| Stack | Framework | Test location | Run command |
+|-------|-----------|---------------|-------------|
+| Python | pytest | `tests/test_*.py` | `python -m pytest tests/ -v` |
+| Vanilla HTML/JS | Playwright | `tests/*.spec.js` | `npx playwright test` |
+| React/Vite | Vitest | `src/__tests__/` or `tests/` | `npx vitest run` |
+| Node.js | Jest | `tests/*.test.js` | `npx jest` |
 
-**Minimum test requirements by complexity:**
+Test core logic directly, cover the happy path, include edge cases and error states. For Playwright: use `playwright.config.js` with `testDir: './tests'` and a static file server or `file://` URLs.
 
-| Complexity | Minimum Tests | Coverage |
-|------------|---------------|----------|
-| Focused Utility | 5 tests | Core function(s) happy path + 2 edge cases |
-| Solid Feature | 10 tests | All main features, multiple edge cases, error states |
-| Ambitious Project | 15 tests | Full coverage of happy paths, edge cases, error states, and integration |
-
-**Test framework and location by stack:**
-
-| Stack | Framework | Install | Test file location | Run command |
-|-------|-----------|---------|-------------------|-------------|
-| Python | pytest | `pip install pytest` (add to requirements.txt) | `tests/test_*.py` | `python -m pytest tests/ -v` |
-| Vanilla HTML/JS | Playwright | `npm install @playwright/test && npx playwright install chromium` | `tests/*.spec.js` | `npx playwright test` |
-| React/Vite | Vitest | included with Vite | `src/__tests__/` or `tests/` | `npx vitest run` |
-| Node.js | Jest | `npm install --save-dev jest` | `tests/*.test.js` | `npx jest` |
-
-**What to test:**
-- Core logic functions (unit tests) — test the function directly, not just through UI
-- Happy path through the main user flow
-- At least one edge case (empty input, boundary values, invalid data)
-- Error handling (what happens when something goes wrong)
-
-**For browser apps (Playwright):** Write a `playwright.config.js` at the build folder root that sets `testDir: './tests'` and uses `webServer` pointing to a local static file server, OR use `file://` URLs directly in tests. Keep Playwright tests focused on verifiable behavior (element exists, text matches, interaction produces expected result).
-
-**Tests must pass before you proceed to Step 6.** If a test reveals a bug, fix the bug, not the test.
+Fix the code when tests fail, not the test.
 
 ---
 
 ## Step 6 — Run Tests
 
-Run the full test suite. Log the results in `BUILD_LOG.md`.
+Run the full suite. Log results in `BUILD_LOG.md`: `[HH:MM UTC] Tests: X passed, Y failed.`
 
-```bash
-# Python
-python -m pytest tests/ -v
-
-# Playwright
-npx playwright test
-
-# Vitest
-npx vitest run
-
-# Jest
-npx jest
-```
-
-**If tests fail:**
-1. Read the failure message carefully
-2. Fix the source code (not the test, unless the test itself is wrong)
-3. Re-run until all tests pass
-4. Log each fix in `BUILD_LOG.md`
-
-**If tests cannot be made to pass within reasonable effort** (i.e., a fundamental design issue was found):
-- Reduce scope in PRD.md — remove the broken feature, document why
-- Remove or skip the corresponding test (with a comment explaining why)
-- Mark the build `partial` in the index
-
-Log entry format: `[HH:MM UTC] Tests: X passed, Y failed. [Outcome and action taken.]`
+If tests cannot be made to pass: reduce scope in PRD.md, remove or skip the corresponding test with a comment, mark the build `partial`.
 
 ---
 
-## Step 7 — Verify Against Success Criteria
+## Step 7 — Verify
 
-Return to `PRD.md` success criteria. For each criterion, explicitly confirm it is met. At minimum, one criterion should be "all tests pass" — verify it here.
-
-If a criterion is not met:
-- Fix the code if fixable within scope
-- Or document the shortfall in `BUILD_LOG.md` with a specific explanation and mark the build `partial` in the index
-
-Run the security checklist from `STANDARDS.md` before moving to Step 8.
-
-Before moving on: confirm that real data integrations in PROFILE.md were used where applicable, and that tests reflect genuine coverage of the build's failure modes. If either falls short, address it now.
+Check each PRD success criterion. Run the `STANDARDS.md` security checklist. If a criterion isn't met: fix it or document the shortfall and mark `partial`.
 
 ---
 
-## Step 8 — Write Remaining Documentation
-
-After tests pass and success criteria are verified:
+## Step 8 — Documentation
 
 1. Complete `FutureFeatures.md` — at least 5 concrete suggestions
-2. Complete `Manual.md` (if build has a UI) — include how to run tests
-3. Add final `BUILD_LOG.md` entry: `Build complete. Success criteria reviewed. All tests passing.`
+2. Complete `Manual.md` if the build has a UI
+3. Final `BUILD_LOG.md` entry: `Build complete. Success criteria reviewed. All tests passing.`
 
 ---
 
 ## Step 9 — Update builds/index.md
 
-Because each build branch starts from `main` (which may be weeks behind), first resync `builds/index.md` from the most recent open PR branch before appending tonight's row:
+Resync from the most recent open PR branch first:
 
 ```bash
 RECENT_BRANCH=$(gh pr list --state open --json headRefName,createdAt \
@@ -435,49 +225,36 @@ if [ -n "$RECENT_BRANCH" ]; then
 fi
 ```
 
-This ensures the index accumulates across all nightly builds — each branch carries the full history forward, regardless of how many PRs are unmerged.
+Append one row to the Full Catalog table. Update the Stats block.
 
-Now append one new row to the Full Catalog table and update the Stats block.
+Columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
 
-Table columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
-
-Leave `Your Rating` and `Rating Notes` as `—`. The user fills these in after reviewing the build.
-Set `Complexity` to `focused`, `solid`, or `ambitious` to match what was built.
-
-Status: `complete`, `partial`, or `aborted`
-
-Do not rewrite or delete any existing rows.
+Set Complexity to `ambitious`. Leave `Your Rating` and `Rating Notes` as `—`. Status: `complete`, `partial`, or `aborted`. Never rewrite existing rows.
 
 ---
 
 ## Step 10 — Commit, Push, and Open Pull Request
 
-**Branch:** If currently on `main`, create a dedicated build branch before staging:
+If on `main`, create a branch first:
 ```bash
 git checkout -b build/YYYY-MM-DD-title-slug
 ```
-If already on a non-main branch (Routines sessions start on their own branch), stay on it.
 
-Stage only:
-- Everything in `builds/YYYY-MM-DD-title-slug/`
-- `builds/index.md`
-- `builds/ideas.md` if modified by lottery status updates or fresh idea appends
+Stage only: the build folder, `builds/index.md`, `builds/ideas.md` if modified.
 
-Do not stage any other files.
-
-Commit message format:
+Commit:
 ```
 build(YYYY-MM-DD): [Title] — [Category ID + Name]
 
-[One sentence describing what was built and what it does.]
+[One sentence: what was built and what it does.]
 ```
 
-Push to origin:
+Push:
 ```bash
 git push -u origin $(git branch --show-current)
 ```
 
-**Open a pull request targeting `main`:**
+Open PR targeting `main`:
 ```bash
 gh pr create \
   --base main \
@@ -497,44 +274,21 @@ Tests: X passed, 0 failed
 - \`Manual.md\` — usage instructions (if applicable)"
 ```
 
-If push fails, wait 4 seconds and retry once. If it fails again, log the failure in `BUILD_LOG.md` and stop — do not force push. Do not open a PR if the push failed.
+If push fails: wait 4 seconds, retry once. If it fails again, log it and stop — no force push.
 
 ---
 
 ## Abort Protocol
 
-If at any point a build cannot be completed safely and reversibly, stop immediately.
+Abort if:
+- The build requires modifying files outside the build folder and `builds/index.md`
+- Credentials required aren't in the environment
+- The build can't be self-contained
+- A hard standard from `STANDARDS.md` can't be met
 
-**Abort if:**
-- The build would require modifying files outside `builds/YYYY-MM-DD-title-slug/` and `builds/index.md`
-- The build requires credentials not already in the environment
-- The build cannot be self-contained (requires external infrastructure to function)
-- A hard standard from `STANDARDS.md` cannot be met and there is no safe workaround
-
-**When aborting:**
-1. Create `builds/YYYY-MM-DD-title-slug/ABORTED.md` with:
-   - Date and time (UTC)
-   - What you were attempting to build
-   - The specific reason for aborting
-   - What would be needed to attempt it safely in the future
+When aborting:
+1. Create `ABORTED.md` in the build folder: date/time, what was attempted, why aborted, what would be needed to attempt it safely
 2. Update `builds/index.md` with status `aborted`
-3. Commit and push with message: `build(YYYY-MM-DD): ABORTED — [brief reason]`
+3. Commit and push: `build(YYYY-MM-DD): ABORTED — [brief reason]`
 
-Never abort silently. The abort commit is the deliverable.
-
----
-
-## Tone and Craft
-
-The user opens each build the morning after. The question they're asking is not "does this work?" — it's "huh, is this interesting?" The best outcome is that they pause, look at what was built, and feel something: impressed, delighted, genuinely glad it exists. That's the bar.
-
-This does not mean flashy. It means *considered*. A build that makes one thing unexpectedly easy, or surfaces something the user has but never sees clearly, or automates something they do manually without realizing it could be automated — that's a win. A technically complete build that produces a "yeah, okay" reaction is not.
-
-The enemy is the obvious version. The obvious dashboard, the obvious CLI, the obvious generator. Push past it. Ask what angle on the problem is non-obvious. Ask what the user would not have thought to ask for but would immediately want once they saw it. Ask what this could do that a quick prompt to an LLM couldn't.
-
-Four things to get right in every build:
-
-- **The idea.** This is where most of the value comes from. A mediocre implementation of a great idea beats a polished implementation of a dull one. Spend real time on idea selection. Don't settle.
-- **Real data over manual entry.** If the user's data exists somewhere accessible — GitHub, public APIs, files on disk — the build should work with it. Tools that pull from real sources deliver value automatically; tools that require the user to maintain them manually often go unused.
-- **Honest tests.** Test the failure modes that actually matter for this logic. Tests that exist only to reach a minimum count add noise, not confidence.
-- **Complete scope.** What ships must be genuinely useful in its delivered state. Features that are prerequisites for usefulness belong in this build, not in FutureFeatures.md.
+Never abort silently.
