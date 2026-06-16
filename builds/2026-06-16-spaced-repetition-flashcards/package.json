@@ -1,0 +1,12 @@
+{
+  "name": "spaced-repetition-flashcards",
+  "version": "1.0.0",
+  "description": "Browser-based SM-2 spaced repetition flashcard app with Bayesian stats, Python research patterns, and Git workflow decks",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
+
