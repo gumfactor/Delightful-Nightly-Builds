@@ -20,7 +20,7 @@ filtered pool is empty, Claude generates fresh ideas instead.
 When a draw does happen, each matching idea's probability is proportional to its ticket count:
 
 | Your Rating | Tickets in Draw |
-|-------------|------------------|
+|-------------|-----------------|
 | 1 | 1 — much less likely |
 | 2–3 | 2–3 |
 | — (blank) or 5 | 5 — default |
@@ -39,20 +39,25 @@ always generates fresh ideas.
 | ID | Date Added | Category | Complexity | Title | Description | Idea Brief | Your Rating | Rating Notes | Status |
 |----|------------|----------|------------|-------|-------------|------------|-------------|--------------|--------|
 | 1 | 2026-06-06 | F | ambitious | The Canada List CSV Quality Inspector | Browser-based tool to inspect and validate CSV uploads for The Canada List pipeline — flags malformed rows, missing required columns, encoding issues, and duplicate entries before ingestion | — | 7 | Could be very useful if implemented properly — unclear what role Playwright plays here vs. a pure Python validator | pending |
-| 2 | 2026-06-06 | A | ambitious | Investment Research Dashboard | Comprehensive personal finance dashboard — portfolio tracking, watchlist, research notes, and performance over time; not just an investing-interest toy but a genuinely useful daily tool | — | 6 | Love the idea of a comprehensive investment dashboard, but not just for investing interest — that framing is less exciting | skipped |
+| 2 | 2026-06-06 | A | ambitious | Investment Research Dashboard | Comprehensive personal finance dashboard — portfolio tracking, watchlist, research notes, and performance over time; not just an investing-interest toy but a genuinely useful daily tool | — | 6 | Love the idea of a comprehensive investment dashboard, but not just for investing interest — that framing is less exciting | pending |
 | 3 | 2026-06-06 | A | ambitious | Lab Research Project Tracker | Dashboard for tracking neuroscience lab projects, milestones, team tasks, and publication status | — | 4 | No need — already use Teamwork.com for project tracking | pending |
 | 4 | 2026-06-09 | B | ambitious | Cross-Agent Project Activity Workstreams | Automatically correlate Git, GitHub, and AI-agent activity into evidence-backed workstreams that can generate accurate standups, resumptions, handoffs, timelines, and decision histories across tools | [Brief](idea-briefs/cross-agent-project-activity-workstreams.md) | 9 | — | pending |
 | 5 | 2026-06-10 | A | ambitious | GitHub Repository Health Scorecard | Python script using GITHUB_TOKEN to pull all user repos and generate an HTML health scorecard: last commit date, open issues/PRs, CI status, contributor count, and a health score per repo | — | — | — | pending |
 | 6 | 2026-06-10 | A | ambitious | Open-Meteo Activity Planner | Vanilla HTML/JS dashboard pulling from Open-Meteo API for Toronto — 7-day forecast with activity suitability scores for running, golf, and boating; no auth required | — | — | — | pending |
 | 7 | 2026-06-11 | B | focused | Morning Briefing | Unified daily digest that combines the Git Standup Reporter, Investment Portfolio Snapshot, and GitHub Repository Health Dashboard into a single morning report — commits from yesterday, portfolio overnight moves, and any repos that have gone quiet | — | 8 | — | pending |
-| 8 | 2026-06-14 | A | ambitious | Investment Research Platform | Unified HTML report that merges live watchlist metrics (prices, sparklines, 52W range, P/E, analyst target) with thesis journal entries per ticker — showing the price when each thesis was written and the % move since, so you can evaluate your reasoning against outcomes at a glance. Builds on the Jun 10 Portfolio Snapshot as the base with the Jun 14 Thesis Journal's price-at-note logic integrated as a data layer. | — | 8 | Combines the two strongest investment builds into something with genuine daily utility — the accountability loop between thesis and outcome is the unique value | skipped |
+| 8 | 2026-06-14 | A | ambitious | Investment Research Platform | Unified HTML report that merges live watchlist metrics (prices, sparklines, 52W range, P/E, analyst target) with thesis journal entries per ticker — showing the price when each thesis was written and the % move since, so you can evaluate your reasoning against outcomes at a glance. Builds on the Jun 10 Portfolio Snapshot as the base with the Jun 14 Thesis Journal's price-at-note logic integrated as a data layer. | — | 8 | Combines the two strongest investment builds into something with genuine daily utility — the accountability loop between thesis and outcome is the unique value | built |
+| 9 | 2026-06-15 | D | focused | AI-Powered Exam Question Generator | Python CLI that uses the Anthropic API to generate multiple-choice and short-answer exam questions on any topic at specified Bloom's taxonomy levels, with answer keys and rubrics — directly reduces a recurring high-effort teaching task | — | — | — | pending |
+| 10 | 2026-06-15 | D | focused | Research Hypothesis Combinatorics Tool | Python CLI that takes two neuroscience constructs from predefined concept banks and generates testable research hypotheses with suggested designs, populations, and measures — useful for brainstorming and grant ideation | — | — | — | pending |
+| 11 | 2026-06-15 | D | solid | Grant Specific Aims Drafter | Python CLI using the Anthropic API to draft an NIH-formatted Specific Aims page from structured researcher input (title, gap, hypothesis, aims, innovation) — could save 3-5 hours per grant application cycle | — | — | — | pending |
+| 12 | 2026-06-16 | E | ambitious | Interactive Git Decision Tree Reference | Visual, branching browser guide to git workflows organized by real-world scenario ("I need to undo a commit", "I need to save work before switching branches") — decision tree UI leads to exact commands with explanations | — | — | — | pending |
+| 13 | 2026-06-16 | E | focused | Python Research Cookbook | Searchable, copy-on-click code snippet library for common Python patterns in research: data loading, pandas operations, scipy stats, matplotlib, pathlib, logging — single HTML file, filterable by category, syntax-highlighted | — | — | — | pending |
 
 ---
 
 ## Status Key
 
 | Value | Meaning |
-|-------|----------|
+|-------|---------|
 | `pending` | Available for lottery draws |
 | `built` | Already implemented — excluded from future draws |
 | `skipped` | You've decided not to build this — excluded from future draws |

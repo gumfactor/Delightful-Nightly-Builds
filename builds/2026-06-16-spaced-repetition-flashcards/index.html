@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards — Spaced Repetition</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --accent: #58a6ff;
+      --border: #30363d;
+      --again: #da3633;
+      --hard: #d29922;
+      --good: #3fb950;
+      --easy: #58a6ff;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .deck-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .deck-tab {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .deck-tab:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .deck-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0d1117;
+    }
+
+    .stats-bar {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 16px;
+      display: flex;
+      gap: 20px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .stat-num {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .card-wrapper {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+    }
+
+    .card-label {
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    #cardFront {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    #cardBack {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: var(--text-dim);
+      white-space: pre-wrap;
+    }
+
+    .btn-reveal {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 8px 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .btn-reveal:hover { background: var(--border); }
+
+    .rating-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-rating {
+      flex: 1;
+      min-width: 72px;
+      padding: 9px 10px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+
+    .btn-rating:hover { opacity: 0.85; }
+    .btn-again { background: var(--again); color: #fff; }
+    .btn-hard  { background: var(--hard);  color: #0d1117; }
+    .btn-good  { background: var(--good);  color: #0d1117; }
+    .btn-easy  { background: var(--easy);  color: #0d1117; }
+
+    .done-screen {
+      text-align: center;
+      width: 100%;
+      max-width: 600px;
+      padding: 48px 24px;
+    }
+
+    .done-screen h2 {
+      font-size: 1.3rem;
+      color: var(--good);
+      margin-bottom: 10px;
+    }
+
+    .done-screen p {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 480px) {
+      header { gap: 10px; }
+      .card-panel { padding: 20px 16px; }
+      .btn-rating { min-width: 60px; padding: 8px 6px; font-size: 0.8rem; }
+      #cardFront { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Flashcards</h1>
+  <nav class="deck-tabs" id="deckTabs" aria-label="Select deck"></nav>
+</header>
+
+<div class="stats-bar" data-testid="stats-bar">
+  <span>Due: <span class="stat-num" id="statDue" data-testid="stat-due">0</span></span>
+  <span>New: <span class="stat-num" id="statNew" data-testid="stat-new">0</span></span>
+  <span>Done: <span class="stat-num" id="statDone" data-testid="stat-done">0</span></span>
+</div>
+
+<main class="main" id="mainArea">
+  <div class="card-wrapper" id="cardWrapper">
+    <div class="card-panel" id="cardPanel">
+      <span class="card-label" id="cardPhase">Question</span>
+      <div id="cardFront" data-testid="card-front"></div>
+      <button class="btn-reveal" id="revealBtn" data-testid="reveal-btn">Show Answer</button>
+      <div class="divider hidden" id="answerDivider"></div>
+      <div id="cardBack" class="hidden" data-testid="card-back"></div>
+    </div>
+    <div class="rating-row hidden" id="ratingButtons" data-testid="rating-buttons">
+      <button class="btn-rating btn-again" data-rating="0" data-testid="btn-again">Again</button>
+      <button class="btn-rating btn-hard"  data-rating="2" data-testid="btn-hard">Hard</button>
+      <button class="btn-rating btn-good"  data-rating="3" data-testid="btn-good">Good</button>
+      <button class="btn-rating btn-easy"  data-rating="5" data-testid="btn-easy">Easy</button>
+    </div>
+  </div>
+
+  <div class="done-screen hidden" id="doneScreen" data-testid="done-screen">
+    <h2>All done for now</h2>
+    <p id="doneMsg">Come back tomorrow for more cards.</p>
+  </div>
+</main>
+
+<script>
+  // ─── Deck Data ──────────────────────────────────────────────────────────────
+
+  window.DECKS = {
+    bayesian: {
+      name: 'Bayesian Stats',
+      cards: [
+        {
+          id: 'b01',
+          front: "What is Bayes' theorem?",
+          back: "P(H|D) = [P(D|H) × P(H)] / P(D)\n\nPosterior ∝ likelihood × prior. The probability of a hypothesis given data equals how likely the data is under that hypothesis, scaled by the prior and normalized by the total evidence."
+        },
+        {
+          id: 'b02',
+          front: "What is a prior distribution?",
+          back: "Your beliefs about a parameter before seeing data. Can be informative (based on prior research), weakly informative (regularizing constraint), or non-informative (flat/diffuse).\n\nThe choice of prior is explicit and principled — unlike hidden frequentist assumptions."
+        },
+        {
+          id: 'b03',
+          front: "What is the posterior distribution?",
+          back: "P(θ|data) ∝ P(data|θ) × P(θ)\n\nYour updated beliefs after combining prior knowledge with observed data. The full posterior distribution summarizes all remaining uncertainty about the parameter θ."
+        },
+        {
+          id: 'b04',
+          front: "What is the likelihood function?",
+          back: "P(data|θ) — the probability of observing the data given a specific parameter value θ.\n\nTreats data as fixed and θ as variable. Central to both Bayesian and frequentist inference but plays different roles in each."
+        },
+        {
+          id: 'b05',
+          front: "What is a credible interval?",
+          back: "A 95% credible interval [a, b] means: P(a ≤ θ ≤ b | data) = 0.95\n\nThe parameter has a 95% probability of lying within that range — directly interpretable. Unlike frequentist confidence intervals, which describe the procedure, not the parameter."
+        },
+        {
+          id: 'b06',
+          front: "What is a Bayes Factor?",
+          back: "BF₁₀ = P(data|H₁) / P(data|H₀)\n\nQuantifies relative evidence: BF > 3 = moderate, > 10 = strong, > 30 = very strong. BF < 1/3 favors H₀.\n\nSensitive to prior specification on model parameters — not a free lunch over p-values."
+        },
+        {
+          id: 'b07',
+          front: "What is MCMC?",
+          back: "Markov Chain Monte Carlo — algorithms that draw samples from posterior distributions that can't be computed analytically.\n\nCommon variants: Metropolis-Hastings, Gibbs sampling, Hamiltonian Monte Carlo (HMC), NUTS. The samples approximate the full posterior shape."
+        },
+        {
+          id: 'b08',
+          front: "What is a conjugate prior?",
+          back: "A prior that produces a posterior from the same distributional family, enabling analytic (closed-form) computation without MCMC.\n\nClassic example: Beta prior + Binomial likelihood → Beta posterior.\n\nConvenient but limits flexibility to specific likelihood forms."
+        },
+        {
+          id: 'b09',
+          front: "What is the Beta distribution used for in Bayesian analysis?",
+          back: "Modeling probability parameters bounded between 0 and 1.\n\nBeta(α, β) has mean α/(α+β) and mode (α−1)/(α+β−2). Beta(1,1) is the flat uniform prior.\n\nConjugate prior for the Binomial likelihood — the posterior after n trials with k successes is Beta(α+k, β+n−k)."
+        },
+        {
+          id: 'b10',
+          front: "What is the difference between MAP and the posterior mean?",
+          back: "MAP (Maximum A Posteriori) = the mode of the posterior — the single most likely parameter value.\n\nPosterior mean = the expected value, averaging over the full distribution.\n\nMAP can be misleading for skewed or multimodal posteriors. Posterior mean better reflects overall uncertainty."
+        },
+        {
+          id: 'b11',
+          front: "What is a hyperparameter in a Bayesian model?",
+          back: "A parameter of a prior distribution. In a hierarchical model, group-level parameters are hyperparameters — they can themselves receive hyperpriors.\n\nThis creates partial pooling: units with little data borrow strength from the group, shrinking toward the group mean."
+        },
+        {
+          id: 'b12',
+          front: "What is a hierarchical (multilevel) Bayesian model?",
+          back: "A model where individual-level parameters are drawn from a group-level distribution.\n\nEnables partial pooling: groups with little data borrow strength from the population rather than being estimated independently.\n\nMore principled than complete pooling (one estimate) or no pooling (independent estimates)."
+        },
+        {
+          id: 'b13',
+          front: "What is the posterior predictive distribution?",
+          back: "P(ỹ|data) = ∫ P(ỹ|θ) P(θ|data) dθ\n\nDistribution of new observations after marginalizing over posterior uncertainty in θ.\n\nUsed for prediction (accounts for parameter uncertainty) and posterior predictive checking (comparing simulated data to observed)."
+        },
+        {
+          id: 'b14',
+          front: "What is posterior predictive checking?",
+          back: "Simulating new datasets from the posterior predictive distribution and comparing them to the observed data using summary statistics (means, variances, extremes, quantiles).\n\nLarge discrepancies reveal model misfit — the model can't generate data that looks like what you observed."
+        },
+        {
+          id: 'b15',
+          front: "What is the NUTS sampler?",
+          back: "No-U-Turn Sampler — an adaptive extension of HMC (Hamiltonian Monte Carlo) that automatically tunes step size and trajectory length.\n\nAvoids the inefficient back-and-forth of Metropolis-Hastings. Default sampler in Stan and PyMC. Especially efficient for high-dimensional, correlated posteriors."
+        },
+        {
+          id: 'b16',
+          front: "What is the Dirichlet distribution?",
+          back: "The multivariate generalization of the Beta distribution. Parameterized by vector α.\n\nModels probability vectors (values in [0,1] that sum to 1). Used for topic model mixing weights, multinomial category probabilities.\n\nConjugate prior for the Multinomial likelihood."
+        },
+        {
+          id: 'b17',
+          front: "What is R-hat (R̂)?",
+          back: "Gelman-Rubin convergence diagnostic. Compares variance within MCMC chains to variance between chains.\n\nValues near 1.0 indicate chains have converged to the same distribution. R̂ > 1.01 (modern threshold) or > 1.05 (traditional) suggests inadequate mixing — run chains longer or reparameterize."
+        },
+        {
+          id: 'b18',
+          front: "What is Effective Sample Size (ESS) in MCMC?",
+          back: "The number of independent samples equivalent in information to your autocorrelated MCMC draws.\n\nESS = N / (1 + 2 × Σ autocorrelations)\n\nTarget ESS > 400 for stable posterior summaries. Low ESS → high Monte Carlo error in estimates. Reported by ArviZ, Stan, PyMC."
+        },
+        {
+          id: 'b19',
+          front: "What is a Gaussian Process (GP) prior?",
+          back: "A prior over functions: any finite set of function values is jointly Gaussian, defined by a mean function μ(x) and covariance (kernel) function k(x, x').\n\nUsed for flexible nonparametric regression — fits the data while quantifying uncertainty over the entire function, not just a finite set of parameters."
+        },
+        {
+          id: 'b20',
+          front: "How does Bayesian probability differ from frequentist probability?",
+          back: "Bayesian: probability is a degree of belief, updated as evidence arrives. Parameters have distributions; you make direct probability statements about them.\n\nFrequentist: probability is the long-run relative frequency in repeated experiments. Parameters are fixed (unknown); you make statements about the procedure, not the parameter."
+        }
+      ]
+    },
+
+    python: {
+      name: 'Python Research',
+      cards: [
+        {
+          id: 'p01',
+          front: "How do you read a CSV with pandas and handle encoding?",
+          back: "df = pd.read_csv('file.csv', encoding='utf-8', on_bad_lines='warn')\n\nAlways specify encoding explicitly. Use encoding_errors='replace' for corrupt bytes. Check df.shape and df.dtypes immediately after loading to catch silent parse errors."
+        },
+        {
+          id: 'p02',
+          front: "How do you filter DataFrame rows efficiently?",
+          back: "# Simple condition\ndf[df['col'] > threshold]\n\n# Multiple conditions\ndf[(df['a'] > 0) & (df['b'] < 10)]\n\n# Readable with local vars\ndf.query('col > @threshold and status == \"active\"')\n\nNever iterate rows — vectorized operations are orders of magnitude faster."
+        },
+        {
+          id: 'p03',
+          front: "How do you group and summarize a DataFrame?",
+          back: "df.groupby('group')['value'].agg(['mean', 'std', 'count'])\n\nFlatten MultiIndex: .reset_index()\nMultiple columns: .groupby(['a','b'])['v'].mean()\nAdd observed=True for categorical keys to suppress FutureWarning."
+        },
+        {
+          id: 'p04',
+          front: "What is the idiomatic pattern for handling missing data?",
+          back: "# Audit\nprint(df.isnull().sum())\n\n# Drop rows missing required fields\ndf = df.dropna(subset=['required_col'])\n\n# Fill with central tendency\ndf['col'] = df['col'].fillna(df['col'].median())\n\nAlways log how many rows were affected — silent drops hide data quality issues."
+        },
+        {
+          id: 'p05',
+          front: "How do you cache expensive computations between runs?",
+          back: "import pickle\n\n# Save\npickle.dump(result, open('cache.pkl', 'wb'))\n\n# Load\nresult = pickle.load(open('cache.pkl', 'rb'))\n\nFor numpy arrays, use joblib.dump/load (faster, handles memory maps). Add a version tag to the filename (e.g., cache_v2.pkl) to avoid stale cache bugs."
+        },
+        {
+          id: 'p06',
+          front: "How do you run a one-way ANOVA in scipy?",
+          back: "from scipy.stats import f_oneway\n\nF, p = f_oneway(group1, group2, group3)\n\nReturns F-statistic and p-value. Each group is a 1D array of observations. For post-hoc tests after a significant result, use statsmodels.stats.multicomp.pairwise_tukeyhsd."
+        },
+        {
+          id: 'p07',
+          front: "How do you compute Pearson correlation with a p-value?",
+          back: "from scipy.stats import pearsonr\n\nr, p = pearsonr(x, y)\n\nFor non-normal data: spearmanr or kendalltau. Always remove NaN rows from both arrays together before calling (pearsonr does not handle NaN). Check len(x) == len(y)."
+        },
+        {
+          id: 'p08',
+          front: "What is the argparse boilerplate for a research script?",
+          back: "import argparse\n\nparser = argparse.ArgumentParser(description='What the script does')\nparser.add_argument('--input',  required=True,  help='Input CSV path')\nparser.add_argument('--output', default='out.csv', help='Output path')\nparser.add_argument('--alpha',  type=float, default=0.05)\nargs = parser.parse_args()\n\nAlways put under: if __name__ == '__main__':"
+        },
+        {
+          id: 'p09',
+          front: "How do you create a figure with multiple subplots in matplotlib?",
+          back: "fig, axes = plt.subplots(2, 2, figsize=(12, 8))\n\naxes[0, 0].plot(x, y, label='series')\naxes[0, 0].set_title('Title')\n\nfig.tight_layout()           # prevent overlap\nfig.savefig('fig.png', dpi=150, bbox_inches='tight')\n\nUse axes.flat to iterate all subplots in a loop."
+        },
+        {
+          id: 'p10',
+          front: "What is the pathlib pattern for file discovery and path handling?",
+          back: "from pathlib import Path\n\ndata_dir = Path('data')\nfiles = sorted(data_dir.glob('*.csv'))\n\nfor f in files:\n    stem = f.stem           # filename without extension\n    out  = f.with_suffix('.json')\n\nSafer than os.path string concatenation. Works on Windows and Unix."
+        },
+        {
+          id: 'p11',
+          front: "How do you add structured logging to a research script?",
+          back: "import logging\n\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s %(levelname)s %(message)s'\n)\nlogger = logging.getLogger(__name__)\n\nlogger.info('Processing %d rows', n)\nlogger.warning('Skipped %d malformed rows', bad)\n\nNever use print() in production scripts — logging is filterable and timestamped."
+        },
+        {
+          id: 'p12',
+          front: "What are Python type hints for function signatures?",
+          back: "def analyze(\n    data: list[float],\n    alpha: float = 0.05,\n    label: str | None = None\n) -> dict[str, float]:\n\nType hints are not enforced at runtime but enable editor autocomplete, mypy static checks, and serve as inline documentation for complex signatures."
+        },
+        {
+          id: 'p13',
+          front: "How do you write a pytest fixture for shared test setup?",
+          back: "@pytest.fixture\ndef sample_df():\n    return pd.DataFrame({'x': [1, 2, 3], 'y': [4, 5, 6]})\n\ndef test_mean(sample_df):\n    assert sample_df['x'].mean() == 2.0\n\nUse scope='module' for expensive setup (database connection, large file load). Fixtures compose: a fixture can depend on another fixture."
+        },
+        {
+          id: 'p14',
+          front: "How do you measure elapsed time for a slow operation?",
+          back: "import time\n\nstart = time.perf_counter()\ndo_expensive_work()\nelapsed = time.perf_counter() - start\n\nlogger.info(f'Took {elapsed:.2f}s')\n\nUse time.perf_counter() (high-resolution wall time), not time.time() (susceptible to NTP clock adjustments during long runs)."
+        },
+        {
+          id: 'p15',
+          front: "How do you safely write a JSON output file?",
+          back: "import json\nfrom pathlib import Path\n\nPath('output.json').write_text(\n    json.dumps(result, indent=2, default=str)\n)\n\ndefault=str handles datetime objects and numpy types that aren't JSON-serializable. Use ensure_ascii=False to preserve Unicode. Prefer write_text over open() for one-liners."
+        }
+      ]
+    },
+
+    git: {
+      name: 'Git & GitHub',
+      cards: [
+        {
+          id: 'g01',
+          front: "How do you undo the last commit but keep changes staged?",
+          back: "git reset --soft HEAD~1\n\nThe commit is removed; all changes return to the index (staging area) ready for a new commit.\n\nUse when: you committed too early, want to rewrite the commit message, or want to squash before pushing."
+        },
+        {
+          id: 'g02',
+          front: "How do you undo the last commit and unstage the changes?",
+          back: "git reset HEAD~1\n\n(Mixed reset — the default.) The commit is removed; changes return to working directory as modified-but-unstaged files.\n\nUse when: you want to re-examine what you changed before re-staging selectively."
+        },
+        {
+          id: 'g03',
+          front: "How do you discard all unstaged changes to tracked files?",
+          back: "git restore .           # modern (Git 2.23+)\ngit checkout .          # legacy\n\nIRREVERSIBLE — changes are gone, nothing in staging.\n\nTo also remove untracked files: git clean -fd\nTo preview what clean would remove: git clean -nfd"
+        },
+        {
+          id: 'g04',
+          front: "How do you stash changes and restore them later?",
+          back: "git stash                           # save to stash\ngit stash push -m 'WIP: feature'    # save with label\ngit stash list                      # see all stashes\ngit stash pop                       # restore and remove\ngit stash apply stash@{1}           # restore, keep in stash\ngit stash drop stash@{0}            # delete specific stash"
+        },
+        {
+          id: 'g05',
+          front: "How do you create and switch to a new branch in one step?",
+          back: "git switch -c new-branch    # modern (Git 2.23+)\ngit checkout -b new-branch  # legacy, same effect\n\nBoth create the branch from HEAD and switch to it.\n\nTo create from a specific commit: git switch -c new-branch <sha>"
+        },
+        {
+          id: 'g06',
+          front: "How do you inspect a stash without applying it?",
+          back: "git stash show -p stash@{0}   # full diff\ngit stash show stash@{0}      # just file list\n\nReplace {0} with the stash index from git stash list.\n\nTo see all stashes at once: git stash list --stat"
+        },
+        {
+          id: 'g07',
+          front: "How do you maintain a clean linear history when integrating a feature branch?",
+          back: "# On feature branch:\ngit rebase main\n\n# Then on main:\ngit merge --ff-only feature-branch\n\nFast-forward merge fails if divergence remains (safety net). Result: linear history with no merge commits.\n\nAlternative: git merge --squash feature-branch (all changes as one commit)"
+        },
+        {
+          id: 'g08',
+          front: "How do you see what commits are on your branch but not on main?",
+          back: "git log main..HEAD --oneline\n\nReads as: 'commits reachable from HEAD but not from main'.\n\nReverse (what main has that your branch lacks):\ngit log HEAD..main --oneline\n\nWith diff stats: git log main..HEAD --oneline --stat"
+        },
+        {
+          id: 'g09',
+          front: "How do you find which commit introduced a bug?",
+          back: "git bisect start\ngit bisect bad HEAD\ngit bisect good <known-good-sha>\n\nGit checks out midpoints; you test each and run:\ngit bisect good   # or: git bisect bad\n\nWhen done: git bisect reset\n\nAutomate with: git bisect run ./test_script.sh"
+        },
+        {
+          id: 'g10',
+          front: "How do you search git history for a string?",
+          back: "# In commit messages:\ngit log --all --grep='keyword' --oneline -i\n\n# In code changes (pickaxe — finds when a string was added/removed):\ngit log -S 'function_name' --oneline\n\n# Regex pickaxe:\ngit log -G 'regex_pattern' --oneline"
+        },
+        {
+          id: 'g11',
+          front: "How do you see who last changed each line of a file?",
+          back: "git blame filename\n\nShows: commit hash, author, timestamp, line content for each line.\n\nLimit to a range: git blame -L 20,40 filename\nIgnore whitespace: git blame -w filename\n\nUseful for: understanding why a line exists before changing it."
+        },
+        {
+          id: 'g12',
+          front: "How do you rename a branch locally and on the remote?",
+          back: "# Rename local branch\ngit branch -m old-name new-name\n\n# Push new name to remote\ngit push -u origin new-name\n\n# Delete old remote branch\ngit push origin --delete old-name\n\nOther contributors will need to update their tracking: git fetch --prune"
+        },
+        {
+          id: 'g13',
+          front: "How do you delete a remote branch?",
+          back: "git push origin --delete branch-name\n\nOr the older colon syntax:\ngit push origin :branch-name\n\nThe local branch still exists; delete it with:\ngit branch -d branch-name   # safe (checks merged)\ngit branch -D branch-name   # force delete"
+        },
+        {
+          id: 'g14',
+          front: "What is the difference between git fetch and git pull?",
+          back: "git fetch: downloads remote changes, updates remote-tracking branches (origin/main etc.), leaves your working directory untouched. Always safe.\n\ngit pull: fetch + merge (or + rebase with --rebase). Modifies your working directory.\n\nPrefer: git fetch → inspect → git merge for better control."
+        },
+        {
+          id: 'g15',
+          front: "How do you squash multiple commits into one?",
+          back: "# Interactive rebase (most flexible)\ngit rebase -i HEAD~N\n# Change 'pick' to 'squash' for commits to fold in\n\n# Quick squash (no interactive editor)\ngit reset HEAD~N          # mixed: unstage all N commits\ngit commit -am 'squashed message'\n\nOnly safe on commits not yet pushed to a shared remote."
+        }
+      ]
+    }
+  };
+
+  // ─── SM-2 Algorithm ─────────────────────────────────────────────────────────
+
+  window.SM2 = (function () {
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function addDays(dateStr, n) {
+      const d = new Date(dateStr + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+
+    /**
+     * Creates the default state for a card that has never been reviewed.
+     */
+    function newCard() {
+      return { ef: 2.5, interval: 1, repetitions: 0, due: todayStr(), lastRating: null };
+    }
+
+    /**
+     * Updates card state after a review with quality rating q (0, 2, 3, or 5).
+     * Returns a new state object; does not mutate the input.
+     *
+     * SM-2 rules:
+     *   q < 3 (fail): reset repetitions to 0, interval to 1
+     *   q >= 3 (pass): interval = 1 / 6 / round(prev * ef) based on repetition count
+     *   ef adjustment: ef + 0.1 - (5-q)*(0.08 + (5-q)*0.02); floored at 1.3
+     */
+    function update(state, rating) {
+      const s = Object.assign({}, state);
+
+      if (rating < 3) {
+        s.repetitions = 0;
+        s.interval = 1;
+      } else {
+        if (s.repetitions === 0) {
+          s.interval = 1;
+        } else if (s.repetitions === 1) {
+          s.interval = 6;
+        } else {
+          s.interval = Math.round(s.interval * s.ef);
+        }
+        s.repetitions += 1;
+      }
+
+      const efRaw = s.ef + 0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02);
+      s.ef = Math.max(1.3, Math.round(efRaw * 100) / 100);
+      s.due = addDays(todayStr(), s.interval);
+      s.lastRating = rating;
+      return s;
+    }
+
+    /**
+     * Returns true if the card is due for review today or overdue.
+     */
+    function isDue(state) {
+      return state.due <= todayStr();
+    }
+
+    /**
+     * Returns true if the card has never been reviewed.
+     */
+    function isNew(state) {
+      return state.lastRating === null;
+    }
+
+    return { newCard, update, isDue, isNew, todayStr, addDays };
+  }());
+
+  // ─── State Management ────────────────────────────────────────────────────────
+
+  const STATE_KEY = 'srf_state_v1';
+
+  function loadAllStates() {
+    try {
+      return JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function saveAllStates(states) {
+    localStorage.setItem(STATE_KEY, JSON.stringify(states));
+  }
+
+  function getCardState(allStates, deckId, cardId) {
+    return allStates[deckId + '::' + cardId] || SM2.newCard();
+  }
+
+  function setCardState(allStates, deckId, cardId, state) {
+    allStates[deckId + '::' + cardId] = state;
+    return allStates;
+  }
+
+  // ─── Session Queue ───────────────────────────────────────────────────────────
+
+  const DAILY_NEW_LIMIT = 20;
+
+  function buildQueue(deckId) {
+    const allStates = loadAllStates();
+    const deck = window.DECKS[deckId];
+    const dueCards = [];
+    const newCards = [];
+
+    for (const card of deck.cards) {
+      const state = getCardState(allStates, deckId, card.id);
+      if (SM2.isNew(state)) {
+        newCards.push(card);
+      } else if (SM2.isDue(state)) {
+        dueCards.push(card);
+      }
+    }
+
+    dueCards.sort(function (a, b) {
+      const sa = getCardState(allStates, deckId, a.id);
+      const sb = getCardState(allStates, deckId, b.id);
+      return sa.due < sb.due ? -1 : sa.due > sb.due ? 1 : 0;
+    });
+
+    return dueCards.concat(newCards.slice(0, DAILY_NEW_LIMIT));
+  }
+
+  // ─── UI State ────────────────────────────────────────────────────────────────
+
+  let activeDeckId = Object.keys(window.DECKS)[0];
+  let queue = [];
+  let currentIndex = 0;
+  let sessionDone = 0;
+
+  // ─── Rendering ───────────────────────────────────────────────────────────────
+
+  function renderDeckTabs() {
+    const nav = document.getElementById('deckTabs');
+    nav.innerHTML = '';
+    for (const [id, deck] of Object.entries(window.DECKS)) {
+      const btn = document.createElement('button');
+      btn.className = 'deck-tab' + (id === activeDeckId ? ' active' : '');
+      btn.textContent = deck.name;
+      btn.setAttribute('data-testid', 'deck-tab-' + id);
+      btn.addEventListener('click', function () { switchDeck(id); });
+      nav.appendChild(btn);
+    }
+  }
+
+  function updateStats() {
+    const allStates = loadAllStates();
+    const deck = window.DECKS[activeDeckId];
+    let dueCount = 0;
+    let newCount = 0;
+    for (const card of deck.cards) {
+      const state = getCardState(allStates, activeDeckId, card.id);
+      if (SM2.isNew(state)) {
+        newCount++;
+      } else if (SM2.isDue(state)) {
+        dueCount++;
+      }
+    }
+    document.getElementById('statDue').textContent = dueCount;
+    document.getElementById('statNew').textContent = newCount;
+    document.getElementById('statDone').textContent = sessionDone;
+  }
+
+  function showCard(card) {
+    document.getElementById('cardWrapper').classList.remove('hidden');
+    document.getElementById('doneScreen').classList.add('hidden');
+    document.getElementById('cardPhase').textContent = 'Question';
+    document.getElementById('cardFront').textContent = card.front;
+    document.getElementById('cardBack').textContent = card.back;
+    document.getElementById('cardBack').classList.add('hidden');
+    document.getElementById('answerDivider').classList.add('hidden');
+    document.getElementById('revealBtn').classList.remove('hidden');
+    document.getElementById('ratingButtons').classList.add('hidden');
+  }
+
+  function revealAnswer() {
+    document.getElementById('revealBtn').classList.add('hidden');
+    document.getElementById('answerDivider').classList.remove('hidden');
+    document.getElementById('cardBack').classList.remove('hidden');
+    document.getElementById('ratingButtons').classList.remove('hidden');
+    document.getElementById('cardPhase').textContent = 'Answer';
+  }
+
+  function showDone() {
+    document.getElementById('cardWrapper').classList.add('hidden');
+    document.getElementById('doneScreen').classList.remove('hidden');
+    const total = window.DECKS[activeDeckId].cards.length;
+    document.getElementById('doneMsg').textContent =
+      sessionDone > 0
+        ? sessionDone + ' card' + (sessionDone === 1 ? '' : 's') + ' reviewed. Come back tomorrow for more.'
+        : 'Nothing due in this deck right now. Check back tomorrow.';
+  }
+
+  function applyRating(rating) {
+    if (currentIndex >= queue.length) return;
+    const card = queue[currentIndex];
+    let allStates = loadAllStates();
+    const oldState = getCardState(allStates, activeDeckId, card.id);
+    const newState = SM2.update(oldState, rating);
+    allStates = setCardState(allStates, activeDeckId, card.id, newState);
+    saveAllStates(allStates);
+    sessionDone++;
+    currentIndex++;
+    updateStats();
+    if (currentIndex < queue.length) {
+      showCard(queue[currentIndex]);
+    } else {
+      showDone();
+    }
+  }
+
+  function switchDeck(deckId) {
+    activeDeckId = deckId;
+    sessionDone = 0;
+    queue = buildQueue(deckId);
+    currentIndex = 0;
+    renderDeckTabs();
+    updateStats();
+    if (queue.length > 0) {
+      showCard(queue[0]);
+    } else {
+      showDone();
+    }
+  }
+
+  // ─── Initialisation ──────────────────────────────────────────────────────────
+
+  function init() {
+    renderDeckTabs();
+    switchDeck(activeDeckId);
+
+    document.getElementById('revealBtn').addEventListener('click', revealAnswer);
+
+    document.getElementById('ratingButtons').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-rating]');
+      if (btn) applyRating(Number(btn.dataset.rating));
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
