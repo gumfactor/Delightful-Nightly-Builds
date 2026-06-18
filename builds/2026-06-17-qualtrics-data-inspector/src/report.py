@@ -192,6 +192,47 @@ def generate_text_report(quality, survey, source_name: str = "survey") -> str:
                 )
             lines.append("")
 
+    # Attention checks
+    if q.attention_results:
+        lines.append("ATTENTION CHECKS")
+        for col, res in sorted(q.attention_results.items()):
+            expected = res.get("expected") or "(unknown expected)"
+            pass_rate = res.get("pass_rate")
+            n = res.get("n_checked", 0)
+            n_failed = len(res.get("failed_ids", []))
+            if pass_rate is None:
+                lines.append(f"  {col:<30} expected unknown  n={n}")
+            else:
+                flag = " !" if pass_rate < 0.80 else ""
+                lines.append(
+                    f"  {col:<30} expect='{expected}'  "
+                    f"pass={pass_rate:.1%}  failed={n_failed}/{n}{flag}"
+                )
+        lines.append("")
+
+    # Careless responding index
+    if q.careless_index:
+        from src.careless import careless_summary
+        summary = careless_summary(q.careless_index)
+        flagged = summary["n_flagged"]
+        total = len(q.careless_index)
+        lines.append(f"CARELESS RESPONDING INDEX  (threshold ≥ 0.40)")
+        lines.append(f"  Flagged: {flagged}/{total} respondents")
+        if summary["mean_score"] is not None:
+            lines.append(f"  Mean score: {summary['mean_score']:.3f}")
+        # Show top offenders
+        top = sorted(q.careless_index.items(), key=lambda x: -x[1]["score"])[:10]
+        if any(s > 0 for _, d in top for s in [d["score"]]):
+            lines.append("  Highest scorers:")
+            for rid, data in top:
+                if data["score"] == 0:
+                    break
+                lines.append(
+                    f"    {rid:<25} score={data['score']:.3f}  "
+                    f"[{', '.join(data['flags'])}]"
+                )
+        lines.append("")
+
     lines.append("=" * 62)
     return "\n".join(lines)
 
@@ -529,6 +570,88 @@ def generate_html_report(quality, survey, source_name: str = "survey") -> str:
       {dup_html}
     </section>"""
 
+    # ── Attention checks ──
+    attn_html = ""
+    if q.attention_results:
+        attn_rows = ""
+        for col, res in sorted(q.attention_results.items()):
+            expected = res.get("expected") or "(unknown)"
+            pass_rate = res.get("pass_rate")
+            n = res.get("n_checked", 0)
+            n_failed = len(res.get("failed_ids", []))
+            qt = esc((res.get("question_text") or "")[:80])
+            if pass_rate is None:
+                pass_cell = "<td colspan='3' style='color:var(--muted)'>expected answer unknown</td>"
+            else:
+                rate_cls = "good" if pass_rate >= 0.80 else "bad"
+                pass_cell = (
+                    f"<td class='{rate_cls}'>{pass_rate:.1%}</td>"
+                    f"<td>{n_failed}/{n}</td>"
+                    f"<td>{esc(str(expected))}</td>"
+                )
+            attn_rows += (
+                f"<tr><td>{esc(col)}</td>{pass_cell}"
+                f"<td style='font-size:0.75rem;color:var(--muted)'>{qt}</td></tr>"
+            )
+        attn_html = f"""
+    <section>
+      <h2>Attention Checks</h2>
+      <table>
+        <tr><th>Column</th><th>Pass Rate</th><th>Failed</th><th>Expected</th><th>Question</th></tr>
+        {attn_rows}
+      </table>
+    </section>"""
+
+    # ── Careless responding index ──
+    careless_html = ""
+    if q.careless_index:
+        from src.careless import careless_summary
+        summary = careless_summary(q.careless_index)
+        flagged = summary["n_flagged"]
+        total = len(q.careless_index)
+        mean_score = summary.get("mean_score")
+        mean_str = f"{mean_score:.3f}" if mean_score is not None else "n/a"
+        flag_cls = "bad" if flagged else "good"
+
+        top = sorted(q.careless_index.items(), key=lambda x: -x[1]["score"])[:15]
+        top_rows = ""
+        for rid, data in top:
+            if data["score"] == 0:
+                break
+            score_cls = "bad" if data["score"] >= 0.6 else ("warn" if data["score"] >= 0.4 else "")
+            chips = "".join(
+                f"<span class='flag-chip'>{esc(f)}</span>" for f in data["flags"]
+            )
+            top_rows += (
+                f"<tr><td>{esc(rid)}</td>"
+                f"<td class='{score_cls}'>{data['score']:.3f}</td>"
+                f"<td>{chips}</td></tr>"
+            )
+
+        dist = summary.get("score_distribution", {})
+        dist_cells = "".join(
+            f"<td style='text-align:center'>{dist.get(b, 0)}</td>"
+            for b in ["0.0–0.2", "0.2–0.4", "0.4–0.6", "0.6–0.8", "0.8–1.0"]
+        )
+        top_table = (
+            f"<table style='margin-top:1rem'>"
+            f"<tr><th>ResponseId</th><th>Score</th><th>Flags</th></tr>"
+            f"{top_rows}</table>"
+        ) if top_rows else ""
+
+        careless_html = f"""
+    <section>
+      <h2>Careless Responding Index (threshold ≥ 0.40)</h2>
+      <p><strong class="{flag_cls}">{flagged}/{total}</strong> respondents flagged
+         &nbsp;|&nbsp; Mean score: {mean_str}</p>
+      <table style='margin-top:0.75rem'>
+        <tr><th>0.0–0.2</th><th>0.2–0.4</th><th>0.4–0.6</th>
+            <th>0.6–0.8</th><th>0.8–1.0</th></tr>
+        <tr>{dist_cells}</tr>
+      </table>
+      {top_table}
+    </section>"""
+
     # ── Condition tests ──
     cond_html = ""
     if q.condition_tests:
@@ -579,6 +702,8 @@ def generate_html_report(quality, survey, source_name: str = "survey") -> str:
 {reliability_html}
 {corr_html}
 {cond_html}
+{attn_html}
+{careless_html}
 </body>
 </html>"""
 

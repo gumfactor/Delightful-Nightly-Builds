@@ -46,12 +46,22 @@ def cmd_inspect(args):
     scale_groups = _load_scales(args.scales) if args.scales else None
     thresholds = _build_thresholds(args)
 
+    attention_answers = None
+    if args.attention_answers:
+        aa_path = Path(args.attention_answers)
+        if not aa_path.exists():
+            print(f"Error: attention answers file not found: {args.attention_answers}", file=sys.stderr)
+            sys.exit(1)
+        with open(aa_path, encoding="utf-8") as f:
+            attention_answers = json.load(f)
+
     quality = compute_quality(
         survey,
         scale_groups=scale_groups,
         timing_threshold=args.threshold,
         thresholds=thresholds,
         detect_conditions=not args.no_conditions,
+        expected_attention_answers=attention_answers,
     )
 
     text = generate_text_report(quality, survey, source_name=name)
@@ -62,6 +72,20 @@ def cmd_inspect(args):
         html_content = generate_html_report(quality, survey, source_name=name)
         html_path.write_text(html_content, encoding="utf-8")
         print(f"\nHTML report written to: {args.html}", file=sys.stderr)
+
+    if args.excel:
+        try:
+            from src.excel_export import export_excel
+            excel_bytes = export_excel(
+                quality, survey, source_name=name,
+                attention_results=quality.attention_results,
+                careless_index=quality.careless_index,
+            )
+            Path(args.excel).write_bytes(excel_bytes)
+            print(f"Excel report written to: {args.excel}", file=sys.stderr)
+        except ImportError:
+            print("Error: openpyxl is required for Excel export. Run: pip install openpyxl", file=sys.stderr)
+            sys.exit(1)
 
 
 def cmd_clean(args):
@@ -126,6 +150,10 @@ def main():
                            help="Also write a self-contained HTML report")
     p_inspect.add_argument("--no-conditions", action="store_true",
                            help="Disable automatic condition/group detection")
+    p_inspect.add_argument("--attention-answers", metavar="ANSWERS.json",
+                           help="JSON file mapping column names to expected answer values")
+    p_inspect.add_argument("--excel", metavar="OUTPUT.xlsx",
+                           help="Also write an Excel workbook (requires openpyxl)")
     _add_shared_args(p_inspect)
     p_inspect.set_defaults(func=cmd_inspect)
 

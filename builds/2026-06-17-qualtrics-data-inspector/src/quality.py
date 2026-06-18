@@ -49,6 +49,9 @@ class QualityReport:
     floor_ceiling_effects: dict = field(default_factory=dict)
     condition_column: Optional[str] = field(default=None)
     condition_tests: dict = field(default_factory=dict)
+    attention_specs: list = field(default_factory=list)
+    attention_results: dict = field(default_factory=dict)
+    careless_index: dict = field(default_factory=dict)
 
 
 # ── Helpers shared by other modules ──────────────────────────────────────────
@@ -256,6 +259,7 @@ def compute_quality(
     timing_threshold: int = 60,
     thresholds: Optional[QualityThresholds] = None,
     detect_conditions: bool = True,
+    expected_attention_answers: Optional[dict] = None,
 ) -> QualityReport:
     """
     Compute the full quality report for a ParsedSurvey.
@@ -275,6 +279,8 @@ def compute_quality(
         respondent_outlier_counts as _resp_outlier_counts,
     )
     from src.conditions import detect_condition_columns, run_condition_tests
+    from src.attention import detect_attention_check_columns, score_attention_checks
+    from src.careless import compute_careless_index
 
     if thresholds is None:
         thresholds = QualityThresholds(fast_response_seconds=timing_threshold)
@@ -383,6 +389,38 @@ def compute_quality(
             cond_col = candidates[0]
             cond_tests = run_condition_tests(rows, cond_col, detected_scales)
 
+    # ── Attention checks ──
+    attn_specs = detect_attention_check_columns(survey, expected_attention_answers)
+    attn_results = score_attention_checks(survey, attn_specs)
+
+    # ── Careless responding index ──
+    # Build a temporary report stub to pass to compute_careless_index
+    _stub = QualityReport(
+        respondent_count=len(rows),
+        completed_count=completed_count,
+        completion_rate=completion_rate,
+        timing_stats=timing_stats,
+        per_column_missing=per_column_missing,
+        straight_liner_ids=straight_liner_ids,
+        duplicate_ips=duplicate_ips,
+        cronbach_results=cronbach_results,
+        fast_response_ids=fast_response_ids,
+        timing_threshold_seconds=timing_threshold,
+        detected_scales=detected_scales,
+        thresholds=thresholds,
+        high_missing_respondents=high_missing,
+        column_stats=col_stats,
+        outlier_zscore=z_outliers,
+        outlier_iqr=iq_outliers,
+        respondent_outlier_counts=resp_outlier_counts,
+        item_total_correlations=itc_results,
+        correlation_matrices=corr_matrices,
+        floor_ceiling_effects=fc_effects,
+        condition_column=cond_col,
+        condition_tests=cond_tests,
+    )
+    careless = compute_careless_index(_stub, attn_results if attn_results else None)
+
     return QualityReport(
         respondent_count=len(rows),
         completed_count=completed_count,
@@ -406,4 +444,7 @@ def compute_quality(
         floor_ceiling_effects=fc_effects,
         condition_column=cond_col,
         condition_tests=cond_tests,
+        attention_specs=attn_specs,
+        attention_results=attn_results,
+        careless_index=careless,
     )

@@ -1,1 +1,4 @@
-# stdlib only — no third-party dependencies required
+# Core: stdlib only
+# Optional: openpyxl for Excel export (--excel flag)
+#   pip install openpyxl
+openpyxl
