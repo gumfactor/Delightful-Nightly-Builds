@@ -66,4 +66,4 @@
 | `complete` | All hard standards met, committed and pushed |
 | `partial` | Build works but scope was reduced; documented in BUILD_LOG |
 | `aborted` | Could not complete safely; see ABORTED.md in the dated folder |
-| `discarded` | Build completed but judged not built keeping; folder renamed with -DISCARDED suffix |
+| `discarded` | Build completed but judged not worth keeping; folder renamed with -DISCARDED suffix |
