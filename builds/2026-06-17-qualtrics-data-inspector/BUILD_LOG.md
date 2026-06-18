@@ -65,3 +65,80 @@ Tests: 61 passed, 0 failed. First run had 1 failure (test assertion used wrong e
 - builds/index.md updated with this build's row
 
 Build complete. Success criteria reviewed. All tests passing.
+
+---
+
+## v2 Expansion — Statistics, Outliers, Conditions (session 2)
+
+**Scope added:** outlier detection, distributional statistics, normality testing, condition/group detection with between-group tests, correlation matrices, inter-item correlations, floor/ceiling effects, per-respondent missing rate flagging, configurable thresholds.
+
+### New modules
+- `src/statistics.py`: `descriptive_stats()`, `skewness()`, `excess_kurtosis()`, `normality_test()` (D'Agostino–Pearson K², pure Python including regularised incomplete gamma via series expansion and Lentz continued fraction), `pearson_r()`, `correlation_matrix()`, `item_total_correlations()`, `extract_numeric_column()`
+- `src/outliers.py`: `zscore_outliers()`, `iqr_outliers()`, `respondent_outlier_counts()`
+- `src/conditions.py`: `detect_condition_columns()`, `group_descriptive_stats()`, `compute_scale_scores()`, `mann_whitney_u()`, `kruskal_wallis()`, `run_condition_tests()`
+
+### Modified
+- `src/quality.py`: `QualityThresholds` dataclass; `QualityReport` extended with 10 new fields; `compute_quality()` orchestrates all new analyses
+- `src/report.py`: text and HTML reports gain 7 new sections; `export_clean_csv()` gains `exclude_high_missing`
+- `main.py`: `--threshold`, `--scales`, `--missing-warn`, `--missing-flag`, `--missing-respondent`, `--outlier-z`, `--low-r`, `--no-conditions`
+
+### Tests
+- `tests/test_statistics.py`: 34 tests
+- `tests/test_outliers.py`: 17 tests
+- `tests/test_conditions.py`: 26 tests
+- Total after v2: 142 tests passing
+
+### Key decisions
+- Pure Python chi-squared CDF (no scipy): implemented regularised incomplete gamma to support D'Agostino K² p-values and Kruskal-Wallis
+- Non-parametric group tests only: Mann-Whitney U with tie correction and normal approximation; Kruskal-Wallis with chi-squared approximation
+- Corrected item-total correlations: each item correlated against sum of remaining items, avoiding part-whole inflation
+
+---
+
+## v3 Expansion — Attention Checks, Careless Index, Excel Export (session 3)
+
+**Scope added:** attention check auto-detection and pass/fail scoring, careless responding composite index, multi-sheet Excel export.
+
+### New modules
+- `src/attention.py`: `detect_attention_check_columns()` (hint keywords + question text regex extraction), `score_attention_checks()` (case-insensitive pass/fail), `attention_failed_ids()`
+- `src/careless.py`: `compute_careless_index()` (5-component 0–1 composite: fast response, straight-liner, high missing, outlier breadth, attention fail rate), `careless_summary()`
+- `src/excel_export.py`: `export_excel()` — multi-sheet openpyxl workbook with color-coded cells; sheets: Overview, Respondents, Missing Data, Scale Reliability, Normality, Outliers, Attention Checks, Careless Index, Group Tests, per-scale correlation matrices
+
+### Bug fixed
+- `src/attention.py` was originally written with typographic curly quotes (U+201C/U+201D) used as Python string delimiters — invalid syntax that went unnoticed until the module was first imported. Rewrote the file with valid ASCII string delimiters and triple-quoted raw strings for regex patterns.
+
+### Modified
+- `src/quality.py`: `QualityReport` extended with `attention_specs`, `attention_results`, `careless_index`; `compute_quality()` gains `expected_attention_answers` parameter
+- `src/report.py`: text and HTML reports gain Attention Checks and Careless Index sections
+- `main.py`: `--attention-answers ANSWERS.json`, `--excel OUTPUT.xlsx`
+- `requirements.txt`: added `openpyxl` (optional, only for `--excel`)
+
+### Tests
+- `tests/test_attention.py`: 29 tests
+- `tests/test_careless.py`: 27 tests (Excel tests deferred until openpyxl available in CI)
+- Total after v3: 198 tests passing
+
+---
+
+## v4 Expansion — Config File + Manual Rewrite (session 4)
+
+**Scope added:** `qi.toml` config file support; comprehensive Manual rewrite covering all versions; this build log updated retrospectively.
+
+### New module
+- `src/config.py`: `load_config()` (reads `qi.toml` via stdlib `tomllib`; returns `{}` if absent; raises `ValueError` on malformed TOML), `apply_config_defaults()` (sets argparse defaults from config — CLI flags still override), `get_scales_from_config()`, `get_attention_answers_from_config()`
+
+### Modified
+- `main.py`: `--config` flag added; config loaded before argparse so defaults propagate correctly; `cmd_inspect` and `cmd_clean` use config for scales and attention answers when no CLI equivalent is provided
+- `Manual.md`: complete rewrite — now documents all v1–v4 features, config file format with full example, all flags for both subcommands, attention check setup, careless index table, Excel sheet list, known limitations
+- `BUILD_LOG.md`: retrospective entries added for v2, v3, v4
+
+### Tests
+- `tests/test_config.py`: 22 tests (load, apply defaults, scales, attention answers, CLI override)
+- Total after v4: 220 tests passing
+
+### Key decisions
+- TOML over JSON for config: more readable for a file users edit by hand; Python 3.11+ stdlib `tomllib` means no additional dependency
+- CLI flags always win: config only sets argparse defaults, so every option is still individually overridable
+- `_extract_config_path()` does a pre-parse argv scan so config is loaded before the full argparse run, allowing `set_defaults()` to take effect
+
+Build complete. Success criteria reviewed. All tests passing.

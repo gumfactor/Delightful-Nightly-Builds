@@ -4,14 +4,28 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Optional
 
 from src.parser import parse_csv
 from src.quality import compute_quality, QualityThresholds
 from src.report import generate_text_report, generate_html_report, export_clean_csv
+from src.config import (
+    load_config, apply_config_defaults,
+    get_scales_from_config, get_attention_answers_from_config,
+)
+
+
+def _extract_config_path(argv: list) -> Optional[str]:
+    """Quick argv scan to find --config before full argparse run."""
+    for i, arg in enumerate(argv):
+        if arg == "--config" and i + 1 < len(argv):
+            return argv[i + 1]
+        if arg.startswith("--config="):
+            return arg[len("--config="):]
+    return None
 
 
 def _load_survey(path: str):
-    """Read and parse a survey CSV file."""
     file_path = Path(path)
     if not file_path.exists():
         print(f"Error: file not found: {path}", file=sys.stderr)
@@ -43,10 +57,16 @@ def _build_thresholds(args) -> QualityThresholds:
 def cmd_inspect(args):
     """Run quality inspection and print a report."""
     survey, name = _load_survey(args.file)
-    scale_groups = _load_scales(args.scales) if args.scales else None
     thresholds = _build_thresholds(args)
+    config = getattr(args, "_config", {})
 
-    attention_answers = None
+    # Scales: CLI flag > config [scales] > auto-detect
+    if args.scales:
+        scale_groups = _load_scales(args.scales)
+    else:
+        scale_groups = get_scales_from_config(config)
+
+    # Attention answers: CLI flag > config [attention]
     if args.attention_answers:
         aa_path = Path(args.attention_answers)
         if not aa_path.exists():
@@ -54,6 +74,8 @@ def cmd_inspect(args):
             sys.exit(1)
         with open(aa_path, encoding="utf-8") as f:
             attention_answers = json.load(f)
+    else:
+        attention_answers = get_attention_answers_from_config(config)
 
     quality = compute_quality(
         survey,
@@ -71,7 +93,7 @@ def cmd_inspect(args):
         html_path = Path(args.html)
         html_content = generate_html_report(quality, survey, source_name=name)
         html_path.write_text(html_content, encoding="utf-8")
-        print(f"\nHTML report written to: {args.html}", file=sys.stderr)
+        print(f"HTML report written to: {args.html}", file=sys.stderr)
 
     if args.excel:
         try:
@@ -91,8 +113,13 @@ def cmd_inspect(args):
 def cmd_clean(args):
     """Export a cleaned CSV with QI_Flags column."""
     survey, name = _load_survey(args.file)
-    scale_groups = _load_scales(args.scales) if hasattr(args, "scales") and args.scales else None
     thresholds = _build_thresholds(args)
+    config = getattr(args, "_config", {})
+
+    if args.scales:
+        scale_groups = _load_scales(args.scales)
+    else:
+        scale_groups = get_scales_from_config(config)
 
     quality = compute_quality(
         survey,
@@ -137,9 +164,21 @@ def _add_shared_args(p):
 
 
 def main():
+    # Load config early so we can set argparse defaults before the full parse
+    config_path = _extract_config_path(sys.argv[1:])
+    try:
+        config = load_config(config_path)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         prog="qi",
         description="Qualtrics Survey Data Inspector — quality-check a CSV export",
+    )
+    parser.add_argument(
+        "--config", metavar="qi.toml",
+        help="Config file path (default: qi.toml in current directory if present)",
     )
     sub = parser.add_subparsers(dest="command")
 
@@ -173,7 +212,13 @@ def main():
     _add_shared_args(p_clean)
     p_clean.set_defaults(func=cmd_clean)
 
+    # Apply config as defaults (CLI flags will still override)
+    apply_config_defaults(p_inspect, config)
+    apply_config_defaults(p_clean, config)
+
     args = parser.parse_args()
+    args._config = config  # make available to cmd_* handlers
+
     if not args.command:
         parser.print_help()
         sys.exit(0)
