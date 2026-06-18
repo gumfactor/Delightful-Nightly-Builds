@@ -62,7 +62,7 @@
 ## Status Key
 
 | Value | Meaning |
-|-------|─────────|
+|-------|-------|
 | `complete` | All hard standards met, committed and pushed |
 | `partial` | Build works but scope was reduced; documented in BUILD_LOG |
 | `aborted` | Could not complete safely; see ABORTED.md in the dated folder |
