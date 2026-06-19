@@ -100,7 +100,7 @@ Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
 Scan `builds/index.md` for the last 7 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
-Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained (no cloud infrastructure, no unconfigured paid APIs); complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
+Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained — no deployment to external hosting, no cloud infrastructure that persists or bills after the session ends; local persistence (SQLite, JSON or flat files within the build folder) is fine; APIs with credentials confirmed in PROFILE.md's Data Sources are fine; complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); ambitious — scoped to the upper limit of what one session can deliver, with testable core logic.
 
 Pick the strongest idea. Append non-winners to `builds/ideas.md` (new sequential ID, today's date, tonight's category, complexity `ambitious`, status `pending`, rating `—`). Do not add the winning idea.
 
@@ -110,10 +110,12 @@ If the selected backlog row has a link in `Idea Brief`: read it fully before wri
 
 ### 2f — Choose Stack and Deployment Model
 
-**Stack:**
-- Browser tool / dashboard / game → Vanilla HTML/CSS/JS, `index.html` at root, Playwright tests
-- Data processing / CLI → Python 3 stdlib, pytest
-- Richer interactive app → React + Vite (only when vanilla JS would genuinely limit the idea), Vitest
+**Stack — choose what fits the idea, not what's simplest to set up:**
+- Browser tool / dashboard / game → HTML/CSS/JS with whatever framework or library best serves the idea; Playwright tests
+  - Vanilla JS when the idea is genuinely simple; React + Vite, Svelte, or similar when component structure or ecosystem libraries raise the quality ceiling
+  - CDN-hosted libraries (Chart.js, D3, Three.js, Tone.js, etc.) are fine — pin the version number in the URL
+  - A build step (Vite, esbuild) is fine — document the build command in `Manual.md` and ensure `npm run build` produces an artifact the user can open directly
+- Data processing / CLI → Python 3; use third-party packages freely when they raise quality (pandas, matplotlib, rich, httpx, etc.); pytest
 - Node.js utility → Jest or Vitest
 - MCP server → when the value is best exposed as callable tools across Claude contexts
 
@@ -147,7 +149,7 @@ Use templates from `templates/` as starting points:
 
 No code before the PRD is complete.
 
-Fill every section: Goal (one sentence), User Story, Scope (in and out), Tech Stack, Data Structure, Folder Structure (every file including tests), Testing Strategy, Success Criteria (3–5 verifiable, at least one is "all tests pass").
+Fill every section: Goal (one sentence), User Story, Scope (in and out), Tech Stack, Data Structure, Folder Structure (every file including tests), Testing Strategy, Success Criteria (3–5 verifiable criteria that reflect the actual goals of this build).
 
 ---
 
@@ -163,7 +165,8 @@ Follow `STANDARDS.md` throughout.
 
 **Never:**
 - Hardcode credentials, real personal data, or API keys
-- Make external HTTP calls to services not in PROFILE.md's Data Sources
+- Call paid or auth-required APIs whose credentials are not listed in PROFILE.md's Data Sources
+- Send user-entered or personal data to any third-party service
 - Import from another build's folder
 - Use `eval()`, `exec()`, or user-controlled strings in shell calls
 - Write tests just to reach a count — every test should correspond to a real failure mode
@@ -173,7 +176,7 @@ Follow `STANDARDS.md` throughout.
 | Stack | Framework | Test location | Run command |
 |-------|-----------|---------------|-------------|
 | Python | pytest | `tests/test_*.py` | `python -m pytest tests/ -v` |
-| Vanilla HTML/JS | Playwright | `tests/*.spec.js` | `npx playwright test` |
+| HTML/JS (any) | Playwright | `tests/*.spec.js` | `npx playwright test` |
 | React/Vite | Vitest | `src/__tests__/` or `tests/` | `npx vitest run` |
 | Node.js | Jest | `tests/*.test.js` | `npx jest` |
 
@@ -222,7 +225,7 @@ Append one row to the Full Catalog table. Update the Stats block.
 
 Columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
 
-Set Complexity to `ambitious`. Leave `Your Rating` and `Rating Notes` as `—`. Status: `complete`, `partial`, or `aborted`. Never rewrite existing rows.
+Set Complexity to reflect actual scope: `focused` (single core feature, tight scope), `solid` (a few integrated features), or `ambitious` (broad scope, multiple integrations or data sources). Leave `Your Rating` and `Rating Notes` as `—`. Status: `complete`, `partial`, or `aborted`. Never rewrite existing rows.
 
 ---
 
@@ -258,6 +261,9 @@ gh pr create \
 ## Tech
 [Stack and key dependencies]
 
+## External APIs
+[List each external API called, the data fetched, and whether it is free/public/no-auth — or write \"None\"]
+
 ## Test results
 Tests: X passed, 0 failed
 
@@ -276,7 +282,7 @@ If push fails: wait 4 seconds, retry once. If it fails again, log it and stop �
 Abort if:
 - The build requires modifying files outside the build folder and `builds/index.md`
 - Credentials required aren't in the environment
-- The build can't be self-contained
+- The build requires deploying to external hosting or spinning up cloud infrastructure that persists or bills after the session ends
 - A hard standard from `STANDARDS.md` can't be met
 
 When aborting:
