@@ -110,10 +110,12 @@ If the selected backlog row has a link in `Idea Brief`: read it fully before wri
 
 ### 2f — Choose Stack and Deployment Model
 
-**Stack:**
-- Browser tool / dashboard / game → Vanilla HTML/CSS/JS, `index.html` at root, Playwright tests
-- Data processing / CLI → Python 3 stdlib, pytest
-- Richer interactive app → React + Vite (only when vanilla JS would genuinely limit the idea), Vitest
+**Stack — choose what fits the idea, not what's simplest to set up:**
+- Browser tool / dashboard / game → HTML/CSS/JS with whatever framework or library best serves the idea; Playwright tests
+  - Vanilla JS when the idea is genuinely simple; React + Vite, Svelte, or similar when component structure or ecosystem libraries raise the quality ceiling
+  - CDN-hosted libraries (Chart.js, D3, Three.js, Tone.js, etc.) are fine — pin the version number in the URL
+  - A build step (Vite, esbuild) is fine — document the build command in `Manual.md` and ensure `npm run build` produces an artifact the user can open directly
+- Data processing / CLI → Python 3; use third-party packages freely when they raise quality (pandas, matplotlib, rich, httpx, etc.); pytest
 - Node.js utility → Jest or Vitest
 - MCP server → when the value is best exposed as callable tools across Claude contexts
 
@@ -173,7 +175,7 @@ Follow `STANDARDS.md` throughout.
 | Stack | Framework | Test location | Run command |
 |-------|-----------|---------------|-------------|
 | Python | pytest | `tests/test_*.py` | `python -m pytest tests/ -v` |
-| Vanilla HTML/JS | Playwright | `tests/*.spec.js` | `npx playwright test` |
+| HTML/JS (any) | Playwright | `tests/*.spec.js` | `npx playwright test` |
 | React/Vite | Vitest | `src/__tests__/` or `tests/` | `npx vitest run` |
 | Node.js | Jest | `tests/*.test.js` | `npx jest` |
 

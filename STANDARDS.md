@@ -42,19 +42,19 @@
 ## Soft Standards (Deviations Must Be Documented in BUILD_LOG.md)
 
 ### Code Quality
-- Prefer standard library over third-party dependencies
+- Use third-party packages freely when they raise quality or capability — pin versions in `requirements.txt` or `package.json`
 - No unused imports, variables, or dead code
 - Consistent indentation: 2 spaces for JS/HTML/CSS, 4 spaces for Python
 - Meaningful variable names — no single-letter names except loop counters (`i`, `j`, `k`)
 - No `console.log` or `print` debug statements in production code (use a `DEBUG` flag or structured logging)
 
 ### HTML/CSS/JS Builds
-- Must work in modern browsers without a build step (no compilation required)
 - CSS uses custom properties (variables) for colors and key spacing values
 - Mobile-responsive: at minimum, does not break on narrow screens
-- No external CDN dependencies unless a local fallback is provided
 - Accessible: semantic HTML elements, `alt` attributes on images, sufficient color contrast
 - Dark/light mode considered even if only one is implemented
+- Pin all dependency versions — exact version in CDN URLs (e.g. `chart.js@4.4.4`), exact or locked in `package.json`; commit `package-lock.json` when `npm install` is run
+- If a build step is used, document the build command in `Manual.md`; `npm run build` must produce an artifact the user can open directly without a dev server
 
 ### Python Builds
 - Type hints on all function signatures
