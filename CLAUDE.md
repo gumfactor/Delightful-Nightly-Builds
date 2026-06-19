@@ -261,6 +261,9 @@ gh pr create \
 ## Tech
 [Stack and key dependencies]
 
+## External APIs
+[List each external API called, the data fetched, and whether it is free/public/no-auth — or write \"None\"]
+
 ## Test results
 Tests: X passed, 0 failed
 
