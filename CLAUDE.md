@@ -149,7 +149,7 @@ Use templates from `templates/` as starting points:
 
 No code before the PRD is complete.
 
-Fill every section: Goal (one sentence), User Story, Scope (in and out), Tech Stack, Data Structure, Folder Structure (every file including tests), Testing Strategy, Success Criteria (3–5 verifiable, at least one is "all tests pass").
+Fill every section: Goal (one sentence), User Story, Scope (in and out), Tech Stack, Data Structure, Folder Structure (every file including tests), Testing Strategy, Success Criteria (3–5 verifiable criteria that reflect the actual goals of this build).
 
 ---
 
@@ -225,7 +225,7 @@ Append one row to the Full Catalog table. Update the Stats block.
 
 Columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
 
-Set Complexity to `ambitious`. Leave `Your Rating` and `Rating Notes` as `—`. Status: `complete`, `partial`, or `aborted`. Never rewrite existing rows.
+Set Complexity to reflect actual scope: `focused` (single core feature, tight scope), `solid` (a few integrated features), or `ambitious` (broad scope, multiple integrations or data sources). Leave `Your Rating` and `Rating Notes` as `—`. Status: `complete`, `partial`, or `aborted`. Never rewrite existing rows.
 
 ---
 
