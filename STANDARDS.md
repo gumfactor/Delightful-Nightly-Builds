@@ -18,6 +18,7 @@
 - [ ] No external HTTP calls in the build scaffold itself (individual apps may make calls only to pre-configured services listed in PROFILE.md)
 
 ### Completeness
+- [ ] For categories A (Dashboard), E (Learning Aid), F (Data Explorer), G (Game), and I (Life Admin): the build includes a visual/interactive interface — a CLI that prints to stdout does not satisfy these categories
 - [ ] `PRD.md` exists and all sections are filled — no `[YOUR ANSWER]` or `[TBD]` placeholders
 - [ ] `WhyThis.md` exists, explains the specific rationale, and notes whether tonight's idea came from the lottery or fresh generation
 - [ ] `BUILD_LOG.md` exists and has at least one entry per major phase
@@ -42,17 +43,17 @@
 ## Soft Standards (Deviations Must Be Documented in BUILD_LOG.md)
 
 ### Code Quality
-- Prefer standard library over third-party dependencies
+- Use the right library for the job — prefer well-maintained third-party packages (pandas, rich, plotly, requests, anthropic) over reimplementing their functionality from scratch
 - No unused imports, variables, or dead code
 - Consistent indentation: 2 spaces for JS/HTML/CSS, 4 spaces for Python
 - Meaningful variable names — no single-letter names except loop counters (`i`, `j`, `k`)
 - No `console.log` or `print` debug statements in production code (use a `DEBUG` flag or structured logging)
 
 ### HTML/CSS/JS Builds
-- Must work in modern browsers without a build step (no compilation required)
+- Vanilla builds must work in modern browsers without a build step; React+Vite builds run via `npm run dev` / `npm run build` — both are acceptable
 - CSS uses custom properties (variables) for colors and key spacing values
 - Mobile-responsive: at minimum, does not break on narrow screens
-- No external CDN dependencies unless a local fallback is provided
+- CDN imports of well-known libraries are permitted and encouraged: Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js — no local fallback required for widely-hosted libraries
 - Accessible: semantic HTML elements, `alt` attributes on images, sufficient color contrast
 - Dark/light mode considered even if only one is implemented
 
@@ -95,16 +96,22 @@ builds/YYYY-MM-DD-title-slug/          ← Everything lives here
 ├── BUILD_LOG.md            ← Required always
 ├── FutureFeatures.md       ← Required always
 ├── Manual.md               ← Required if any UI exists
-├── index.html              ← Single-file web apps: place at folder root
-├── playwright.config.js    ← If using Playwright (HTML/JS builds)
+├── package.json            ← React/Vite/Node builds
+├── vite.config.js          ← If using Vite
+├── playwright.config.js    ← If using Playwright (vanilla HTML/JS builds)
+├── index.html              ← Entry point (vanilla builds at root; Vite builds at root too)
 ├── tests/                  ← All test files live here
 │   ├── test_*.py           ← Python (pytest)
 │   ├── *.spec.js           ← Playwright
 │   └── *.test.js           ← Jest / Vitest
-└── src/                    ← Multi-file builds: all code lives here
-    ├── main.py             ← (or main.js, index.js, App.jsx, etc.)
-    └── ...
+└── src/                    ← All source code lives here (components, modules, styles)
+    ├── main.py             ← Python entry point
+    ├── main.js / index.js  ← JS/Node entry point
+    ├── App.jsx             ← React root component
+    └── components/         ← React components, modules, etc.
 ```
+
+Multi-file structure is the default for anything with meaningful complexity. Do not attempt to fit a React app or a multi-view dashboard into a single file.
 
 For aborted builds:
 ```

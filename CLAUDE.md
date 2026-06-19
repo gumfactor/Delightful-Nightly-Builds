@@ -100,7 +100,13 @@ Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
 Scan `builds/index.md` for the last 7 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
-Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained (no cloud infrastructure, no unconfigured paid APIs); complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
+Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained (no unconfigured paid APIs — APIs listed as available in PROFILE.md are fair game); complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources — prefer live data over mock/localStorage-only); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
+
+**Topic diversity check (required before proposing ideas):** Scan the last 10 builds (not just 7) in `builds/index.md` and note which *topic domains* have appeared, not just which categories. If investment/finance has appeared more than twice in the last 10 builds, treat it as saturated and do not propose another investment build unless the category has no other viable ideas. Apply the same check to other domains that have repeated.
+
+**Ambition floor by category:** A build is not ambitious if it lacks a matching interface. Dashboard/Visualizer and Data Explorer builds without a visual output layer are not acceptable — a Python script that prints to stdout is not a dashboard. Game/Puzzle builds must be playable in a browser. Learning Aid builds must be interactive. If the right implementation is a CLI, the category selection was probably wrong.
+
+**AI integration signal:** This user works at the intersection of AI and research. A build that uses the Anthropic API to do something genuinely useful (summarize, classify, extract, generate, evaluate) is almost always a better candidate than a build that only processes data mechanically. Consider whether AI processing is the differentiating layer before defaulting to pure data manipulation.
 
 Pick the strongest idea. Append non-winners to `builds/ideas.md` (new sequential ID, today's date, tonight's category, complexity `ambitious`, status `pending`, rating `—`). Do not add the winning idea.
 
@@ -111,11 +117,21 @@ If the selected backlog row has a link in `Idea Brief`: read it fully before wri
 ### 2f — Choose Stack and Deployment Model
 
 **Stack:**
-- Browser tool / dashboard / game → Vanilla HTML/CSS/JS, `index.html` at root, Playwright tests
-- Data processing / CLI → Python 3 stdlib, pytest
-- Richer interactive app → React + Vite (only when vanilla JS would genuinely limit the idea), Vitest
+- Browser tool / dashboard / game with complex state, multiple views, or data-heavy display → **React + Vite + Vitest** (default for most dashboards, data explorers, and games)
+- Simple single-interaction browser tool → Vanilla HTML/CSS/JS, Playwright tests (only when React genuinely adds no value)
+- Data processing / CLI / analysis → Python 3 with appropriate libraries (pandas, requests, rich, plotly, anthropic, etc.), pytest
 - Node.js utility → Jest or Vitest
 - MCP server → when the value is best exposed as callable tools across Claude contexts
+
+**Library and dependency guidance:**
+- Use established third-party libraries when they fit: pandas/polars for data, rich for terminal UI, plotly/matplotlib for charts, anthropic/openai for AI, requests/httpx for HTTP
+- For browser builds: CDN imports of well-known libraries are permitted and encouraged — Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js, Recharts (via CDN or npm)
+- Do not reimplement functionality that a well-known library already provides cleanly
+
+**Always-available APIs — use them:**
+- `ANTHROPIC_API_KEY` is always set in the build environment. Any build where AI processing is the core value should use it.
+- `GITHUB_TOKEN` is always set. Any developer tool that touches repos or activity should use it.
+- Yahoo Finance (via `yfinance`) and Open-Meteo are available with no auth. Prefer real data over mock data.
 
 **Deployment model — decide before writing code:**
 - Runs on a schedule → Claude Code Routine
