@@ -80,7 +80,7 @@
 
 ### Scope Discipline
 - If scope changed mid-build, document what was cut and why in a "Scope Changes" subsection of PRD.md
-- Scope decisions must be deliberate. What ships must be complete and genuinely useful — a narrower build executed well beats a broader build half-finished
+- Scope decisions must be deliberate. Push scope to the upper limit first; reduce only when necessary to ship something complete and genuinely useful rather than half-finished.
 - Remove features that cannot be done correctly rather than shipping them broken
 - FutureFeatures.md is for enhancements to a working, valuable thing — not for features required to make the build worth using. Those belong in tonight's scope
 - Meeting the checklist is the floor. The goal is a build that is genuinely useful and well-executed
