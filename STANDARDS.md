@@ -43,7 +43,7 @@
 
 ### Code Quality
 - Use the right library for the job — prefer well-maintained third-party packages (pandas, rich, plotly, requests, anthropic) over reimplementing their functionality from scratch
-- For React+Vite builds: install packages with `npm install` and declare them in `package.json` — do not use CDN imports inside a Vite project
+- For builds using a bundler (Vite, webpack, etc.): install packages with `npm install` and declare them in `package.json` — do not mix CDN imports into a bundled project
 - No unused imports, variables, or dead code
 - Consistent indentation: 2 spaces for JS/HTML/CSS, 4 spaces for Python
 - Meaningful variable names — no single-letter names except loop counters (`i`, `j`, `k`)

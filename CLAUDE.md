@@ -118,16 +118,21 @@ If the selected backlog row has a link in `Idea Brief`: read it fully before wri
 
 ### 2f — Choose Stack and Deployment Model
 
-**Stack:**
-- Browser tool / dashboard / game with complex state, multiple views, or data-heavy display → **React + Vite + Vitest** (default for most dashboards, data explorers, and games)
-- Simple single-interaction browser tool → Vanilla HTML/CSS/JS, Playwright tests (only when React genuinely adds no value)
-- Data processing / CLI / analysis → Python 3 with appropriate libraries (pandas, requests, rich, plotly, anthropic, etc.), pytest
-- Node.js utility → Jest or Vitest
-- MCP server → when the value is best exposed as callable tools across Claude contexts
+**Stack — preferred options, not requirements:**
+
+Choose the stack that best fits the idea. Preferred stacks (in rough order of preference for each context):
+
+- **Interactive browser tool / dashboard / game / data explorer** → React + Vite + Vitest preferred; Flutter web is also acceptable; Vanilla HTML/CSS/JS for genuinely simple single-interaction tools
+- **Data processing / analysis / CLI** → Python with appropriate libraries (pandas, requests, rich, plotly, anthropic, etc.) + pytest preferred; use whatever language/runtime actually fits best
+- **Node.js utility or server** → Jest or Vitest
+- **MCP server** → when the value is best exposed as callable tools across Claude contexts
+
+If the best version of the build calls for a different stack than the preferred one, use it. The user can translate or adapt later. A mediocre build in the "right" stack is worse than an impressive build in a less preferred one.
 
 **Library and dependency guidance:**
 - Use established third-party libraries when they fit: pandas/polars for data, rich for terminal UI, plotly/matplotlib for charts, anthropic/openai for AI, requests/httpx for HTTP
-- For browser builds: CDN imports of well-known libraries are permitted and encouraged — Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js, Recharts (via CDN or npm)
+- For React+Vite builds: install packages with `npm install`, not CDN imports
+- For vanilla HTML/CSS/JS builds: CDN imports of well-known libraries are fine — Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js
 - Do not reimplement functionality that a well-known library already provides cleanly
 
 **Always-available APIs — use them:**
