@@ -15,7 +15,9 @@
 - [ ] No system-level operations (no `rm -rf`, no system file writes, no registry edits)
 - [ ] No credentials, API keys, or passwords hardcoded in source files
 - [ ] No personal data (real names, real emails, real addresses) hardcoded in code
-- [ ] No external HTTP calls in the build scaffold itself (individual apps may make calls only to pre-configured services listed in PROFILE.md)
+- [ ] No calls to paid or auth-required APIs unless credentials for that service are listed in PROFILE.md's Data Sources
+- [ ] No sending user-entered or personal data to any third-party service
+- [ ] Free, public, no-auth APIs may be used freely — prefer well-known services with stable, documented endpoints
 
 ### Completeness
 - [ ] `PRD.md` exists and all sections are filled — no `[YOUR ANSWER]` or `[TBD]` placeholders

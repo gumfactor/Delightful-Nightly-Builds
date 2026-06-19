@@ -165,7 +165,8 @@ Follow `STANDARDS.md` throughout.
 
 **Never:**
 - Hardcode credentials, real personal data, or API keys
-- Make external HTTP calls to services not in PROFILE.md's Data Sources
+- Call paid or auth-required APIs whose credentials are not listed in PROFILE.md's Data Sources
+- Send user-entered or personal data to any third-party service
 - Import from another build's folder
 - Use `eval()`, `exec()`, or user-controlled strings in shell calls
 - Write tests just to reach a count — every test should correspond to a real failure mode
