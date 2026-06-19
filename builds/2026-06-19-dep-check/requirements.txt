@@ -1,0 +1,3 @@
+# Runtime dependencies: none (stdlib only)
+# Dev dependencies (not installed via this file):
+# pytest
