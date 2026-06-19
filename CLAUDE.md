@@ -100,7 +100,7 @@ Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
 Scan `builds/index.md` for the last 7 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
-Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained (no cloud infrastructure, no unconfigured paid APIs); complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
+Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained — no deployment to external hosting, no cloud infrastructure that persists or bills after the session ends; local persistence (SQLite, JSON or flat files within the build folder) is fine; APIs with credentials confirmed in PROFILE.md's Data Sources are fine; complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
 
 Pick the strongest idea. Append non-winners to `builds/ideas.md` (new sequential ID, today's date, tonight's category, complexity `ambitious`, status `pending`, rating `—`). Do not add the winning idea.
 
@@ -282,7 +282,7 @@ If push fails: wait 4 seconds, retry once. If it fails again, log it and stop �
 Abort if:
 - The build requires modifying files outside the build folder and `builds/index.md`
 - Credentials required aren't in the environment
-- The build can't be self-contained
+- The build requires deploying to external hosting or spinning up cloud infrastructure that persists or bills after the session ends
 - A hard standard from `STANDARDS.md` can't be met
 
 When aborting:
