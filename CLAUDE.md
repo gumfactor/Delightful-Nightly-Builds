@@ -98,7 +98,7 @@ Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
 ### 2d — Generate Fresh Ideas
 
-Scan `builds/index.md` for the last 7 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
+Scan `builds/index.md` for the last 10 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
 Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained (no unconfigured paid APIs — APIs listed as available in PROFILE.md are fair game); complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources — prefer live data over mock/localStorage-only); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
 

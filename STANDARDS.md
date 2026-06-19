@@ -60,7 +60,7 @@
 ### Python Builds
 - Type hints on all function signatures
 - `if __name__ == "__main__":` guard in the entry point
-- `requirements.txt` present even if empty (signals stdlib-only intent)
+- `requirements.txt` listing all third-party dependencies (leave empty only if truly stdlib-only)
 - Common error cases handled gracefully (file not found, malformed input, wrong argument count)
 
 ### Node.js / React Builds
