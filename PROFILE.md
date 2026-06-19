@@ -183,7 +183,7 @@ Claude should read this section when selecting and designing builds. Prefer buil
 
 ### Available via environment variables already set in the build environment
 - **GitHub API** — full authenticated access via `GITHUB_TOKEN` (automatically available in GitHub Actions) — use for repo data, commit history, PR state, issue tracking
-- **Anthropic API** — via `ANTHROPIC_API_KEY` — use sparingly and only when AI processing is the core value of the build
+- **Anthropic API** — via `ANTHROPIC_API_KEY` — use whenever AI processing adds meaningful value: classification, extraction, summarization, generation, evaluation, or explanation. Does not need to be the "core" feature — an AI-powered layer on a dashboard or data tool is often what makes it genuinely useful rather than redundant
 
 ### Available if added as GitHub repo secrets
 The following credentials exist but must be added to repo secrets before Claude can use them in nightly builds. To add: github.com/gumfactor/Delightful-Nightly-Builds → Settings → Secrets and variables → Actions.

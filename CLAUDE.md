@@ -59,6 +59,8 @@ Get today's date in UTC. Your build folder: `builds/YYYY-MM-DD-title-slug/`
 
 Read the ratings and notes in `builds/index.md`. The notes explain *why* a build scored as it did and are more actionable than the number alone. Use this as a soft prior: give weight to patterns the user has rated highly, be skeptical of patterns they've rated poorly.
 
+**Calibration note:** Every rated build to date has scored 4/10 or below. The pattern is consistent: low scores come from builds that (a) lack a visual interface when the category implies one, (b) use mock or localStorage data instead of live APIs, or (c) duplicate functionality already in the user's tools. A build that would not surprise the user on first open is not ambitious enough. Use this to set your bar before committing to an idea.
+
 ### 2b — Determine Tonight's Category
 
 Category follows a fixed 9-day rotation based on day of year:
