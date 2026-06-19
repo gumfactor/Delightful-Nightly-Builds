@@ -37,7 +37,6 @@
 
 ### Documentation
 - [ ] `Manual.md` exists for any build with a user interface
-- [ ] Every function or class over 10 lines has a descriptive docstring or comment block
 
 ---
 
