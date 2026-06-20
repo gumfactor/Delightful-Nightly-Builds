@@ -59,6 +59,8 @@ Get today's date in UTC. Your build folder: `builds/YYYY-MM-DD-title-slug/`
 
 Read the ratings and notes in `builds/index.md`. The notes explain *why* a build scored as it did and are more actionable than the number alone. Use this as a soft prior: give weight to patterns the user has rated highly, be skeptical of patterns they've rated poorly.
 
+**Calibration note:** Every rated build to date has scored 4/10 or below. The pattern is consistent: low scores come from builds that (a) lack a visual interface when the category implies one, (b) use mock or localStorage data instead of live APIs, or (c) duplicate functionality already in the user's tools. A build that would not surprise the user on first open is not ambitious enough. Use this to set your bar before committing to an idea.
+
 ### 2b — Determine Tonight's Category
 
 Category follows a fixed 9-day rotation based on day of year:
@@ -98,9 +100,15 @@ Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
 ### 2d — Generate Fresh Ideas
 
-Scan `builds/index.md` for the last 7 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
+Scan `builds/index.md` for the last 10 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
-Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained — no deployment to external hosting, no cloud infrastructure that persists or bills after the session ends; local persistence (SQLite, JSON or flat files within the build folder) is fine; APIs with credentials confirmed in PROFILE.md's Data Sources are fine; complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); ambitious — scoped to the upper limit of what one session can deliver, with testable core logic.
+Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained — no deployment to external hosting, no cloud infrastructure that persists or bills after the session ends; local persistence (SQLite, JSON or flat files within the build folder) is fine; APIs with credentials confirmed in PROFILE.md's Data Sources are fine; complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources — prefer live data over mock/localStorage-only); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); ambitious — scoped to the upper limit of what one session can deliver, with testable core logic.
+
+**Topic diversity check (required before proposing ideas):** Scan the last 10 builds (not just 7) in `builds/index.md` and note which *topic domains* have appeared, not just which categories. If investment/finance has appeared more than twice in the last 10 builds, treat it as saturated and do not propose another investment build unless the category has no other viable ideas. Apply the same check to other domains that have repeated.
+
+**Ambition floor by category:** A build is not ambitious if it lacks a matching interface. Dashboard/Visualizer and Data Explorer builds without a visual output layer are not acceptable — a Python script that prints to stdout is not a dashboard. Game/Puzzle builds must be playable in a browser. Learning Aid builds must be interactive. If the right implementation is a CLI, the category selection was probably wrong.
+
+**AI integration signal:** This user works at the intersection of AI and research. A build that uses the Anthropic API to do something genuinely useful (summarize, classify, extract, generate, evaluate) is almost always a better candidate than a build that only processes data mechanically. Consider whether AI processing is the differentiating layer before defaulting to pure data manipulation.
 
 Pick the strongest idea. Append non-winners to `builds/ideas.md` (new sequential ID, today's date, tonight's category, complexity `ambitious`, status `pending`, rating `—`). Do not add the winning idea.
 
@@ -112,12 +120,17 @@ If the selected backlog row has a link in `Idea Brief`: read it fully before wri
 
 **Stack — choose what fits the idea, not what's simplest to set up:**
 - Browser tool / dashboard / game → HTML/CSS/JS with whatever framework or library best serves the idea; Playwright tests
-  - Vanilla JS when the idea is genuinely simple; React + Vite, Svelte, or similar when component structure or ecosystem libraries raise the quality ceiling
+  - Vanilla JS when the idea is genuinely simple; React + Vite, Flutter web, Svelte, or similar when component structure or ecosystem libraries raise the quality ceiling
   - CDN-hosted libraries (Chart.js, D3, Three.js, Tone.js, etc.) are fine — pin the version number in the URL
   - A build step (Vite, esbuild) is fine — document the build command in `Manual.md` and ensure `npm run build` produces an artifact the user can open directly
-- Data processing / CLI → Python 3; use third-party packages freely when they raise quality (pandas, matplotlib, rich, httpx, etc.); pytest
+- Data processing / CLI → Python 3; use third-party packages freely when they raise quality (pandas, matplotlib, rich, httpx, anthropic, etc.); pytest
 - Node.js utility → Jest or Vitest
 - MCP server → when the value is best exposed as callable tools across Claude contexts
+
+**Always-available APIs — use them:**
+- `ANTHROPIC_API_KEY` is always set in the build environment. Use it whenever AI processing adds meaningful value.
+- `GITHUB_TOKEN` is always set. Any developer tool that touches repos or activity should use it.
+- Yahoo Finance (via `yfinance`) and Open-Meteo are available with no auth. Prefer real data over mock data.
 
 **Deployment model — decide before writing code:**
 - Runs on a schedule → Claude Code Routine

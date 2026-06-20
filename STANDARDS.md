@@ -20,6 +20,7 @@
 - [ ] Free, public, no-auth APIs may be used freely — prefer well-known services with stable, documented endpoints
 
 ### Completeness
+- [ ] For categories A (Dashboard), E (Learning Aid), F (Data Explorer), G (Game), and I (Life Admin): the build includes a visual/interactive interface — a CLI that prints to stdout does not satisfy these categories
 - [ ] `PRD.md` exists and all sections are filled — no `[YOUR ANSWER]` or `[TBD]` placeholders
 - [ ] `WhyThis.md` exists, explains the specific rationale, and notes whether tonight's idea came from the lottery or fresh generation
 - [ ] `BUILD_LOG.md` exists and has at least one entry per major phase
@@ -44,12 +45,14 @@
 
 ### Code Quality
 - Use third-party packages freely when they raise quality or capability — pin versions in `requirements.txt` or `package.json`
+- For builds using a bundler (Vite, webpack, etc.): install packages with `npm install` and declare them in `package.json` — do not mix CDN imports into a bundled project
 - No unused imports, variables, or dead code
 - Consistent indentation: 2 spaces for JS/HTML/CSS, 4 spaces for Python
 - Meaningful variable names — no single-letter names except loop counters (`i`, `j`, `k`)
 - No `console.log` or `print` debug statements in production code (use a `DEBUG` flag or structured logging)
 
 ### HTML/CSS/JS Builds
+- CDN imports of well-known libraries are permitted and encouraged: Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js — no local fallback required
 - CSS uses custom properties (variables) for colors and key spacing values
 - Mobile-responsive: at minimum, does not break on narrow screens
 - Accessible: semantic HTML elements, `alt` attributes on images, sufficient color contrast
@@ -60,7 +63,7 @@
 ### Python Builds
 - Type hints on all function signatures
 - `if __name__ == "__main__":` guard in the entry point
-- `requirements.txt` present even if empty (signals stdlib-only intent)
+- `requirements.txt` listing all third-party dependencies (leave empty only if truly stdlib-only)
 - Common error cases handled gracefully (file not found, malformed input, wrong argument count)
 
 ### Node.js / React Builds
@@ -96,16 +99,22 @@ builds/YYYY-MM-DD-title-slug/          ← Everything lives here
 ├── BUILD_LOG.md            ← Required always
 ├── FutureFeatures.md       ← Required always
 ├── Manual.md               ← Required if any UI exists
-├── index.html              ← Single-file web apps: place at folder root
-├── playwright.config.js    ← If using Playwright (HTML/JS builds)
+├── package.json            ← React/Vite/Node builds
+├── vite.config.js          ← If using Vite
+├── playwright.config.js    ← If using Playwright (vanilla HTML/JS builds)
+├── index.html              ← Entry point (vanilla builds at root; Vite builds at root too)
 ├── tests/                  ← All test files live here
 │   ├── test_*.py           ← Python (pytest)
 │   ├── *.spec.js           ← Playwright
 │   └── *.test.js           ← Jest / Vitest
-└── src/                    ← Multi-file builds: all code lives here
-    ├── main.py             ← (or main.js, index.js, App.jsx, etc.)
-    └── ...
+└── src/                    ← All source code lives here (components, modules, styles)
+    ├── main.py             ← Python entry point
+    ├── main.js / index.js  ← JS/Node entry point
+    ├── App.jsx             ← React root component
+    └── components/         ← React components, modules, etc.
 ```
+
+Multi-file structure is the default for anything with meaningful complexity. Do not attempt to fit a React app or a multi-view dashboard into a single file.
 
 For aborted builds:
 ```
