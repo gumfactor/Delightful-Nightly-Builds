@@ -102,7 +102,7 @@ Record in `WhyThis.md`: lottery or fresh, the roll, pool size.
 
 Scan `builds/index.md` for the last 10 builds. Avoid subject areas already well-covered — the category rotation handles category diversity; you handle topic diversity within the category.
 
-Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained (no unconfigured paid APIs — APIs listed as available in PROFILE.md are fair game); complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources — prefer live data over mock/localStorage-only); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); achievable tonight with testable core logic.
+Generate at least 3 candidate ideas in tonight's category. Each must be: self-contained — no deployment to external hosting, no cloud infrastructure that persists or bills after the session ends; local persistence (SQLite, JSON or flat files within the build folder) is fine; APIs with credentials confirmed in PROFILE.md's Data Sources are fine; complete as delivered (anything required for real usefulness ships tonight, not deferred); connected to real data where it exists (check PROFILE.md's Data Sources — prefer live data over mock/localStorage-only); novel (not already in `builds/index.md`, not trivially covered by tools already in the user's stack); ambitious — scoped to the upper limit of what one session can deliver, with testable core logic.
 
 **Topic diversity check (required before proposing ideas):** Scan the last 10 builds (not just 7) in `builds/index.md` and note which *topic domains* have appeared, not just which categories. If investment/finance has appeared more than twice in the last 10 builds, treat it as saturated and do not propose another investment build unless the category has no other viable ideas. Apply the same check to other domains that have repeated.
 
@@ -118,25 +118,17 @@ If the selected backlog row has a link in `Idea Brief`: read it fully before wri
 
 ### 2f — Choose Stack and Deployment Model
 
-**Stack — preferred options, not requirements:**
-
-Choose the stack that best fits the idea. Preferred stacks (in rough order of preference for each context):
-
-- **Interactive browser tool / dashboard / game / data explorer** → React + Vite + Vitest preferred; Flutter web is also acceptable; Vanilla HTML/CSS/JS for genuinely simple single-interaction tools
-- **Data processing / analysis / CLI** → Python with appropriate libraries (pandas, requests, rich, plotly, anthropic, etc.) + pytest preferred; use whatever language/runtime actually fits best
-- **Node.js utility or server** → Jest or Vitest
-- **MCP server** → when the value is best exposed as callable tools across Claude contexts
-
-If the best version of the build calls for a different stack than the preferred one, use it. The user can translate or adapt later. A mediocre build in the "right" stack is worse than an impressive build in a less preferred one.
-
-**Library and dependency guidance:**
-- Use established third-party libraries when they fit: pandas/polars for data, rich for terminal UI, plotly/matplotlib for charts, anthropic/openai for AI, requests/httpx for HTTP
-- For React+Vite builds: install packages with `npm install`, not CDN imports
-- For vanilla HTML/CSS/JS builds: CDN imports of well-known libraries are fine — Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js
-- Do not reimplement functionality that a well-known library already provides cleanly
+**Stack — choose what fits the idea, not what's simplest to set up:**
+- Browser tool / dashboard / game → HTML/CSS/JS with whatever framework or library best serves the idea; Playwright tests
+  - Vanilla JS when the idea is genuinely simple; React + Vite, Flutter web, Svelte, or similar when component structure or ecosystem libraries raise the quality ceiling
+  - CDN-hosted libraries (Chart.js, D3, Three.js, Tone.js, etc.) are fine — pin the version number in the URL
+  - A build step (Vite, esbuild) is fine — document the build command in `Manual.md` and ensure `npm run build` produces an artifact the user can open directly
+- Data processing / CLI → Python 3; use third-party packages freely when they raise quality (pandas, matplotlib, rich, httpx, anthropic, etc.); pytest
+- Node.js utility → Jest or Vitest
+- MCP server → when the value is best exposed as callable tools across Claude contexts
 
 **Always-available APIs — use them:**
-- `ANTHROPIC_API_KEY` is always set in the build environment. Any build where AI processing is the core value should use it.
+- `ANTHROPIC_API_KEY` is always set in the build environment. Use it whenever AI processing adds meaningful value.
 - `GITHUB_TOKEN` is always set. Any developer tool that touches repos or activity should use it.
 - Yahoo Finance (via `yfinance`) and Open-Meteo are available with no auth. Prefer real data over mock data.
 
@@ -170,7 +162,7 @@ Use templates from `templates/` as starting points:
 
 No code before the PRD is complete.
 
-Fill every section: Goal (one sentence), User Story, Scope (in and out), Tech Stack, Data Structure, Folder Structure (every file including tests), Testing Strategy, Success Criteria (3–5 verifiable, at least one is "all tests pass").
+Fill every section: Goal (one sentence), User Story, Scope (in and out), Tech Stack, Data Structure, Folder Structure (every file including tests), Testing Strategy, Success Criteria (3–5 verifiable criteria that reflect the actual goals of this build).
 
 ---
 
@@ -186,7 +178,8 @@ Follow `STANDARDS.md` throughout.
 
 **Never:**
 - Hardcode credentials, real personal data, or API keys
-- Make external HTTP calls to services not in PROFILE.md's Data Sources
+- Call paid or auth-required APIs whose credentials are not listed in PROFILE.md's Data Sources
+- Send user-entered or personal data to any third-party service
 - Import from another build's folder
 - Use `eval()`, `exec()`, or user-controlled strings in shell calls
 - Write tests just to reach a count — every test should correspond to a real failure mode
@@ -196,7 +189,7 @@ Follow `STANDARDS.md` throughout.
 | Stack | Framework | Test location | Run command |
 |-------|-----------|---------------|-------------|
 | Python | pytest | `tests/test_*.py` | `python -m pytest tests/ -v` |
-| Vanilla HTML/JS | Playwright | `tests/*.spec.js` | `npx playwright test` |
+| HTML/JS (any) | Playwright | `tests/*.spec.js` | `npx playwright test` |
 | React/Vite | Vitest | `src/__tests__/` or `tests/` | `npx vitest run` |
 | Node.js | Jest | `tests/*.test.js` | `npx jest` |
 
@@ -245,7 +238,7 @@ Append one row to the Full Catalog table. Update the Stats block.
 
 Columns: `| Date | Category | Complexity | Title | Short Description | Tech | Status | Your Rating | Rating Notes |`
 
-Set Complexity to `ambitious`. Leave `Your Rating` and `Rating Notes` as `—`. Status: `complete`, `partial`, or `aborted`. Never rewrite existing rows.
+Set Complexity to reflect actual scope: `focused` (single core feature, tight scope), `solid` (a few integrated features), or `ambitious` (broad scope, multiple integrations or data sources). Leave `Your Rating` and `Rating Notes` as `—`. Status: `complete`, `partial`, or `aborted`. Never rewrite existing rows.
 
 ---
 
@@ -281,6 +274,9 @@ gh pr create \
 ## Tech
 [Stack and key dependencies]
 
+## External APIs
+[List each external API called, the data fetched, and whether it is free/public/no-auth — or write \"None\"]
+
 ## Test results
 Tests: X passed, 0 failed
 
@@ -299,7 +295,7 @@ If push fails: wait 4 seconds, retry once. If it fails again, log it and stop �
 Abort if:
 - The build requires modifying files outside the build folder and `builds/index.md`
 - Credentials required aren't in the environment
-- The build can't be self-contained
+- The build requires deploying to external hosting or spinning up cloud infrastructure that persists or bills after the session ends
 - A hard standard from `STANDARDS.md` can't be met
 
 When aborting:

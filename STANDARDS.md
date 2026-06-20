@@ -15,7 +15,9 @@
 - [ ] No system-level operations (no `rm -rf`, no system file writes, no registry edits)
 - [ ] No credentials, API keys, or passwords hardcoded in source files
 - [ ] No personal data (real names, real emails, real addresses) hardcoded in code
-- [ ] No external HTTP calls in the build scaffold itself (individual apps may make calls only to pre-configured services listed in PROFILE.md)
+- [ ] No calls to paid or auth-required APIs unless credentials for that service are listed in PROFILE.md's Data Sources
+- [ ] No sending user-entered or personal data to any third-party service
+- [ ] Free, public, no-auth APIs may be used freely — prefer well-known services with stable, documented endpoints
 
 ### Completeness
 - [ ] For categories A (Dashboard), E (Learning Aid), F (Data Explorer), G (Game), and I (Life Admin): the build includes a visual/interactive interface — a CLI that prints to stdout does not satisfy these categories
@@ -42,7 +44,7 @@
 ## Soft Standards (Deviations Must Be Documented in BUILD_LOG.md)
 
 ### Code Quality
-- Use the right library for the job — prefer well-maintained third-party packages (pandas, rich, plotly, requests, anthropic) over reimplementing their functionality from scratch
+- Use third-party packages freely when they raise quality or capability — pin versions in `requirements.txt` or `package.json`
 - For builds using a bundler (Vite, webpack, etc.): install packages with `npm install` and declare them in `package.json` — do not mix CDN imports into a bundled project
 - No unused imports, variables, or dead code
 - Consistent indentation: 2 spaces for JS/HTML/CSS, 4 spaces for Python
@@ -50,12 +52,13 @@
 - No `console.log` or `print` debug statements in production code (use a `DEBUG` flag or structured logging)
 
 ### HTML/CSS/JS Builds
-- Vanilla builds must work in modern browsers without a build step; React+Vite builds run via `npm run dev` / `npm run build` — both are acceptable
+- CDN imports of well-known libraries are permitted and encouraged: Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js — no local fallback required
 - CSS uses custom properties (variables) for colors and key spacing values
 - Mobile-responsive: at minimum, does not break on narrow screens
-- CDN imports of well-known libraries are permitted and encouraged: Chart.js, D3.js, Plotly, Tailwind CSS, Alpine.js — no local fallback required for widely-hosted libraries
 - Accessible: semantic HTML elements, `alt` attributes on images, sufficient color contrast
 - Dark/light mode considered even if only one is implemented
+- Pin all dependency versions — exact version in CDN URLs (e.g. `chart.js@4.4.4`), exact or locked in `package.json`; commit `package-lock.json` when `npm install` is run
+- If a build step is used, document the build command in `Manual.md`; `npm run build` must produce an artifact the user can open directly without a dev server
 
 ### Python Builds
 - Type hints on all function signatures
@@ -80,7 +83,7 @@
 
 ### Scope Discipline
 - If scope changed mid-build, document what was cut and why in a "Scope Changes" subsection of PRD.md
-- Scope decisions must be deliberate. What ships must be complete and genuinely useful — a narrower build executed well beats a broader build half-finished
+- Scope decisions must be deliberate. Push scope to the upper limit first; reduce only when necessary to ship something complete and genuinely useful rather than half-finished.
 - Remove features that cannot be done correctly rather than shipping them broken
 - FutureFeatures.md is for enhancements to a working, valuable thing — not for features required to make the build worth using. Those belong in tonight's scope
 - Meeting the checklist is the floor. The goal is a build that is genuinely useful and well-executed

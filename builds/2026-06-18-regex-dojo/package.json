@@ -1,0 +1,11 @@
+{
+  "name": "regex-dojo",
+  "version": "1.0.0",
+  "description": "20-level browser regex puzzle game — match the green strings, reject the red ones",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

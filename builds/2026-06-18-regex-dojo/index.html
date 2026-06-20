@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regex Dojo</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-2: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-dim: #8b949e;
+      --text-dimmer: #484f58;
+      --green: #3fb950;
+      --green-bg: #0d2e16;
+      --red: #f85149;
+      --red-bg: #2d1015;
+      --amber: #d29922;
+      --amber-bg: #2e1f00;
+      --blue: #58a6ff;
+      --purple: #bc8cff;
+      --radius: 6px;
+      --font-mono: 'Courier New', Courier, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── APP HEADER ── */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .app-logo {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+    .app-logo span { color: var(--text-dim); }
+    .app-subtitle {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* ── LEVEL SELECT ── */
+    #view-select .select-body {
+      flex: 1;
+      padding: 24px 20px;
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .select-intro {
+      margin-bottom: 24px;
+    }
+    .select-intro h2 {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+    .select-intro p {
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    .total-progress {
+      display: inline-block;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--amber);
+      margin-top: 8px;
+      font-family: var(--font-mono);
+    }
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .level-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .level-card:hover:not(.locked) {
+      border-color: var(--blue);
+      background: var(--surface-2);
+    }
+    .level-card.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .level-card.complete {
+      border-color: var(--green);
+      background: var(--green-bg);
+    }
+    .level-card.complete:hover {
+      border-color: var(--green);
+      background: var(--green-bg);
+      opacity: 0.9;
+    }
+    .card-num {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--text-dimmer);
+      line-height: 1;
+    }
+    .level-card.complete .card-num { color: var(--green); }
+    .level-card:not(.locked):not(.complete) .card-num { color: var(--blue); }
+    .card-title {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+    .level-card.complete .card-title { color: var(--green); }
+    .card-concept {
+      font-size: 10px;
+      color: var(--text-dimmer);
+      margin-top: 6px;
+      font-family: var(--font-mono);
+    }
+    .card-check {
+      float: right;
+      color: var(--green);
+      font-size: 16px;
+    }
+
+    /* ── GAME VIEW LAYOUT ── */
+    #view-game .game-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .btn-back {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: var(--radius);
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-back:hover { border-color: var(--blue); color: var(--blue); }
+    .game-header-title {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-dim);
+      min-width: 0;
+    }
+    .game-header-title strong { color: var(--text); }
+    .progress-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--amber);
+      background: var(--amber-bg);
+      border: 1px solid var(--amber);
+      border-radius: 20px;
+      padding: 2px 10px;
+      white-space: nowrap;
+    }
+
+    /* ── GAME BODY ── */
+    .game-body {
+      flex: 1;
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .panel-puzzle {
+      flex: 1;
+      padding: 24px 20px;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      min-width: 0;
+    }
+    .panel-input {
+      width: 340px;
+      flex-shrink: 0;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 700px) {
+      .game-body { flex-direction: column; overflow: visible; }
+      .panel-puzzle { border-right: none; border-bottom: 1px solid var(--border); }
+      .panel-input { width: 100%; }
+    }
+
+    /* ── CONCEPT BADGE ── */
+    .concept-badge {
+      display: inline-block;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber);
+      color: var(--amber);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .level-title-lg {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .level-desc {
+      color: var(--text-dim);
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    /* ── STRING GROUPS ── */
+    .string-group { margin-bottom: 16px; }
+    .group-label {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-dimmer);
+      font-family: var(--font-mono);
+      margin-bottom: 6px;
+    }
+    .test-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 5px;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    .test-row.pass { border-color: var(--green); background: var(--green-bg); }
+    .test-row.fail { border-color: var(--red); background: var(--red-bg); }
+
+    .indicator {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+      color: var(--text-dimmer);
+    }
+    .indicator.pass { color: var(--green); }
+    .indicator.fail { color: var(--red); }
+
+    .row-type-tag {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1px 5px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .row-type-tag.match { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+    .row-type-tag.reject { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+
+    .string-val {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    /* ── REGEX INPUT PANEL ── */
+    .input-label {
+      font-size: 11px;
+      color: var(--text-dimmer);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: var(--font-mono);
+    }
+    .regex-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .regex-wrapper:focus-within { border-color: var(--blue); }
+    .regex-wrapper.error-state { border-color: var(--red); }
+    .regex-delim {
+      color: var(--text-dimmer);
+      font-family: var(--font-mono);
+      font-size: 20px;
+      padding: 8px 8px;
+      user-select: none;
+    }
+    #regex-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--green);
+      font-family: var(--font-mono);
+      font-size: 16px;
+      padding: 8px 4px;
+      caret-color: var(--green);
+      min-width: 0;
+    }
+    .error-msg {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--red);
+      min-height: 16px;
+    }
+    .solve-status {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dimmer);
+    }
+    .solve-status .count-pass { color: var(--green); }
+    .solve-status .count-fail { color: var(--red); }
+
+    /* ── BUTTONS ── */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      background: var(--surface-2);
+      color: var(--text-dim);
+    }
+    .btn:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-hint { flex: 1; }
+    .btn-submit {
+      flex: 2;
+      background: var(--green-bg);
+      border-color: var(--green);
+      color: var(--green);
+      font-weight: bold;
+    }
+    .btn-submit:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .btn-submit:not(:disabled):hover {
+      background: var(--green);
+      color: var(--bg);
+    }
+
+    /* ── HINT ── */
+    .hint-box {
+      background: var(--surface-2);
+      border: 1px solid var(--purple);
+      border-left: 3px solid var(--purple);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      display: none;
+    }
+    .hint-box.visible { display: block; }
+    .hint-box code {
+      font-family: var(--font-mono);
+      color: var(--purple);
+      background: rgba(188, 140, 255, 0.1);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    /* ── SUCCESS BANNER ── */
+    .success-banner {
+      background: var(--green-bg);
+      border: 1px solid var(--green);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: none;
+      gap: 12px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .success-banner.visible { display: flex; }
+    .success-title {
+      color: var(--green);
+      font-weight: bold;
+      font-family: var(--font-mono);
+      font-size: 14px;
+    }
+    .success-subtitle {
+      color: var(--text-dim);
+      font-size: 12px;
+      margin-top: -4px;
+    }
+    .btn-next {
+      background: var(--green);
+      border: none;
+      border-radius: var(--radius);
+      color: var(--bg);
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: opacity 0.15s;
+    }
+    .btn-next:hover { opacity: 0.85; }
+    .btn-all-done {
+      background: var(--amber);
+      border: none;
+      border-radius: var(--radius);
+      color: var(--bg);
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: var(--font-sans);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════
+       VIEW: LEVEL SELECT
+  ════════════════════════════════════════════ -->
+  <div id="view-select" class="view" data-testid="view-select">
+    <header class="app-header">
+      <div class="app-logo">REGEX <span>//</span> DOJO</div>
+      <div class="app-subtitle">20 progressive puzzles</div>
+    </header>
+    <div class="select-body">
+      <div class="select-intro">
+        <h2>Choose a Level</h2>
+        <p>Write a regex to match the green strings and reject the red ones.<br>Each level teaches one concept. Complete them in order.</p>
+        <div class="total-progress" data-testid="total-progress">0 / 20 complete</div>
+      </div>
+      <div class="level-grid" id="level-grid" data-testid="level-grid"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       VIEW: GAME
+  ════════════════════════════════════════════ -->
+  <div id="view-game" class="view" data-testid="view-game">
+    <div class="game-header">
+      <button class="btn-back" id="btn-menu" data-testid="btn-menu">← Levels</button>
+      <div class="game-header-title">
+        <span id="level-num" data-testid="level-num">Level 1 / 20</span>
+        &nbsp;—&nbsp;
+        <strong id="level-title-header" data-testid="level-title-header"></strong>
+      </div>
+      <div class="progress-pill" id="progress" data-testid="progress">0 / 20</div>
+    </div>
+
+    <div class="game-body">
+      <!-- Left: puzzle description + test strings -->
+      <div class="panel-puzzle" id="panel-puzzle">
+        <div class="concept-badge" id="concept-badge" data-testid="concept-badge"></div>
+        <div class="level-title-lg" id="level-title" data-testid="level-title"></div>
+        <div class="level-desc" id="level-desc" data-testid="level-desc"></div>
+
+        <div id="test-strings" data-testid="test-strings">
+          <div class="string-group" id="group-match">
+            <div class="group-label">✓ Must Match</div>
+            <div id="rows-match" data-testid="rows-match"></div>
+          </div>
+          <div class="string-group" id="group-reject">
+            <div class="group-label">✗ Must Not Match</div>
+            <div id="rows-reject" data-testid="rows-reject"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: regex input + controls -->
+      <div class="panel-input">
+        <div class="input-label">Your Regex</div>
+        <div class="regex-wrapper" id="regex-wrapper">
+          <span class="regex-delim">/</span>
+          <input
+            type="text"
+            id="regex-input"
+            data-testid="regex-input"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="type pattern here"
+          />
+          <span class="regex-delim">/</span>
+        </div>
+        <div class="error-msg" id="regex-error" data-testid="regex-error"></div>
+
+        <div class="solve-status" id="solve-status" data-testid="solve-status">
+          <span id="status-text">Enter a pattern above</span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-hint" id="btn-hint" data-testid="btn-hint">Hint</button>
+          <button class="btn btn-submit" id="btn-submit" data-testid="btn-submit" disabled>Submit →</button>
+        </div>
+
+        <div class="hint-box" id="hint-text" data-testid="hint-text"></div>
+
+        <div class="success-banner" id="success-banner" data-testid="success-banner">
+          <div class="success-title" id="success-title">✓ Level Complete!</div>
+          <div class="success-subtitle" id="success-subtitle"></div>
+          <button class="btn-next" id="btn-next" data-testid="btn-next">Next Level →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+/* ================================================================
+   GAME DATA — 20 progressive regex levels
+================================================================ */
+const LEVELS = [
+  {
+    id: 1,
+    title: "Find the Greeting",
+    concept: "Literal Match",
+    description: "Match strings that contain the exact word 'hello' (lowercase only).",
+    hint: "Regex patterns can be plain text — just type the exact characters you want to find. <code>hello</code> matches any string containing those five letters in that order.",
+    match: ["hello", "say hello", "hello there", "hello!"],
+    reject: ["world", "HELLO", "Hell0", "help", "helo"]
+  },
+  {
+    id: 2,
+    title: "Vowel Starter",
+    concept: "Character Class [ ]",
+    description: "Match strings that BEGIN with a lowercase vowel (a, e, i, o, or u).",
+    hint: "Square brackets define a character class: <code>[aeiou]</code> matches any single vowel. Anchor to the start with <code>^</code>.",
+    match: ["apple", "end", "ice cream", "oven", "under"],
+    reject: ["start", "game", "world", "cat", "1apple"]
+  },
+  {
+    id: 3,
+    title: "Three-Letter Code",
+    concept: "Dot Wildcard .",
+    description: "Match strings that are EXACTLY 3 characters: starts with 'c', any middle character, ends with 't'.",
+    hint: "A dot <code>.</code> matches any single character. Anchor with <code>^</code> and <code>$</code> to require the full string to match.",
+    match: ["cat", "cot", "cut", "cbt", "c9t"],
+    reject: ["coat", "ct", "chat", "cast", "cats"]
+  },
+  {
+    id: 4,
+    title: "British or American",
+    concept: "Optional: ?",
+    description: "Match EXACTLY 'color' or 'colour' — nothing else.",
+    hint: "Put <code>?</code> after a character to make it optional (zero or one occurrence). <code>u?</code> means the 'u' may or may not be present.",
+    match: ["color", "colour"],
+    reject: ["colouur", "clour", "colours", "colors", "colour!"]
+  },
+  {
+    id: 5,
+    title: "Numbers Only",
+    concept: "One or More: +",
+    description: "Match strings that consist ENTIRELY of digits (at least one digit, nothing else).",
+    hint: "<code>\\d</code> matches a single digit 0–9. Use <code>+</code> for 'one or more'. Anchor with <code>^</code> and <code>$</code> to reject any non-digit characters.",
+    match: ["5", "42", "1000", "007", "314159"],
+    reject: ["12a", "a99", "12.5", " 42", ""]
+  },
+  {
+    id: 6,
+    title: "Optional Repeats",
+    concept: "Zero or More: *",
+    description: "Match strings that are 'a' followed by zero or more 'b's — and nothing else.",
+    hint: "<code>*</code> means 'zero or more' of the preceding element. <code>ab*</code> matches 'a', 'ab', 'abb', etc. Anchor with <code>^</code> and <code>$</code>.",
+    match: ["a", "ab", "abb", "abbb", "abbbb"],
+    reject: ["b", "ba", "aab", "abc", "aabb"]
+  },
+  {
+    id: 7,
+    title: "Error Lines",
+    concept: "Start Anchor: ^",
+    description: "Match strings that START with 'Error:' (case-sensitive).",
+    hint: "<code>^</code> anchors the match to the START of the string. Without it, 'Error:' could appear anywhere.",
+    match: ["Error: not found", "Error: timeout", "Error: 404"],
+    reject: ["Warning: Error: found", "INFO Error: crash", "No error here", "error: lowercase"]
+  },
+  {
+    id: 8,
+    title: "Log Files",
+    concept: "End Anchor: $",
+    description: "Match strings that END with '.log'.",
+    hint: "<code>$</code> anchors the match to the END of the string. Escape the dot with <code>\\.</code> so it matches a literal dot, not any character.",
+    match: ["app.log", "error.log", "system.log", "2024-01-01.log"],
+    reject: ["log.txt", "log.backup", "application.log.gz", "mylog"]
+  },
+  {
+    id: 9,
+    title: "PIN Validator",
+    concept: "Exact Count: {n}",
+    description: "Match strings that are EXACTLY 4 digits — no more, no less.",
+    hint: "<code>{n}</code> matches exactly n repetitions. <code>\\d{4}</code> matches exactly four digits. Don't forget to anchor both ends.",
+    match: ["0000", "1234", "9999", "0042"],
+    reject: ["123", "12345", "1a23", "123 ", " 1234"]
+  },
+  {
+    id: 10,
+    title: "Image Files",
+    concept: "Alternation: |",
+    description: "Match strings that end with a .jpg, .png, or .gif extension (lowercase only).",
+    hint: "<code>|</code> inside a group is alternation: <code>(jpg|png|gif)</code> matches any of the three. Escape the dot before the extension.",
+    match: ["photo.jpg", "image.png", "animation.gif", "banner.jpg"],
+    reject: ["video.mp4", "document.pdf", "photo.jpeg", "image.bmp", "photo.JPG"]
+  },
+  {
+    id: 11,
+    title: "Phone Numbers",
+    concept: "Escaping & Combining",
+    description: "Match North American phone numbers in EXACTLY this format: (XXX) XXX-XXXX",
+    hint: "Escape literal parentheses: <code>\\(</code> and <code>\\)</code>. Use <code>\\d{3}</code> for three digits. Include the literal space and hyphen.",
+    match: ["(416) 555-1234", "(800) 123-4567", "(212) 555-9999"],
+    reject: ["416-555-1234", "555-1234", "(416)555-1234", "(4166) 555-1234"]
+  },
+  {
+    id: 12,
+    title: "Whole Words Only",
+    concept: "Word Boundary: \\b",
+    description: "Match strings containing the whole word 'run' — not 'running', 'runner', 'rerun', or 'outrun'.",
+    hint: "<code>\\b</code> matches the boundary between a word character and a non-word character. Wrap your word: <code>\\brun\\b</code>.",
+    match: ["go for a run", "run!", "I run daily", "run now"],
+    reject: ["running shoes", "runner up", "rerun the test", "outrun them"]
+  },
+  {
+    id: 13,
+    title: "No Whitespace",
+    concept: "Non-Whitespace: \\S",
+    description: "Match strings that contain NO whitespace characters — only non-whitespace, at least one character long.",
+    hint: "<code>\\S</code> matches any non-whitespace character (opposite of <code>\\s</code>). Use <code>+</code> for one or more, anchored at both ends.",
+    match: ["hello", "world123", "test_file.py", "NoSpaces", "a"],
+    reject: ["hello world", "a b", "has space", "two  spaces", ""]
+  },
+  {
+    id: 14,
+    title: "IP Addresses",
+    concept: "Range Quantifier: {n,m}",
+    description: "Match simplified IPv4 addresses: four groups of 1–3 digits separated by dots.",
+    hint: "<code>{1,3}</code> matches between 1 and 3 repetitions. Escape the dot between groups. Anchor the full string.",
+    match: ["192.168.1.1", "10.0.0.1", "255.255.255.0", "8.8.8.8"],
+    reject: ["192.168.1", "192.168.1.1.1", "abc.def.ghi.jkl", "1.2.3.4.5"]
+  },
+  {
+    id: 15,
+    title: "Password Validator",
+    concept: "Lookahead: (?=...)",
+    description: "Match strings that contain AT LEAST ONE digit AND AT LEAST ONE uppercase letter (in any order, anywhere).",
+    hint: "Chain lookaheads from the start: <code>(?=.*\\d)</code> asserts a digit exists somewhere. <code>(?=.*[A-Z])</code> asserts an uppercase letter exists. Both must pass.",
+    match: ["Password1", "ABC123", "a1B", "1A", "hello2World"],
+    reject: ["password", "12345", "UPPERCASE", "onlylower1", "all_lower_123"]
+  },
+  {
+    id: 16,
+    title: "Hex Colors",
+    concept: "Character Ranges: [0-9a-fA-F]",
+    description: "Match valid CSS hex color codes: a '#' followed by exactly 6 hexadecimal characters.",
+    hint: "Hex digits are 0–9 and a–f (or A–F). Use <code>[0-9a-fA-F]{6}</code> for exactly 6. Anchor the whole string.",
+    match: ["#ff00cc", "#AABBCC", "#123456", "#000000", "#ffffff"],
+    reject: ["#fff", "#1234567", "ff00cc", "#gggggg", "#12345g"]
+  },
+  {
+    id: 17,
+    title: "Valid Identifiers",
+    concept: "Word Character: \\w",
+    description: "Match valid Python/JavaScript variable names: must start with a letter or underscore, followed by any word characters.",
+    hint: "<code>\\w</code> matches <code>[a-zA-Z0-9_]</code>. The first character must be <code>[a-zA-Z_]</code> — not a digit.",
+    match: ["myVar", "_private", "var123", "__init__", "x"],
+    reject: ["123abc", "-name", "has space", "my-var", ""]
+  },
+  {
+    id: 18,
+    title: "Email Addresses",
+    concept: "Composing Patterns",
+    description: "Match basic email addresses: word characters before @, a domain, a dot, and a 2–4 character TLD.",
+    hint: "Break it down: <code>\\w+@\\w+\\.\\w{2,4}</code> — escape the dot before the TLD and anchor both ends.",
+    match: ["user@example.com", "test@mail.org", "john@co.uk", "a@b.io"],
+    reject: ["notanemail", "@domain.com", "user@", "user@domain", "user@@domain.com"]
+  },
+  {
+    id: 19,
+    title: "Comment Lines",
+    concept: "Real-World Pattern",
+    description: "Match strings that start with '#' — like Python comments, shell scripts, or Markdown headings.",
+    hint: "Combine <code>^</code> (start anchor) with the literal <code>#</code> character. No escaping needed for <code>#</code> outside a character class.",
+    match: ["# This is a comment", "## Heading", "#TODO:", "#! /usr/bin/env bash"],
+    reject: ["not a comment", " # indented", "code # inline", ""]
+  },
+  {
+    id: 20,
+    title: "Log Entry Validator",
+    concept: "Final Challenge",
+    description: "Match structured log entries: [INFO], [WARN], or [ERROR], then a space, a date YYYY-MM-DD, a space, then a non-empty message.",
+    hint: "Combine alternation <code>(INFO|WARN|ERROR)</code> inside literal brackets, <code>\\d{4}-\\d{2}-\\d{2}</code> for the date, and <code>.+</code> for the message.",
+    match: [
+      "[INFO] 2024-01-15 Server started",
+      "[WARN] 2023-12-31 Low memory",
+      "[ERROR] 2024-06-18 Connection failed"
+    ],
+    reject: [
+      "[DEBUG] 2024-01-15 Debug mode",
+      "[info] 2024-01-15 Lowercase level",
+      "[INFO] 2024-1-1 Short date",
+      "[INFO]2024-01-15 No space",
+      "INFO 2024-01-15 No brackets"
+    ]
+  }
+];
+
+/* ================================================================
+   STATE
+================================================================ */
+const STATE_KEY = 'regex-dojo-v1';
+let state = { completed: [], currentLevel: 1 };
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STATE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.completed = Array.isArray(parsed.completed) ? parsed.completed : [];
+      state.currentLevel = Number(parsed.currentLevel) || 1;
+    }
+  } catch (_) {
+    state = { completed: [], currentLevel: 1 };
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify(state));
+  } catch (_) { /* storage unavailable */ }
+}
+
+function isCompleted(levelId) {
+  return state.completed.includes(levelId);
+}
+
+function markComplete(levelId) {
+  if (!isCompleted(levelId)) {
+    state.completed.push(levelId);
+    saveState();
+  }
+}
+
+/* ================================================================
+   REGEX ENGINE
+================================================================ */
+function testPattern(pattern, str) {
+  /* Returns true (matches), false (no match), or null (invalid regex). */
+  if (!pattern) return null;
+  try {
+    return new RegExp(pattern).test(str);
+  } catch (_) {
+    return null;
+  }
+}
+
+function evaluateLevel(pattern, level) {
+  /* Returns {matchResults, rejectResults, allPass, hasError}. */
+  const matchResults = level.match.map(s => testPattern(pattern, s));
+  const rejectResults = level.reject.map(s => testPattern(pattern, s));
+  const hasError = [...matchResults, ...rejectResults].includes(null);
+  const allMatchPass = !hasError && matchResults.every(r => r === true);
+  const allRejectPass = !hasError && rejectResults.every(r => r === false);
+  return {
+    matchResults,
+    rejectResults,
+    allPass: allMatchPass && allRejectPass,
+    hasError
+  };
+}
+
+/* ================================================================
+   RENDERING — LEVEL SELECT
+================================================================ */
+function renderLevelSelect() {
+  const grid = document.getElementById('level-grid');
+  const totalProgress = document.querySelector('[data-testid="total-progress"]');
+  const completedCount = state.completed.length;
+  totalProgress.textContent = `${completedCount} / ${LEVELS.length} complete`;
+
+  grid.innerHTML = '';
+  LEVELS.forEach((level, idx) => {
+    const isFirst = idx === 0;
+    const prevDone = idx > 0 && isCompleted(LEVELS[idx - 1].id);
+    const unlocked = isFirst || prevDone || isCompleted(level.id);
+    const done = isCompleted(level.id);
+
+    const card = document.createElement('div');
+    card.className = 'level-card' + (done ? ' complete' : unlocked ? '' : ' locked');
+    card.setAttribute('data-testid', `level-card-${level.id}`);
+    card.innerHTML = `
+      ${done ? '<span class="card-check">✓</span>' : ''}
+      <div class="card-num">${String(level.id).padStart(2, '0')}</div>
+      <div class="card-title">${level.title}</div>
+      <div class="card-concept">${level.concept}</div>
+    `;
+    if (unlocked) {
+      card.addEventListener('click', () => showGameView(level.id));
+    }
+    grid.appendChild(card);
+  });
+}
+
+/* ================================================================
+   RENDERING — GAME VIEW
+================================================================ */
+let activeLevel = null;
+
+function renderLevel(levelId) {
+  const level = LEVELS.find(l => l.id === levelId);
+  if (!level) return;
+  activeLevel = level;
+
+  /* Header */
+  document.getElementById('level-num').textContent = `Level ${level.id} / ${LEVELS.length}`;
+  document.getElementById('level-title-header').textContent = level.title;
+  document.getElementById('progress').textContent = `${state.completed.length} / ${LEVELS.length}`;
+
+  /* Puzzle panel */
+  document.getElementById('concept-badge').textContent = level.concept;
+  document.getElementById('level-title').textContent = level.title;
+  document.getElementById('level-desc').textContent = level.description;
+
+  /* Match rows */
+  const rowsMatch = document.getElementById('rows-match');
+  rowsMatch.innerHTML = '';
+  level.match.forEach((str, i) => {
+    const row = document.createElement('div');
+    row.className = 'test-row';
+    row.setAttribute('data-testid', `row-match-${i}`);
+    row.setAttribute('data-type', 'match');
+    row.setAttribute('data-str', str);
+    row.innerHTML = `
+      <span class="indicator" data-testid="ind-match-${i}">·</span>
+      <span class="row-type-tag match">match</span>
+      <span class="string-val">"${escHtml(str)}"</span>
+    `;
+    rowsMatch.appendChild(row);
+  });
+
+  /* Reject rows */
+  const rowsReject = document.getElementById('rows-reject');
+  rowsReject.innerHTML = '';
+  level.reject.forEach((str, i) => {
+    const row = document.createElement('div');
+    row.className = 'test-row';
+    row.setAttribute('data-testid', `row-reject-${i}`);
+    row.setAttribute('data-type', 'reject');
+    row.setAttribute('data-str', str);
+    row.innerHTML = `
+      <span class="indicator" data-testid="ind-reject-${i}">·</span>
+      <span class="row-type-tag reject">exclude</span>
+      <span class="string-val">"${escHtml(str)}"</span>
+    `;
+    rowsReject.appendChild(row);
+  });
+
+  /* Reset input panel */
+  const input = document.getElementById('regex-input');
+  input.value = '';
+  document.getElementById('regex-error').textContent = '';
+  document.getElementById('regex-wrapper').classList.remove('error-state');
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('hint-text').classList.remove('visible');
+  document.getElementById('hint-text').innerHTML = level.hint;
+  document.getElementById('success-banner').classList.remove('visible');
+  document.getElementById('solve-status').innerHTML = '<span id="status-text">Enter a pattern above</span>';
+
+  /* Show completed banner immediately if already done */
+  if (isCompleted(level.id)) {
+    showSuccessBanner(level, true);
+  }
+}
+
+function updateFeedback(pattern) {
+  if (!activeLevel) return;
+  const { matchResults, rejectResults, allPass, hasError } = evaluateLevel(pattern, activeLevel);
+  const wrapper = document.getElementById('regex-wrapper');
+  const errorEl = document.getElementById('regex-error');
+
+  if (!pattern) {
+    /* Reset all indicators */
+    activeLevel.match.forEach((_, i) => setIndicator('match', i, null));
+    activeLevel.reject.forEach((_, i) => setIndicator('reject', i, null));
+    errorEl.textContent = '';
+    wrapper.classList.remove('error-state');
+    document.getElementById('btn-submit').disabled = true;
+    document.getElementById('solve-status').innerHTML = '<span id="status-text">Enter a pattern above</span>';
+    return;
+  }
+
+  if (hasError) {
+    wrapper.classList.add('error-state');
+    errorEl.textContent = 'Invalid regex — check your syntax';
+    activeLevel.match.forEach((_, i) => setIndicator('match', i, null));
+    activeLevel.reject.forEach((_, i) => setIndicator('reject', i, null));
+    document.getElementById('btn-submit').disabled = true;
+    document.getElementById('solve-status').innerHTML = '<span style="color:var(--red)">⚠ invalid pattern</span>';
+    return;
+  }
+
+  wrapper.classList.remove('error-state');
+  errorEl.textContent = '';
+
+  /* Update indicators */
+  matchResults.forEach((r, i) => setIndicator('match', i, r));
+  rejectResults.forEach((r, i) => setIndicator('reject', i, !r));  /* reject passes when r===false */
+
+  /* Count */
+  const total = matchResults.length + rejectResults.length;
+  const passing = matchResults.filter(r => r === true).length + rejectResults.filter(r => r === false).length;
+  const failing = total - passing;
+
+  const statusEl = document.getElementById('solve-status');
+  if (allPass) {
+    statusEl.innerHTML = `<span class="count-pass">✓ All ${total} tests passing</span>`;
+  } else {
+    statusEl.innerHTML = `<span class="count-pass">${passing} passing</span> · <span class="count-fail">${failing} failing</span>`;
+  }
+
+  document.getElementById('btn-submit').disabled = !allPass;
+}
+
+function setIndicator(type, idx, pass) {
+  const el = document.querySelector(`[data-testid="ind-${type}-${idx}"]`);
+  const row = document.querySelector(`[data-testid="row-${type}-${idx}"]`);
+  if (!el || !row) return;
+
+  if (pass === null || pass === undefined) {
+    el.textContent = '·';
+    el.className = 'indicator';
+    row.className = 'test-row';
+  } else if (pass) {
+    el.textContent = '✓';
+    el.className = 'indicator pass';
+    row.className = 'test-row pass';
+  } else {
+    el.textContent = '✗';
+    el.className = 'indicator fail';
+    row.className = 'test-row fail';
+  }
+}
+
+function showSuccessBanner(level, alreadyDone) {
+  const banner = document.getElementById('success-banner');
+  const title = document.getElementById('success-title');
+  const subtitle = document.getElementById('success-subtitle');
+  const btnNext = document.getElementById('btn-next');
+
+  title.textContent = alreadyDone ? `✓ Level ${level.id} already complete` : `✓ Level ${level.id} Complete!`;
+  subtitle.textContent = `Concept: ${level.concept}`;
+  banner.classList.add('visible');
+
+  /* Remove any old next button listeners by replacing */
+  const fresh = btnNext.cloneNode(true);
+  btnNext.replaceWith(fresh);
+
+  const nextLevel = LEVELS.find(l => l.id === level.id + 1);
+  if (nextLevel) {
+    fresh.textContent = 'Next Level →';
+    fresh.setAttribute('data-testid', 'btn-next');
+    fresh.addEventListener('click', () => showGameView(nextLevel.id));
+  } else {
+    const done = document.createElement('button');
+    done.className = 'btn-all-done';
+    done.textContent = '🏆 All Levels Complete!';
+    done.setAttribute('data-testid', 'btn-next');
+    done.addEventListener('click', () => showSelectView());
+    fresh.replaceWith(done);
+  }
+}
+
+/* ================================================================
+   NAVIGATION
+================================================================ */
+function showSelectView() {
+  renderLevelSelect();
+  document.getElementById('view-select').classList.add('active');
+  document.getElementById('view-game').classList.remove('active');
+}
+
+function showGameView(levelId) {
+  document.getElementById('view-select').classList.remove('active');
+  document.getElementById('view-game').classList.add('active');
+  renderLevel(levelId);
+  state.currentLevel = levelId;
+  saveState();
+  document.getElementById('regex-input').focus();
+}
+
+/* ================================================================
+   EVENTS
+================================================================ */
+document.getElementById('regex-input').addEventListener('input', function () {
+  updateFeedback(this.value.trim());
+});
+
+document.getElementById('btn-submit').addEventListener('click', function () {
+  if (!activeLevel) return;
+  const pattern = document.getElementById('regex-input').value.trim();
+  const { allPass } = evaluateLevel(pattern, activeLevel);
+  if (!allPass) return;
+  markComplete(activeLevel.id);
+  document.getElementById('progress').textContent = `${state.completed.length} / ${LEVELS.length}`;
+  this.disabled = true;
+  showSuccessBanner(activeLevel, false);
+});
+
+document.getElementById('btn-hint').addEventListener('click', function () {
+  const hintEl = document.getElementById('hint-text');
+  hintEl.classList.toggle('visible');
+  this.textContent = hintEl.classList.contains('visible') ? 'Hide Hint' : 'Hint';
+});
+
+document.getElementById('btn-menu').addEventListener('click', () => showSelectView());
+
+/* ================================================================
+   UTILITIES
+================================================================ */
+function escHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ================================================================
+   INIT
+================================================================ */
+loadState();
+showSelectView();
+</script>
+</body>
+</html>
