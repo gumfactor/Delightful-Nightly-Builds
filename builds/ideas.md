@@ -50,6 +50,8 @@ always generates fresh ideas.
 | 10 | 2026-06-17 | F | ambitious | SEC EDGAR Financial History Extractor | Uses SEC EDGAR public API (no auth) to pull 5 years of income statement and balance sheet data for any list of US tickers; outputs clean CSV and a comparison summary HTML; useful for investment research and financial modeling | — | — | — | pending |
 | 11 | 2026-06-18 | G | ambitious | Market Cap Higher or Lower | Browser game using baked-in Yahoo Finance data: given two company names with sector/industry hints, guess which has the higher market cap. Tracks accuracy and streak per session. Teaches market intuition through play. | — | — | — | pending |
 | 12 | 2026-06-18 | G | ambitious | Stock Chart Direction Quiz | Show a real historical stock chart (last 6 months) with sector and key metrics visible; guess whether the stock went up, down, or flat over the next quarter. Uses pre-generated yfinance data as static JSON. Trains pattern recognition and market intuition. | — | — | — | pending |
+| 13 | 2026-06-20 | I | ambitious | Weekly Project Dashboard / Context Switcher | Browser-based tool (HTML/JS, localStorage) to set weekly priorities across active projects (lab, Canada List, investments, personal), mark items complete, and export a weekly review summary. Directly addresses the managing-many-simultaneous-projects friction. | — | — | — | pending |
+| 14 | 2026-06-20 | I | ambitious | Student Supervision Log | Python CLI + HTML report to log grad student and RA supervision sessions — meeting date, agenda, action items, deadlines — with a weekly "who needs follow-up?" view. Designed for a lab director managing 3–6 students simultaneously. | — | — | — | pending |
 
 ---
 
