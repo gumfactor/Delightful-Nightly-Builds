@@ -1,0 +1,3 @@
+# Runtime: stdlib only (json, urllib.request, argparse, pathlib, datetime)
+# Test dependency:
+pytest>=7.0.0
