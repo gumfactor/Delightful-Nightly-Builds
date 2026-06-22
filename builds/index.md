@@ -8,25 +8,24 @@
 
 ## Stats
 
-- **Total builds:** 9
-- **Completed:** 6
+- **Total builds:** 13
+- **Completed:** 10
 - **Partial:** 0
 - **Aborted:** 0
 - **Discarded:** 3
-- **Last build date:** 2026-06-18
-- **Categories used (all time):** A, B, C, F, G, H
+- **Last build date:** 2026-06-22
+- **Categories used (all time):** A, B, C, F, G, H, I
 
 ---
 
 ## Last 7 Builds (Quick Reference for Decision-Making)
 
-- 2026-06-08 — [F] — focused — Quick Data Profiler (discarded)
-- 2026-06-09 — [A] — focused — Investment Research Notes (discarded)
-- 2026-06-10 — [A] — ambitious — Investment Research Platform (complete)
-- 2026-06-12 — [A] — solid — Investment Watchlist Dashboard (discarded)
-- 2026-06-14 — [C] — focused — Investment Thesis Journal (complete)
 - 2026-06-17 — [F] — ambitious — Qualtrics Survey Data Inspector (complete)
 - 2026-06-18 — [G] — ambitious — Regex Dojo (complete)
+- 2026-06-19 — [H] — ambitious — dep-check: Python Dependency Auditor (complete)
+- 2026-06-20 — [I] — ambitious — Run Planner (complete)
+- 2026-06-21 — [A] — ambitious — GitHub Repository Health Scorecard (complete)
+- 2026-06-22 — [B] — ambitious — Morning Briefing (complete)
 
 ---
 
@@ -43,6 +42,10 @@
 | 2026-06-14 | C | focused | Investment Thesis Journal | Python CLI to record investment research notes per ticker with live price capture at time of writing for later accountability | Python 3, yfinance, pytest | complete | 4 | Good core concept — price-at-time-of-note creates genuine accountability over time. Delivered as a bare CLI with no view layer; value is real but half-realized. Needs dashboard integration to be worth reaching for daily. |
 | 2026-06-17 | F | ambitious | Qualtrics Survey Data Inspector | Python CLI that parses Qualtrics CSV exports (3-row header format), computes research-quality data QC metrics (completion, timing, missing data, straight-lining, duplicate IPs, Cronbach's alpha), and produces a text + HTML report plus a cleaned CSV with QI_Flags column | Python 3, stdlib, pytest | complete | 9 | — |
 | 2026-06-18 | G | ambitious | Regex Dojo | Browser puzzle game with 20 progressive levels — write a regex to match the green strings and reject the red ones; teaches literals through lookaheads with real-time feedback and localStorage progress | Vanilla HTML/CSS/JS, Playwright | complete | — | — |
+| 2026-06-19 | H | ambitious | dep-check: Python Dependency Auditor | Python CLI that parses requirements.txt / setup.cfg / Pipfile, queries PyPI for latest versions and yanked status, classifies each package (up-to-date / patch / minor / major / unpinned), and generates a coloured terminal report or a self-contained HTML dashboard; CI-compatible via exit-code contract | Python 3, stdlib, pytest | complete | — | — |
+| 2026-06-20 | I | ambitious | Run Planner | Python CLI and HTML dashboard that logs running workouts locally, fetches the Open-Meteo 7-day forecast for Toronto, scores each hour for running comfort (temperature, wind, precipitation), and renders a dark-mode report with weekly mileage charts and best training windows | Python 3, stdlib, pytest | complete | — | — |
+| 2026-06-21 | A | ambitious | GitHub Repository Health Scorecard | Python CLI that fetches all authenticated user repos via GITHUB_TOKEN, fetches latest CI/Actions status per repo, computes a composite health score (recency + CI + open issues), and generates a self-contained dark-mode HTML dashboard with a doughnut chart, sortable/filterable repo table, and AI-generated morning briefing via Anthropic API | Python 3, stdlib, pytest | complete | — | — |
+| 2026-06-22 | B | ambitious | Morning Briefing | Python CLI that combines GitHub activity (recent pushes, stale repos, open PRs), investment portfolio moves (yfinance watchlist with day change % and Chart.js bar chart), and Open-Meteo hourly weather scores for running/golf/boating into a single AI-synthesized HTML dashboard + markdown file; designed for daily use as a Claude Code Routine | Python 3, yfinance, pytest | complete | — | — |
 
 ---
 
