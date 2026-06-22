@@ -1,0 +1,10 @@
+{
+  "watchlist": ["NVDA", "AAPL", "MSFT", "SPY", "BRK-B", "SHOP.TO"],
+  "weather_location": {
+    "lat": 43.651070,
+    "lon": -79.347015,
+    "name": "Toronto"
+  },
+  "stale_days": 7,
+  "activity_lookback_hours": 24
+}
