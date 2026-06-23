@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Lens — Research Paper Inbox</title>
+<style>
+:root{--bg:#0f1117;--surface:#1a1d2e;--surface2:#242740;--border:#2d3158;
+  --text:#e2e8f0;--dim:#94a3b8;--green:#4ade80;--amber:#fbbf24;--blue:#60a5fa;
+  --purple:#a78bfa;--accent:#818cf8;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 1.5rem;}
+.hrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);}
+.stats{display:flex;gap:1rem;font-size:.8rem;color:var(--dim);}
+.stats span{color:var(--text);font-weight:600;}
+.controls{padding:.75rem 1.5rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;
+  background:var(--surface);border-bottom:1px solid var(--border);}
+#search{flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:.45rem .75rem;color:var(--text);font-size:.9rem;outline:none;}
+#search:focus{border-color:var(--accent);}
+.fb{padding:.35rem .7rem;border-radius:20px;border:1px solid var(--border);background:transparent;
+  color:var(--dim);font-size:.8rem;cursor:pointer;transition:all .15s;}
+.fb:hover{border-color:var(--accent);color:var(--accent);}
+.fb.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.cnt{background:var(--surface2);border-radius:10px;padding:.1rem .4rem;font-size:.7rem;margin-left:.2rem;}
+main{padding:1.5rem;max-width:960px;margin:0 auto;}
+#rc{font-size:.8rem;color:var(--dim);margin-bottom:1rem;}
+.papers{display:flex;flex-direction:column;gap:.7rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:1rem 1.25rem;transition:border-color .15s;}
+.card:hover{border-color:var(--accent);}
+.card.read{opacity:.6;}
+.ctop{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.4rem;}
+.ptitle{font-size:.95rem;font-weight:600;flex:1;}
+.ptitle a{color:var(--text);text-decoration:none;}
+.ptitle a:hover{color:var(--accent);}
+.rb{flex-shrink:0;font-size:.8rem;font-weight:700;padding:.2rem .5rem;border-radius:12px;}
+.rh{background:#14532d;color:var(--green);}
+.rm{background:#451a03;color:var(--amber);}
+.rl{background:#1c1c1c;color:var(--dim);}
+.pmeta{font-size:.75rem;color:var(--dim);margin-bottom:.4rem;}
+.tags{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.45rem;}
+.tag{font-size:.7rem;padding:.12rem .45rem;border-radius:10px;background:var(--surface2);
+  color:var(--dim);border:1px solid var(--border);}
+.tm{border-color:#4338ca;color:var(--purple);background:#1e1b4b;}
+.psumm{font-size:.85rem;color:var(--dim);line-height:1.55;}
+.cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:.7rem;}
+.rbtn{font-size:.75rem;padding:.22rem .55rem;border-radius:12px;border:1px solid var(--border);
+  background:transparent;color:var(--dim);cursor:pointer;}
+.rbtn:hover{border-color:var(--green);color:var(--green);}
+.rbtn.ir{border-color:var(--green);color:var(--green);}
+.empty{text-align:center;padding:3rem;color:var(--dim);}
+.empty h2{font-size:1rem;margin-bottom:.4rem;}
+@media(max-width:600px){.hrow{flex-direction:column;align-items:flex-start;}.stats{flex-wrap:wrap;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>Paper Lens</h1>
+    <div class="stats">
+      <div>Total <span>3</span></div>
+      <div>Unread <span>3</span></div>
+      <div>Today <span>3</span></div>
+      <div>High Relevance <span>3</span></div>
+    </div>
+  </div>
+</header>
+<div class="controls">
+  <input type="text" id="search" placeholder="Search papers..." oninput="af()">
+  <button class="fb active" data-f="all" onclick="sf(this)">All <span class="cnt" id="ca">3</span></button>
+  <button class="fb" data-f="unread" onclick="sf(this)">Unread <span class="cnt" id="cu">3</span></button>
+  <button class="fb" data-f="today" onclick="sf(this)">Today <span class="cnt" id="ct">3</span></button>
+  <button class="fb" data-f="high" onclick="sf(this)">High Relevance <span class="cnt" id="ch">3</span></button>
+</div>
+<main>
+  <div id="rc"></div>
+  <div class="papers" id="pc"></div>
+  <div id="es" class="empty" style="display:none"><h2>No papers match</h2><p>Try a different search or filter.</p></div>
+  <noscript>
+    <ul>
+      <li><a href="https://arxiv.org/abs/2406.10000">Empathy Deficits in Psychopathy: A Meta-Analytic Review of fMRI Studies</a></li>
+      <li><a href="https://arxiv.org/abs/2406.10001">Cortisol Reactivity and Stress Regulation: HPA Axis Dysregulation in Affective Disorders</a></li>
+      <li><a href="https://arxiv.org/abs/2406.10002">Autonomous LLM Agents for Scientific Literature Synthesis</a></li>
+    </ul>
+  </noscript>
+</main>
+</body>
+<script>
+const P=[{"id": 1, "arxiv_id": "2406.10000", "title": "Empathy Deficits in Psychopathy: A Meta-Analytic Review of fMRI Studies", "authors": "Smith A, Jones B, Williams C", "abstract": "This meta-analysis synthesizes neuroimaging evidence of empathy deficits in psychopathic individuals across 45 fMRI studies. We find consistent hypoactivation of the insula and anterior cingulate cortex during affective empathy tasks.", "published_date": "2024-06-15", "fetched_date": "2026-06-23T10:00:00", "relevance_score": 9, "summary": "Reviews neuroimaging evidence for empathy deficits in psychopathy across 45 fMRI studies. Finds consistent hypoactivation of the insula and anterior cingulate during affective tasks.", "methodology": "fMRI", "topic_label": "psychopathy empathy neuroimaging", "is_read": 0}, {"id": 2, "arxiv_id": "2406.10001", "title": "Cortisol Reactivity and Stress Regulation: HPA Axis Dysregulation in Affective Disorders", "authors": "Doe J, Brown K", "abstract": "We examined cortisol reactivity patterns in 120 participants with affective disorders using the Trier Social Stress Test. Results indicate significant HPA axis dysregulation predictive of disorder severity.", "published_date": "2024-06-14", "fetched_date": "2026-06-23T10:00:00", "relevance_score": 8, "summary": "Examined cortisol reactivity in 120 participants with affective disorders using TSST. Finds HPA dysregulation that predicts disorder severity.", "methodology": "behavioral", "topic_label": "HPA cortisol stress", "is_read": 0}, {"id": 3, "arxiv_id": "2406.10002", "title": "Autonomous LLM Agents for Scientific Literature Synthesis", "authors": "Chen L, Park S, Zhang Y", "abstract": "We present a framework for autonomous language model agents that can search, retrieve, and synthesize scientific literature across domains. Our approach achieves 78% accuracy on expert-graded summaries.", "published_date": "2024-06-13", "fetched_date": "2026-06-23T10:00:00", "relevance_score": 7, "summary": "Proposes autonomous LLM agents for scientific literature search and synthesis. Achieves 78% accuracy on expert-graded summaries.", "methodology": "ML", "topic_label": "LLM agents science", "is_read": 0}];
+const TD="2026-06-23";
+let cf='all';
+function ri(){try{return new Set(JSON.parse(localStorage.getItem('pl-read')||'[]'));}catch{return new Set();}}
+function si(id){const s=ri();s.add(id);localStorage.setItem('pl-read',JSON.stringify([...s]));}
+function ir(p){return p.is_read===1||ri().has(p.arxiv_id);}
+function rc(s){return s>=7?'rb rh':s>=4?'rb rm':'rb rl';}
+function esc(s){const d=document.createElement('div');d.textContent=String(s??'');return d.innerHTML;}
+function mk(p){
+  const rd=ir(p),sc=p.relevance_score??5;
+  const tgs=[];
+  if(p.methodology&&p.methodology!=='other')tgs.push('<span class="tag tm">'+esc(p.methodology)+'</span>');
+  if(p.topic_label)tgs.push('<span class="tag">'+esc(p.topic_label)+'</span>');
+  const ta=tgs.length?'<div class="tags">'+tgs.join('')+'</div>':'';
+  const au=p.authors.split(', ').slice(0,3).join(', ')+(p.authors.split(', ').length>3?' et al.':'');
+  return `<div class="card${rd?' read':''}" data-id="${esc(p.arxiv_id)}" data-s="${sc}" data-d="${esc(p.fetched_date)}" data-r="${rd?'1':'0'}">`
+    +'<div class="ctop"><div class="ptitle"><a href="https://arxiv.org/abs/'+esc(p.arxiv_id)+'" target="_blank" rel="noopener">'+esc(p.title)+'</a></div>'
+    +'<span class="'+rc(sc)+'">'+sc+'/10</span></div>'
+    +'<div class="pmeta">'+esc(au)+' · '+esc(p.published_date)+' · '+esc(p.arxiv_id)+'</div>'
+    +ta+'<div class="psumm">'+esc(p.summary||'')+'</div>'
+    +'<div class="cfoot"><button class="rbtn'+(rd?' ir':'')+"\" onclick=\"mr('"+(p.arxiv_id).replace(/'/g,"\\'")+"',this)\">"+(rd?'✓ Read':'Mark as read')+'</button></div>'
+    +'</div>';
+}
+function mr(id,btn){si(id);const c=btn.closest('.card');c.dataset.r='1';c.classList.add('read');btn.textContent='✓ Read';btn.classList.add('ir');af();}
+function sf(btn){document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');cf=btn.dataset.f;af();}
+function af(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const rids=ri();
+  const vis=P.filter(p=>{
+    const rd=p.is_read===1||rids.has(p.arxiv_id);
+    if(cf==='unread'&&rd)return false;
+    if(cf==='today'&&p.fetched_date.slice(0,10)!==TD)return false;
+    if(cf==='high'&&(p.relevance_score??0)<7)return false;
+    if(q){const h=(p.title+' '+(p.summary||'')+' '+(p.topic_label||'')+' '+p.authors).toLowerCase();if(!h.includes(q))return false;}
+    return true;
+  });
+  document.getElementById('pc').innerHTML=vis.map(mk).join('');
+  document.getElementById('rc').textContent=vis.length+' of '+P.length+' papers';
+  document.getElementById('es').style.display=vis.length===0?'block':'none';
+}
+af();
+</script>
+</html>
