@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture: Cortisol and the Stress Response</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #242837;
+  --border: #2e3347;
+  --accent: #7c6ef7;
+  --accent-dim: #4b47a0;
+  --text: #e2e4ed;
+  --text-muted: #8b91aa;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: "SFMono-Regular", "Consolas", "Monaco", monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+}
+.header-meta { color: var(--text-muted); font-size: 13px; margin-bottom: 4px; }
+.header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.header-sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+.header-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text); font-size: 13px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover { background: var(--border); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.tab-bar {
+  display: flex; gap: 4px; overflow-x: auto; padding-bottom: 0;
+  border-bottom: 1px solid var(--border); margin-bottom: 20px;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 8px 16px; border: none; background: transparent;
+  color: var(--text-muted); font-size: 14px; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  white-space: nowrap; transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.copy-row { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.copy-btn {
+  padding: 5px 12px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text-muted); font-size: 12px; cursor: pointer;
+  transition: color 0.15s;
+}
+.copy-btn:hover { color: var(--text); }
+.section-title {
+  font-size: 17px; font-weight: 700; margin-bottom: 16px;
+  color: var(--text);
+}
+ol.objectives { padding-left: 20px; }
+ol.objectives li { margin-bottom: 10px; }
+.outline-item {
+  display: grid; grid-template-columns: 100px 1fr;
+  gap: 0 16px; margin-bottom: 12px;
+  background: var(--surface); border-radius: var(--radius);
+  padding: 12px 14px; border: 1px solid var(--border);
+}
+.outline-time { color: var(--accent); font-size: 12px; font-family: var(--mono); font-weight: 600; padding-top: 2px; }
+.outline-title { font-weight: 600; margin-bottom: 4px; }
+.outline-activity { color: var(--text-muted); font-size: 14px; }
+.hook-box {
+  background: var(--surface); border-radius: var(--radius);
+  border-left: 3px solid var(--accent); padding: 16px 18px;
+  white-space: pre-wrap; line-height: 1.7;
+}
+.dq-item {
+  margin-bottom: 16px; background: var(--surface);
+  border-radius: var(--radius); border: 1px solid var(--border); padding: 14px 16px;
+}
+.dq-num { color: var(--accent); font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+.dq-question { font-weight: 500; margin-bottom: 8px; }
+.dq-note { color: var(--text-muted); font-size: 13px; }
+.dq-note-label { font-weight: 600; color: var(--amber); }
+.quiz-item {
+  margin-bottom: 20px; background: var(--surface);
+  border-radius: var(--radius); border: 1px solid var(--border); padding: 16px 18px;
+}
+.quiz-num { color: var(--accent); font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+.quiz-question { font-weight: 500; margin-bottom: 12px; }
+.quiz-options { list-style: none; margin-bottom: 12px; }
+.quiz-options li {
+  padding: 8px 12px; margin-bottom: 6px;
+  background: var(--surface2); border-radius: 6px;
+  border: 1px solid var(--border); font-size: 14px;
+}
+.quiz-options li.correct { border-color: var(--green); background: rgba(74,222,128,0.1); }
+.quiz-answer-btn {
+  padding: 6px 12px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text-muted); font-size: 13px; cursor: pointer;
+  transition: color 0.15s;
+}
+.quiz-answer-btn:hover { color: var(--text); }
+.quiz-rationale {
+  margin-top: 12px; padding: 10px 14px;
+  background: rgba(124,110,247,0.1); border-radius: 6px;
+  border: 1px solid var(--accent-dim); font-size: 14px;
+  display: none;
+}
+.quiz-rationale.visible { display: block; }
+.quiz-rationale-label { color: var(--accent); font-weight: 700; font-size: 12px; margin-bottom: 4px; }
+.concepts-list { list-style: none; }
+.concepts-list li {
+  padding: 10px 14px; margin-bottom: 8px;
+  background: var(--surface); border-radius: var(--radius);
+  border: 1px solid var(--border); font-size: 14px;
+}
+.concept-term { font-weight: 700; color: var(--accent); }
+.homework-box {
+  background: var(--surface); border-radius: var(--radius);
+  border-left: 3px solid var(--amber); padding: 16px 18px;
+  white-space: pre-wrap; line-height: 1.7;
+}
+@media print {
+  .tab-bar, .copy-row, .header-actions, .quiz-answer-btn { display: none !important; }
+  .tab-panel { display: block !important; page-break-before: auto; }
+  body { background: #fff; color: #000; }
+}
+@media (max-width: 600px) {
+  .outline-item { grid-template-columns: 1fr; }
+  .outline-time { margin-bottom: 4px; }
+  header { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-meta" data-testid="course-meta">Stress and Coping &bull; Undergrad &bull; 75 min</div>
+  <div class="header-title" data-testid="lecture-title">Cortisol and the Stress Response</div>
+  <div class="header-sub">Generated by AI Lecture Builder</div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="exportMarkdown()" data-testid="export-btn">Export Markdown</button>
+    <button class="btn" onclick="window.print()">Print</button>
+  </div>
+</header>
+<main>
+  <div class="tab-bar" role="tablist">
+<button class="tab-btn active" data-tab="tab-objectives" onclick="showTab('tab-objectives')">Objectives</button>
+<button class="tab-btn" data-tab="tab-outline" onclick="showTab('tab-outline')">Outline</button>
+<button class="tab-btn" data-tab="tab-hook" onclick="showTab('tab-hook')">Hook</button>
+<button class="tab-btn" data-tab="tab-discussion" onclick="showTab('tab-discussion')">Discussion</button>
+<button class="tab-btn" data-tab="tab-quiz" onclick="showTab('tab-quiz')">Quiz</button>
+<button class="tab-btn" data-tab="tab-concepts" onclick="showTab('tab-concepts')">Concepts</button>
+<button class="tab-btn" data-tab="tab-homework" onclick="showTab('tab-homework')">Homework</button>
+  </div>
+<div id="tab-objectives" class="tab-panel active"><div class="copy-row"><button class="copy-btn" onclick="copySection('tab-objectives')">Copy</button></div><h2 class="section-title">Learning Objectives</h2><ol class="objectives"><li>Explain the cortisol stress response in the HPA axis</li><li>Identify three physiological effects of chronic stress</li></ol></div>
+<div id="tab-outline" class="tab-panel"><div class="copy-row"><button class="copy-btn" onclick="copySection('tab-outline')">Copy</button></div><h2 class="section-title">Lecture Outline</h2><div class="outline-item"><div class="outline-time">0-5 min</div><div><div class="outline-title">Introduction</div><div class="outline-activity">Welcome and warm-up question</div></div></div><div class="outline-item"><div class="outline-time">5-30 min</div><div><div class="outline-title">The HPA Axis</div><div class="outline-activity">Lecture with slides</div></div></div><div class="outline-item"><div class="outline-time">30-55 min</div><div><div class="outline-title">Cortisol Effects</div><div class="outline-activity">Case study and pair discussion</div></div></div><div class="outline-item"><div class="outline-time">55-70 min</div><div><div class="outline-title">Discussion</div><div class="outline-activity">Open Q&amp;A from discussion prompts</div></div></div><div class="outline-item"><div class="outline-time">70-75 min</div><div><div class="outline-title">Wrap-up</div><div class="outline-activity">Summary and homework introduction</div></div></div></div>
+<div id="tab-hook" class="tab-panel"><div class="copy-row"><button class="copy-btn" onclick="copySection('tab-hook')">Copy</button></div><h2 class="section-title">Opening Hook</h2><div class="hook-box">Imagine waking up at 3am with a racing heart. Your palms are sweaty and your mind is spinning through tomorrow&#x27;s exam. That surge you feel is your stress response activating.</div></div>
+<div id="tab-discussion" class="tab-panel"><div class="copy-row"><button class="copy-btn" onclick="copySection('tab-discussion')">Copy</button></div><h2 class="section-title">Discussion Questions</h2><div class="dq-item"><div class="dq-num">Q1</div><div class="dq-question">What distinguishes acute stress from chronic stress at the neurobiological level?</div><div class="dq-note"><span class="dq-note-label">Teaching note:</span> Prompt students to consider duration and habituation.</div></div><div class="dq-item"><div class="dq-num">Q2</div><div class="dq-question">How does cortisol affect memory consolidation differently in the hippocampus versus the amygdala?</div><div class="dq-note"><span class="dq-note-label">Teaching note:</span> Pair-share before large group discussion.</div></div><div class="dq-item"><div class="dq-num">Q3</div><div class="dq-question">Can you think of everyday situations where the stress response might be adaptive?</div><div class="dq-note"><span class="dq-note-label">Teaching note:</span> Encourage examples from student life.</div></div></div>
+<div id="tab-quiz" class="tab-panel"><div class="copy-row"><button class="copy-btn" onclick="copySection('tab-quiz')">Copy</button></div><h2 class="section-title">Quiz Items</h2><div class="quiz-item" id="quiz-item-0"><div class="quiz-num">Question 1</div><div class="quiz-question">Which gland releases cortisol in response to ACTH?</div><ul class="quiz-options"><li data-opt="A"><strong>A.</strong> Adrenal cortex</li><li data-opt="B"><strong>B.</strong> Anterior pituitary</li><li data-opt="C"><strong>C.</strong> Hypothalamus</li><li data-opt="D"><strong>D.</strong> Pineal gland</li></ul><button class="quiz-answer-btn" id="answerBtn-0" onclick="toggleAnswer(0)">Show Answer</button><div class="quiz-rationale" id="rationale-0"><div class="quiz-rationale-label">Answer: A &bull; Rationale</div>The adrenal cortex (zona fasciculata) synthesizes and releases cortisol in response to ACTH from the anterior pituitary.</div></div><div class="quiz-item" id="quiz-item-1"><div class="quiz-num">Question 2</div><div class="quiz-question">Which of the following best describes negative feedback in the HPA axis?</div><ul class="quiz-options"><li data-opt="A"><strong>A.</strong> Cortisol inhibits CRH and ACTH release</li><li data-opt="B"><strong>B.</strong> ACTH stimulates CRH production</li><li data-opt="C"><strong>C.</strong> Cortisol amplifies the stress response</li><li data-opt="D"><strong>D.</strong> CRH directly stimulates the adrenal gland</li></ul><button class="quiz-answer-btn" id="answerBtn-1" onclick="toggleAnswer(1)">Show Answer</button><div class="quiz-rationale" id="rationale-1"><div class="quiz-rationale-label">Answer: A &bull; Rationale</div>Cortisol feeds back to inhibit both CRH from the hypothalamus and ACTH from the pituitary, forming a classic negative feedback loop.</div></div></div>
+<div id="tab-concepts" class="tab-panel"><div class="copy-row"><button class="copy-btn" onclick="copySection('tab-concepts')">Copy</button></div><h2 class="section-title">Key Concepts</h2><ul class="concepts-list"><li><span class="concept-term">cortisol</span>: primary glucocorticoid hormone secreted by the adrenal cortex during stress</li><li><span class="concept-term">HPA axis</span>: hypothalamic-pituitary-adrenal axis; the neuroendocrine pathway governing the stress response</li><li><span class="concept-term">CRH</span>: corticotropin-releasing hormone released by the hypothalamus</li><li><span class="concept-term">ACTH</span>: adrenocorticotropic hormone released by the pituitary</li><li><span class="concept-term">negative feedback</span>: mechanism by which cortisol suppresses CRH and ACTH</li></ul></div>
+<div id="tab-homework" class="tab-panel"><div class="copy-row"><button class="copy-btn" onclick="copySection('tab-homework')">Copy</button></div><h2 class="section-title">Homework / Reflection</h2><div class="homework-box">Over the next week, keep a brief stress diary. Each evening, note one stressful event, rate its intensity (1-10), and identify the physical and cognitive symptoms you noticed. Bring your diary to the next session.</div></div>
+</main>
+<script>
+const LECTURE_DATA = {"objectives": ["Explain the cortisol stress response in the HPA axis", "Identify three physiological effects of chronic stress"], "outline": [{"time_range": "0-5 min", "title": "Introduction", "activity": "Welcome and warm-up question"}, {"time_range": "5-30 min", "title": "The HPA Axis", "activity": "Lecture with slides"}, {"time_range": "30-55 min", "title": "Cortisol Effects", "activity": "Case study and pair discussion"}, {"time_range": "55-70 min", "title": "Discussion", "activity": "Open Q&A from discussion prompts"}, {"time_range": "70-75 min", "title": "Wrap-up", "activity": "Summary and homework introduction"}], "hook": "Imagine waking up at 3am with a racing heart. Your palms are sweaty and your mind is spinning through tomorrow's exam. That surge you feel is your stress response activating.", "discussion_questions": [{"question": "What distinguishes acute stress from chronic stress at the neurobiological level?", "teaching_note": "Prompt students to consider duration and habituation."}, {"question": "How does cortisol affect memory consolidation differently in the hippocampus versus the amygdala?", "teaching_note": "Pair-share before large group discussion."}, {"question": "Can you think of everyday situations where the stress response might be adaptive?", "teaching_note": "Encourage examples from student life."}], "quiz_items": [{"question": "Which gland releases cortisol in response to ACTH?", "options": {"A": "Adrenal cortex", "B": "Anterior pituitary", "C": "Hypothalamus", "D": "Pineal gland"}, "answer": "A", "rationale": "The adrenal cortex (zona fasciculata) synthesizes and releases cortisol in response to ACTH from the anterior pituitary."}, {"question": "Which of the following best describes negative feedback in the HPA axis?", "options": {"A": "Cortisol inhibits CRH and ACTH release", "B": "ACTH stimulates CRH production", "C": "Cortisol amplifies the stress response", "D": "CRH directly stimulates the adrenal gland"}, "answer": "A", "rationale": "Cortisol feeds back to inhibit both CRH from the hypothalamus and ACTH from the pituitary, forming a classic negative feedback loop."}], "key_concepts": ["cortisol: primary glucocorticoid hormone secreted by the adrenal cortex during stress", "HPA axis: hypothalamic-pituitary-adrenal axis; the neuroendocrine pathway governing the stress response", "CRH: corticotropin-releasing hormone released by the hypothalamus", "ACTH: adrenocorticotropic hormone released by the pituitary", "negative feedback: mechanism by which cortisol suppresses CRH and ACTH"], "homework": "Over the next week, keep a brief stress diary. Each evening, note one stressful event, rate its intensity (1-10), and identify the physical and cognitive symptoms you noticed. Bring your diary to the next session."};
+const TOPIC = "Cortisol and the Stress Response";
+const COURSE = "Stress and Coping";
+
+function showTab(tabId) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector('[data-tab="' + tabId + '"]').classList.add('active');
+}
+
+function copySection(tabId) {
+  const panel = document.getElementById(tabId);
+  const text = panel.innerText
+    .replace(/^Copy\n/, '')
+    .replace(/^Show Answer\n/gm, '');
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    const btn = panel.querySelector('.copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  }).catch(() => {});
+}
+
+function toggleAnswer(idx) {
+  const el = document.getElementById('rationale-' + idx);
+  const btn = document.getElementById('answerBtn-' + idx);
+  const item = LECTURE_DATA.quiz_items[idx];
+  if (!el || !item) return;
+  if (el.classList.contains('visible')) {
+    el.classList.remove('visible');
+    btn.textContent = 'Show Answer';
+    document.querySelectorAll('.quiz-options li').forEach(li => li.classList.remove('correct'));
+  } else {
+    el.classList.add('visible');
+    btn.textContent = 'Hide Answer';
+    const opts = document.querySelectorAll('#quiz-item-' + idx + ' .quiz-options li');
+    const answer = item.answer;
+    opts.forEach(li => {
+      if (li.dataset.opt === answer) li.classList.add('correct');
+    });
+  }
+}
+
+function exportMarkdown() {
+  const md = buildMarkdown();
+  const blob = new Blob([md], {type: 'text/markdown'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'lecture.md';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildMarkdown() {
+  const d = LECTURE_DATA;
+  const lines = [];
+  lines.push('# ' + TOPIC);
+  lines.push('**Course:** ' + COURSE);
+  lines.push('');
+  if (d.objectives && d.objectives.length) {
+    lines.push('## Learning Objectives');
+    d.objectives.forEach((o, i) => lines.push((i + 1) + '. ' + o));
+    lines.push('');
+  }
+  if (d.outline && d.outline.length) {
+    lines.push('## Lecture Outline');
+    d.outline.forEach(item => {
+      lines.push('**' + (item.time_range || '') + '** — ' + (item.title || ''));
+      if (item.activity) lines.push('  ' + item.activity);
+    });
+    lines.push('');
+  }
+  if (d.hook) {
+    lines.push('## Opening Hook');
+    lines.push(d.hook);
+    lines.push('');
+  }
+  if (d.discussion_questions && d.discussion_questions.length) {
+    lines.push('## Discussion Questions');
+    d.discussion_questions.forEach((q, i) => {
+      lines.push((i + 1) + '. ' + q.question);
+      if (q.teaching_note) lines.push('   *Teaching note:* ' + q.teaching_note);
+    });
+    lines.push('');
+  }
+  if (d.quiz_items && d.quiz_items.length) {
+    lines.push('## Quiz Items');
+    d.quiz_items.forEach((q, i) => {
+      lines.push((i + 1) + '. ' + q.question);
+      const opts = q.options || {};
+      Object.entries(opts).forEach(([k, v]) => lines.push('   ' + k + '. ' + v));
+      lines.push('   **Answer:** ' + q.answer);
+      if (q.rationale) lines.push('   *Rationale:* ' + q.rationale);
+    });
+    lines.push('');
+  }
+  if (d.key_concepts && d.key_concepts.length) {
+    lines.push('## Key Concepts');
+    d.key_concepts.forEach(c => lines.push('- ' + c));
+    lines.push('');
+  }
+  if (d.homework) {
+    lines.push('## Homework / Reflection');
+    lines.push(d.homework);
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+</script>
+</body>
+</html>
