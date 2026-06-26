@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Activity Explorer — gumfactor</title>
+<style>
+:root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --accent3: #f78166;
+    --accent4: #d2a8ff;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --card-radius: 10px;
+    --gap: 20px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 24px 20px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+header h1 { font-size: 1.4rem; font-weight: 600; }
+header h1 span { color: var(--accent); }
+.meta { color: var(--muted); font-size: 12px; }
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+}
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 16px 20px;
+}
+.card .label {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.card .value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+.card .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+.card.blue .value { color: var(--accent); }
+.card.green .value { color: var(--accent2); }
+.card.red .value { color: var(--accent3); }
+.card.purple .value { color: var(--accent4); }
+
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+}
+.chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 20px;
+}
+.chart-card h2 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 16px;
+}
+.chart-card canvas { width: 100% !important; }
+.chart-wide {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    margin-bottom: var(--gap);
+}
+.chart-wide h2 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 16px;
+}
+.insights-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent4);
+    border-radius: var(--card-radius);
+    padding: 20px 24px;
+    margin-bottom: var(--gap);
+}
+.insights-card h2 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent4);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 12px;
+}
+.insights-card p {
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+}
+footer {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+}
+@media (max-width: 600px) {
+    .charts-row { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>GitHub Activity Explorer &mdash; <span data-testid="username">gumfactor</span></h1>
+  <span class="meta">Last 12 months &bull; 2026-06-26 08:13 UTC</span>
+</header>
+
+<div class="stats-row">
+  <div class="card blue">
+    <div class="label">Total Commits</div>
+    <div class="value" data-testid="total-commits">474</div>
+    <div class="sub">117 active days</div>
+  </div>
+  <div class="card green">
+    <div class="label">Peak Hour</div>
+    <div class="value" data-testid="peak-hour">12am</div>
+    <div class="sub">4.1 commits / active day</div>
+  </div>
+  <div class="card red">
+    <div class="label">Current Streak</div>
+    <div class="value" data-testid="current-streak">8 days</div>
+    <div class="sub">Longest: 12 days</div>
+  </div>
+  <div class="card purple">
+    <div class="label">Top Repository</div>
+    <div class="value" style="font-size:1.3rem" data-testid="top-repo">TheCanadaList</div>
+    <div class="sub">186 commits</div>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-card">
+    <h2>Commits by Hour of Day (Eastern Time)</h2>
+    <canvas id="chart-hourly" data-testid="chart-hourly"></canvas>
+  </div>
+  <div class="chart-card">
+    <h2>Commits by Day of Week</h2>
+    <canvas id="chart-dow" data-testid="chart-dow"></canvas>
+  </div>
+</div>
+
+<div class="chart-wide">
+  <h2>Weekly Commit Volume &mdash; Past 12 Months</h2>
+  <canvas id="chart-weekly" data-testid="chart-weekly"></canvas>
+</div>
+
+<div class="chart-wide">
+  <h2>Repository Focus &mdash; Top 10 by Commit Count</h2>
+  <canvas id="chart-repos" data-testid="chart-repos"></canvas>
+</div>
+
+<div class="insights-card">
+  <h2>&#x2728; AI Developer Profile</h2>
+  <p data-testid="ai-insights">AI insights were not generated. Set ANTHROPIC_API_KEY and re-run without --no-ai.</p>
+</div>
+
+<footer>
+  Generated by GitHub Activity Explorer &bull; 2026-06-26 08:13 UTC
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.plugins.legend.display = false;
+
+
+new Chart(document.getElementById('chart-hourly'), {
+    type: 'bar',
+    data: {
+        labels: ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"],
+        datasets: [{
+            data: [46, 40, 25, 6, 0, 0, 0, 2, 1, 1, 14, 15, 32, 31, 30, 35, 27, 32, 25, 23, 15, 28, 28, 18],
+            backgroundColor: '#58a6ff',
+            borderRadius: 3,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: { grid: { display: false } },
+            y: { grid: { color: '#21262d' }, beginAtZero: true, ticks: { precision: 0 } }
+        },
+        plugins: { tooltip: { callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => ctx.raw + ' commits'
+        } } }
+    }
+});
+
+new Chart(document.getElementById('chart-dow'), {
+    type: 'bar',
+    data: {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [{
+            data: [39, 63, 49, 44, 80, 103, 96],
+            backgroundColor: '#3fb950',
+            borderRadius: 3,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: { grid: { display: false } },
+            y: { grid: { color: '#21262d' }, beginAtZero: true, ticks: { precision: 0 } }
+        },
+        plugins: { tooltip: { callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => ctx.raw + ' commits'
+        } } }
+    }
+});
+
+new Chart(document.getElementById('chart-weekly'), {
+    type: 'line',
+    data: {
+        labels: ["2025-W27", "2025-W28", "2025-W29", "2025-W30", "2025-W31", "2025-W32", "2025-W33", "2025-W34", "2025-W35", "2025-W36", "2025-W37", "2025-W38", "2025-W39", "2025-W40", "2025-W41", "2025-W42", "2025-W43", "2025-W44", "2025-W45", "2025-W46", "2025-W47", "2025-W48", "2025-W49", "2025-W50", "2025-W51", "2025-W52", "2026-W01", "2026-W02", "2026-W03", "2026-W04", "2026-W05", "2026-W06", "2026-W07", "2026-W08", "2026-W09", "2026-W10", "2026-W11", "2026-W12", "2026-W13", "2026-W14", "2026-W15", "2026-W16", "2026-W17", "2026-W18", "2026-W19", "2026-W20", "2026-W21", "2026-W22", "2026-W23", "2026-W24", "2026-W25", "2026-W26"],
+        datasets: [{
+            data: [4, 0, 3, 0, 0, 6, 9, 10, 5, 8, 6, 0, 12, 3, 11, 4, 1, 4, 3, 4, 2, 0, 0, 0, 7, 3, 5, 19, 0, 0, 3, 1, 53, 52, 6, 2, 58, 15, 6, 3, 9, 28, 13, 4, 8, 0, 1, 0, 1, 30, 45, 7],
+            borderColor: '#f78166',
+            backgroundColor: '#f7816622',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+            pointHoverRadius: 5,
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { maxTicksLimit: 13, maxRotation: 0 }
+            },
+            y: { grid: { color: '#21262d' }, beginAtZero: true, ticks: { precision: 0 } }
+        },
+        plugins: { tooltip: { callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => ctx.raw + ' commits'
+        } } }
+    }
+});
+
+new Chart(document.getElementById('chart-repos'), {
+    type: 'bar',
+    data: {
+        labels: ["TheCanadaList", "KwyeterApp_MVP", "Agentic-Investing", "Optimized-workflow", "TheCANADAList-data", "ADE_dev", "optimised_agentic_workflow", "TheCanadaList-ingestion-arush", "article_scout", "AI-chat-logs"],
+        datasets: [{
+            data: [186, 82, 51, 46, 41, 21, 20, 8, 8, 3],
+            backgroundColor: '#d2a8ff',
+            borderRadius: 3,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: {
+            x: { grid: { color: '#21262d' }, beginAtZero: true, ticks: { precision: 0 } },
+            y: { grid: { display: false } }
+        },
+        plugins: { tooltip: { callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => ctx.raw + ' commits'
+        } } }
+    }
+});
+</script>
+</body>
+</html>
