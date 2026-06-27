@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neurofact — Real or AI-Generated?</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3450;
+    --text: #e8eaf6;
+    --text-dim: #8c93b0;
+    --accent: #6c8ef4;
+    --accent-dim: #3d4f9e;
+    --real: #3ecf8e;
+    --real-dim: #1a5e43;
+    --fake: #f56565;
+    --fake-dim: #7a2929;
+    --neutral: #4a5568;
+    --radius: 12px;
+    --transition: 0.2s ease;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0 24px;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+
+  .logo span { color: var(--text-dim); font-weight: 400; }
+
+  .stats-bar {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .stat { text-align: center; }
+  .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+  .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; }
+
+  .streak-value { color: #f6ad55; }
+
+  main {
+    width: 100%;
+    max-width: 760px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .progress-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .progress-text {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .question-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .tag-category { background: var(--surface2); color: var(--accent); }
+
+  .tag-foundational { background: #1a3a2a; color: #68d391; }
+  .tag-advanced { background: #1a2a3a; color: #63b3ed; }
+  .tag-expert { background: #2a1a3a; color: #b794f4; }
+
+  .question-statement {
+    font-size: 1.1rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .answer-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px 20px;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    letter-spacing: 0.02em;
+  }
+
+  .btn:disabled { cursor: not-allowed; opacity: 0.6; }
+
+  .btn-real {
+    background: var(--real-dim);
+    color: var(--real);
+    border-color: var(--real-dim);
+  }
+  .btn-real:hover:not(:disabled) { background: #205c3d; border-color: var(--real); }
+
+  .btn-fake {
+    background: var(--fake-dim);
+    color: var(--fake);
+    border-color: var(--fake-dim);
+  }
+  .btn-fake:hover:not(:disabled) { background: #6b2222; border-color: var(--fake); }
+
+  .btn.correct {
+    background: var(--real-dim);
+    border-color: var(--real);
+    color: var(--real);
+    opacity: 1;
+  }
+
+  .btn.wrong {
+    background: var(--fake-dim);
+    border-color: var(--fake);
+    color: var(--fake);
+    opacity: 1;
+  }
+
+  .btn.neutral-reveal {
+    opacity: 0.35;
+  }
+
+  .feedback {
+    display: none;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 16px;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .feedback.visible { display: flex; }
+
+  .feedback-verdict {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .feedback-verdict.correct { color: var(--real); }
+  .feedback-verdict.wrong { color: var(--fake); }
+
+  .feedback-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+  }
+
+  .next-btn-wrap {
+    display: none;
+    justify-content: flex-end;
+  }
+
+  .next-btn-wrap.visible { display: flex; }
+
+  .btn-next {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent-dim);
+    padding: 10px 24px;
+    flex: none;
+    font-size: 0.9rem;
+  }
+  .btn-next:hover:not(:disabled) { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* End screen */
+  .end-screen {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .end-screen.visible { display: flex; }
+
+  .end-grade {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .grade-A { color: var(--real); }
+  .grade-B { color: #68d391; }
+  .grade-C { color: #f6ad55; }
+  .grade-D { color: #fc8181; }
+  .grade-F { color: var(--fake); }
+
+  .end-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .end-subtitle { color: var(--text-dim); }
+
+  .end-stats {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .end-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .end-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+  }
+
+  .end-stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .breakdown-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: left;
+  }
+
+  .breakdown-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px; }
+  .breakdown-value { font-size: 1.2rem; font-weight: 700; }
+  .breakdown-value.good { color: var(--real); }
+  .breakdown-value.bad { color: var(--fake); }
+
+  .btn-restart {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent-dim);
+    padding: 14px 40px;
+    font-size: 1rem;
+    flex: none;
+  }
+  .btn-restart:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* Intro screen */
+  .intro-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding: 24px 0;
+  }
+
+  .intro-screen.hidden { display: none; }
+
+  .intro-logo {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -1px;
+  }
+
+  .intro-tagline {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .intro-rules {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 28px;
+    text-align: left;
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .intro-rules h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  .intro-rules ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .intro-rules li {
+    display: flex;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .intro-rules li::before {
+    content: '→';
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .btn-start {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    padding: 14px 48px;
+    font-size: 1rem;
+    flex: none;
+  }
+  .btn-start:hover { background: #8ba6ff; border-color: #8ba6ff; }
+
+  .game-area { display: none; width: 100%; }
+  .game-area.visible { display: flex; flex-direction: column; gap: 20px; }
+
+  @media (max-width: 520px) {
+    .answer-buttons { flex-direction: column; }
+    .stats-bar { gap: 12px; }
+    .breakdown-grid { grid-template-columns: 1fr 1fr; }
+    .question-statement { font-size: 1rem; }
+    .end-stats { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Neurofact <span>/ real or AI?</span></div>
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-value" id="score-display">0</div>
+      <div class="stat-label">Score</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value streak-value" id="streak-display">0</div>
+      <div class="stat-label">Streak</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="accuracy-display">—</div>
+      <div class="stat-label">Accuracy</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Intro screen -->
+  <div class="intro-screen" id="intro-screen">
+    <div class="intro-logo">Neurofact</div>
+    <p class="intro-tagline">
+      30 neuroscience claims. Some are real findings from research literature. Some are convincingly written fakes. Can you tell the difference?
+    </p>
+    <div class="intro-rules">
+      <h3>How to Play</h3>
+      <ul>
+        <li>Read each claim carefully — both real findings and AI-generated fakes are written in the same scientific register.</li>
+        <li>Press <strong>Real Finding</strong> if you think it came from actual research. Press <strong>AI Generated</strong> if you think it's a plausible fake.</li>
+        <li>After you answer, you'll see whether you were right and why — even if it means reading something humbling.</li>
+        <li>Build your streak and see how you score on the final grade.</li>
+      </ul>
+    </div>
+    <button class="btn btn-start" id="btn-start" data-testid="btn-start">Start Game</button>
+  </div>
+
+  <!-- Game area -->
+  <div class="game-area" id="game-area">
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+      <div class="progress-text" id="progress-text">0 / 30</div>
+    </div>
+
+    <div class="question-card" id="question-card">
+      <div class="question-meta" id="question-meta"></div>
+      <div class="question-statement" id="question-statement" data-testid="question-statement"></div>
+      <div class="answer-buttons">
+        <button class="btn btn-real" id="btn-real" data-testid="btn-real">✓ Real Finding</button>
+        <button class="btn btn-fake" id="btn-fake" data-testid="btn-fake">✗ AI Generated</button>
+      </div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-verdict" id="feedback-verdict" data-testid="feedback-verdict"></div>
+        <div class="feedback-text" id="feedback-text" data-testid="feedback-text"></div>
+      </div>
+      <div class="next-btn-wrap" id="next-btn-wrap">
+        <button class="btn btn-next" id="btn-next" data-testid="btn-next">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End screen -->
+  <div class="end-screen" id="end-screen">
+    <div class="end-grade" id="end-grade" data-testid="end-grade"></div>
+    <div>
+      <div class="end-title" id="end-title" data-testid="end-title"></div>
+      <div class="end-subtitle" id="end-subtitle"></div>
+    </div>
+    <div class="end-stats">
+      <div class="end-stat">
+        <div class="end-stat-value" id="end-score" data-testid="end-score"></div>
+        <div class="end-stat-label">Correct</div>
+      </div>
+      <div class="end-stat">
+        <div class="end-stat-value" id="end-pct" data-testid="end-pct"></div>
+        <div class="end-stat-label">Accuracy</div>
+      </div>
+      <div class="end-stat">
+        <div class="end-stat-value" id="end-streak" data-testid="end-streak"></div>
+        <div class="end-stat-label">Best Streak</div>
+      </div>
+    </div>
+    <div class="breakdown-grid">
+      <div class="breakdown-item">
+        <div class="breakdown-label">Real findings identified</div>
+        <div class="breakdown-value good" id="bd-real-correct" data-testid="bd-real-correct"></div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-label">Fakes caught</div>
+        <div class="breakdown-value good" id="bd-fake-correct" data-testid="bd-fake-correct"></div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-label">Real mistaken for fake</div>
+        <div class="breakdown-value bad" id="bd-real-wrong" data-testid="bd-real-wrong"></div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-label">Fakes believed</div>
+        <div class="breakdown-value bad" id="bd-fake-wrong" data-testid="bd-fake-wrong"></div>
+      </div>
+    </div>
+    <button class="btn btn-restart" id="btn-restart" data-testid="btn-restart">Play Again</button>
+  </div>
+</main>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 1,
+    statement: "The hippocampus contains place cells — neurons that fire when an animal occupies a specific location in space — providing a neural basis for spatial navigation and episodic memory.",
+    answer: "real",
+    category: "Memory",
+    difficulty: "Foundational",
+    explanation: "Correct. Place cells in the hippocampus were discovered by John O'Keefe (1971), who shared the 2014 Nobel Prize in Physiology or Medicine for this work. Grid cells in the entorhinal cortex, discovered by the Mosers, provide the coordinate system these place cells use."
+  },
+  {
+    id: 2,
+    statement: "Mirror neurons in the premotor cortex of macaque monkeys fire both when the animal performs a goal-directed action and when it observes another individual performing the same action.",
+    answer: "real",
+    category: "Social Neuroscience",
+    difficulty: "Foundational",
+    explanation: "Correct. Mirror neurons were discovered by Giacomo Rizzolatti and colleagues at the University of Parma in the early 1990s. Their role in human empathy and social cognition remains an active and debated area of research."
+  },
+  {
+    id: 3,
+    statement: "Chronic psychological stress reduces grey matter volume in the prefrontal cortex while increasing amygdala reactivity to threat cues — a pattern reversed in part by successful treatment of stress-related disorders.",
+    answer: "real",
+    category: "Stress",
+    difficulty: "Advanced",
+    explanation: "Correct. Stress-induced structural changes in the prefrontal cortex and amygdala are well-documented in both animal models and human neuroimaging studies. Glucocorticoids (like cortisol) mediate dendritic retraction in the PFC and expansion in the amygdala under chronic stress."
+  },
+  {
+    id: 4,
+    statement: "Sleep slow-wave oscillations synchronize hippocampal sharp-wave ripples with cortical up-states, a process considered necessary for the consolidation of declarative memories during sleep.",
+    answer: "real",
+    category: "Memory",
+    difficulty: "Expert",
+    explanation: "Correct. The hippocampal-cortical dialogue during NREM sleep — in which sharp-wave ripples time-lock with cortical slow oscillations and sleep spindles — is one of the most replicated findings in sleep and memory research. Disrupting this dialogue impairs next-day recall."
+  },
+  {
+    id: 5,
+    statement: "Social exclusion activates the dorsal anterior cingulate cortex — a region also involved in the affective component of physical pain — supporting the hypothesis that social pain shares neural substrates with physical pain.",
+    answer: "real",
+    category: "Social Neuroscience",
+    difficulty: "Advanced",
+    explanation: "Correct. Naomi Eisenberger and colleagues demonstrated this in a seminal 2003 Science paper using the Cyberball paradigm. The finding generated the 'social pain overlap theory' (SPOT), though later research has refined exactly which pain components are shared."
+  },
+  {
+    id: 6,
+    statement: "Cognitive reappraisal — deliberately reinterpreting the meaning of an emotional stimulus — increases dorsolateral prefrontal cortex engagement and decreases amygdala activity compared to passive viewing of negative images.",
+    answer: "real",
+    category: "Emotion Regulation",
+    difficulty: "Advanced",
+    explanation: "Correct. Reappraisal is one of the most studied emotion regulation strategies in affective neuroscience, consistently associated with prefrontal up-regulation and amygdala down-regulation across dozens of fMRI studies."
+  },
+  {
+    id: 7,
+    statement: "The cerebellum contains approximately 70 billion granule cells, making it home to more neurons than the rest of the brain combined — despite accounting for only about 10% of total brain volume.",
+    answer: "real",
+    category: "Neuroanatomy",
+    difficulty: "Foundational",
+    explanation: "Correct. The cerebellum is extraordinarily neuron-dense. Granule cells alone represent roughly 50–80 billion neurons, and the total neuronal population of the cerebellum exceeds that of the cerebral cortex. This density supports the cerebellum's role in precise temporal prediction and motor learning."
+  },
+  {
+    id: 8,
+    statement: "Individuals with psychopathy show a characteristic pattern of preserved cognitive empathy — the ability to understand another's perspective — alongside a deficit in affective empathy — the ability to share their emotional state.",
+    answer: "real",
+    category: "Psychopathy",
+    difficulty: "Advanced",
+    explanation: "Correct. This cognitive-affective dissociation is central to current models of psychopathy (e.g., Blair's Integrated Emotion System model). Psychopathic individuals often score normally on theory-of-mind tasks but show blunted physiological and subjective responses to others' distress."
+  },
+  {
+    id: 9,
+    statement: "Cortisol, released during the stress response, crosses the blood-brain barrier and binds to mineralocorticoid and glucocorticoid receptors in the hippocampus, modulating synaptic plasticity and long-term potentiation.",
+    answer: "real",
+    category: "Stress",
+    difficulty: "Expert",
+    explanation: "Correct. The hippocampus has one of the highest densities of glucocorticoid receptors in the brain. Acute stress facilitates memory encoding via glucocorticoids, while chronic elevation impairs LTP and promotes dendritic atrophy — the cellular basis of stress-related hippocampal volume loss."
+  },
+  {
+    id: 10,
+    statement: "The default mode network — including medial prefrontal cortex, posterior cingulate cortex, and angular gyrus — is more active during rest and mind-wandering than during externally directed attention tasks.",
+    answer: "real",
+    category: "Cognitive Neuroscience",
+    difficulty: "Foundational",
+    explanation: "Correct. The DMN was characterized by Marcus Raichle and colleagues as a 'task-negative' network. It is active during self-referential thought, autobiographical memory retrieval, future thinking, and social cognition — not simply during 'rest.'"
+  },
+  {
+    id: 11,
+    statement: "Oxytocin administered intranasally increases trust and generosity in economic games, an effect that appears selectively enhanced toward in-group members and can paradoxically increase out-group hostility.",
+    answer: "real",
+    category: "Social Neuroscience",
+    difficulty: "Advanced",
+    explanation: "Correct. Ernst Fehr and colleagues demonstrated the trust-promoting effect using the trust game, while later work by Carsten De Dreu showed the in-group bias and potential out-group hostility — challenging simplistic characterizations of oxytocin as a universal 'love hormone.'"
+  },
+  {
+    id: 12,
+    statement: "The locus coeruleus–norepinephrine system is activated by traumatic stress and modulates the encoding strength of emotional memories in the amygdala, explaining in part why traumatic events are remembered with unusual vividness.",
+    answer: "real",
+    category: "Stress",
+    difficulty: "Expert",
+    explanation: "Correct. Norepinephrine enhances synaptic plasticity in the basolateral amygdala, strengthening emotional memory traces. This mechanism is a target for pharmacological interventions (e.g., propranolol) studied for preventing PTSD consolidation after trauma."
+  },
+  {
+    id: 13,
+    statement: "Individuals with damage to the ventromedial prefrontal cortex make significantly more utilitarian judgments in personal moral dilemmas — such as the trolley-footbridge problem — compared to healthy controls.",
+    answer: "real",
+    category: "Moral Cognition",
+    difficulty: "Advanced",
+    explanation: "Correct. This finding from Joshua Greene and colleagues, and later confirmed in lesion studies by Liane Young and Antonio Damasio's group, suggests the vmPFC dampens the emotional response that typically prevents people from personally harming others even for a greater good."
+  },
+  {
+    id: 14,
+    statement: "The vagus nerve carries bidirectional signals between the gut and the brain; higher resting vagal tone — indexed by heart rate variability — is associated with greater capacity for emotion regulation and social engagement.",
+    answer: "real",
+    category: "Autonomic Neuroscience",
+    difficulty: "Advanced",
+    explanation: "Correct. Polyvagal theory (Porges) and the neurovisceral integration model (Thayer & Lane) both link resting HRV to prefrontal inhibitory control over subcortical systems. Higher HRV predicts better executive function, emotional flexibility, and social behavior across multiple studies."
+  },
+  {
+    id: 15,
+    statement: "Dopamine release in the ventral striatum during reward anticipation is stronger for uncertain rewards than for certain ones of equivalent expected value, driving the neural basis of gambling behavior and novelty-seeking.",
+    answer: "real",
+    category: "Reward",
+    difficulty: "Advanced",
+    explanation: "Correct. Wolfram Schultz and others demonstrated that dopamine neurons respond most strongly to unpredicted rewards and cues predicting uncertain reward. This 'uncertainty bonus' underlies slot machine psychology and is a core mechanism in addiction models."
+  },
+  {
+    id: 16,
+    statement: "Alpha wave synchronization between the orbitofrontal cortex and the nucleus accumbens predicts the subjective pleasantness of music, with 10 Hz coherence correlating with peak emotional response across listeners.",
+    answer: "fake",
+    category: "Music & Emotion",
+    difficulty: "Expert",
+    explanation: "AI-generated. No study has established 10 Hz alpha synchronization between the OFC and nucleus accumbens as a predictor of music pleasure. Music-induced pleasure involves the mesolimbic dopamine system and auditory cortex, but not this specific OFC-NAcc alpha coherence pattern."
+  },
+  {
+    id: 17,
+    statement: "Women consistently show greater bilateral amygdala activation than men when viewing fearful faces, an effect independent of stimulus exposure duration and replicated across all major fMRI datasets.",
+    answer: "fake",
+    category: "Sex Differences",
+    difficulty: "Advanced",
+    explanation: "AI-generated. Sex differences in amygdala response to emotional stimuli are inconsistent and often fail to replicate. Meta-analyses find no robust bilateral amygdala advantage for women across paradigms. Stimulus duration, arousal, and individual differences in sex hormones confound most comparisons."
+  },
+  {
+    id: 18,
+    statement: "The right insula is selectively activated during disgust responses, while the left insula is selectively activated during fear responses — a dissociation confirmed by split-brain studies and lesion mapping.",
+    answer: "fake",
+    category: "Emotion",
+    difficulty: "Expert",
+    explanation: "AI-generated. Both insulae respond to disgust and fear, and neither is selectively dedicated to one emotion. Meta-analyses of emotion neuroimaging find bilateral insula involvement in disgust, with no reliable lateralization pattern for fear. No split-brain study has established this dissociation."
+  },
+  {
+    id: 19,
+    statement: "Mindfulness meditation practice for six weeks increases grey matter density in the anterior cingulate cortex but leaves hippocampal volume unchanged — indicating that the emotional and attentional benefits of mindfulness are primarily ACC-dependent.",
+    answer: "fake",
+    category: "Mindfulness",
+    difficulty: "Advanced",
+    explanation: "AI-generated. Sara Lazar's landmark study found increased grey matter in the insula, sensory cortices, and prefrontal cortex — and subsequent work has reported hippocampal volume changes. The claim that hippocampal volume is unchanged and that benefits are 'primarily ACC-dependent' is not supported."
+  },
+  {
+    id: 20,
+    statement: "Chronic stress selectively damages parvalbumin-expressing interneurons in layer IV of the dorsolateral prefrontal cortex, reducing gamma oscillation power and impairing working memory capacity.",
+    answer: "fake",
+    category: "Stress",
+    difficulty: "Expert",
+    explanation: "AI-generated. While stress does affect GABAergic interneurons and prefrontal function, the claim of selective layer IV parvalbumin interneuron damage from chronic stress is not an established finding. Stress preferentially affects layers II/III pyramidal neurons in the PFC in most animal models."
+  },
+  {
+    id: 21,
+    statement: "The anterior commissure connects Broca's area in the left hemisphere with Wernicke's area in the right hemisphere, allowing language-related information to be bilaterally coordinated during connected speech.",
+    answer: "fake",
+    category: "Neuroanatomy",
+    difficulty: "Advanced",
+    explanation: "AI-generated. The anterior commissure is a small fiber bundle primarily connecting the olfactory bulbs and anterior temporal lobes. Interhemispheric language communication occurs predominantly through the corpus callosum, not the anterior commissure."
+  },
+  {
+    id: 22,
+    statement: "Research using transcranial magnetic stimulation shows that disrupting the right prefrontal cortex during an encoding task selectively impairs recall of emotional memories while leaving neutral memories fully intact.",
+    answer: "fake",
+    category: "Memory",
+    difficulty: "Expert",
+    explanation: "AI-generated. TMS studies of prefrontal cortex disruption during encoding typically affect both emotional and neutral memory, and lateralization effects in emotional memory are inconsistent. Left prefrontal disruption more robustly affects verbal encoding than right PFC in most paradigms."
+  },
+  {
+    id: 23,
+    statement: "Individuals with autism spectrum disorder show a characteristic 40 Hz gamma wave deficit specifically in the fusiform face area during face processing, and this deficit correlates inversely with symptom severity.",
+    answer: "fake",
+    category: "Autism",
+    difficulty: "Expert",
+    explanation: "AI-generated. While gamma-band synchrony abnormalities exist in ASD, no study has established a specific 40 Hz gamma deficit in the fusiform face area that correlates inversely with symptom severity. The relationship between gamma oscillations and face processing in ASD is far more complex and inconsistent."
+  },
+  {
+    id: 24,
+    statement: "The default mode network and the executive control network show anticorrelated activity at rest, and this anticorrelation reverses to positive correlation during autobiographical memory retrieval tasks.",
+    answer: "fake",
+    category: "Cognitive Neuroscience",
+    difficulty: "Expert",
+    explanation: "AI-generated. The DMN-ECN anticorrelation does not reverse during autobiographical memory retrieval. In fact, the DMN is recruited during autobiographical memory (which is partly why it was originally labeled 'task-negative'). The anticorrelation reflects two competing networks for internal vs. external attention."
+  },
+  {
+    id: 25,
+    statement: "Serotonin reuptake inhibitors increase fear conditioning thresholds in laboratory animals during the first week of administration, which is why they can paradoxically increase anxiety when first prescribed to humans.",
+    answer: "fake",
+    category: "Pharmacology",
+    difficulty: "Expert",
+    explanation: "AI-generated. SSRIs do not reliably increase fear conditioning thresholds acutely. The initial anxiety-worsening with SSRIs is attributed to acute increases in serotonin availability before autoreceptor desensitization, not to changes in fear conditioning parameters."
+  },
+  {
+    id: 26,
+    statement: "Resting-state fMRI shows that the default mode network exhibits precisely 0.1 Hz oscillations during self-referential thought, and deviations from this frequency are a sensitive biomarker for major depressive disorder.",
+    answer: "fake",
+    category: "Cognitive Neuroscience",
+    difficulty: "Expert",
+    explanation: "AI-generated. DMN BOLD oscillations occur in the 0.01–0.1 Hz range broadly, but there is no established 0.1 Hz frequency signature for self-referential thought, nor a validated DMN frequency biomarker for depression diagnosis."
+  },
+  {
+    id: 27,
+    statement: "The striatal dopamine system differentiates social stimuli from reward stimuli by routing social information through the dorsal striatum and reward information through the ventral striatum — a segregation confirmed by optogenetic silencing.",
+    answer: "fake",
+    category: "Reward",
+    difficulty: "Expert",
+    explanation: "AI-generated. While dorsal and ventral striatum have different functional emphases, they are not cleanly segregated for social vs. reward processing, and optogenetic evidence does not establish this dichotomy in humans or even cleanly in rodents."
+  },
+  {
+    id: 28,
+    statement: "NREM sleep stage 2 is uniquely required for procedural motor skill consolidation, and selectively disrupting only stage 2 sleep while preserving other sleep stages abolishes overnight improvement on finger-tapping tasks.",
+    answer: "fake",
+    category: "Memory",
+    difficulty: "Expert",
+    explanation: "AI-generated. While sleep spindles in stage 2 NREM correlate with motor skill consolidation, stage 2 is not uniquely required in isolation — slow-wave sleep also contributes, and ablation studies have not established that stage 2 alone is both necessary and sufficient."
+  },
+  {
+    id: 29,
+    statement: "Adolescent cannabis exposure produces a selective deficit in the pruning of parvalbumin interneurons in the prefrontal cortex, permanently reducing gamma oscillation amplitude and directly accounting for elevated schizophrenia risk.",
+    answer: "fake",
+    category: "Developmental Neuroscience",
+    difficulty: "Expert",
+    explanation: "AI-generated. While adolescent cannabis use correlates with elevated schizophrenia risk and PV interneuron changes are implicated in schizophrenia, the specific causal chain from cannabis to PV pruning deficits to gamma amplitude reduction as a direct mechanistic link is not established."
+  },
+  {
+    id: 30,
+    statement: "Individuals with higher empathy quotient scores show increased theta wave synchrony (4–8 Hz) between their left temporoparietal junction and right angular gyrus during perspective-taking tasks — a pattern absent in alexithymia.",
+    answer: "fake",
+    category: "Social Neuroscience",
+    difficulty: "Expert",
+    explanation: "AI-generated. While the TPJ is implicated in perspective-taking and theta oscillations are studied in social cognition, this specific 4–8 Hz left TPJ to right angular gyrus synchrony as a predictor of empathy quotient scores absent in alexithymia is not an established finding."
+  }
+];
+
+// Game state
+let questions = [];
+let current = 0;
+let score = 0;
+let streak = 0;
+let bestStreak = 0;
+let answered = false;
+let realCorrect = 0;
+let realWrong = 0;
+let fakeCorrect = 0;
+let fakeWrong = 0;
+let answered_count = 0;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function computeGrade(pct) {
+  if (pct >= 90) return { letter: 'A', label: 'Neuroscience Luminary', css: 'grade-A' };
+  if (pct >= 80) return { letter: 'B', label: 'Research-Literate', css: 'grade-B' };
+  if (pct >= 70) return { letter: 'C', label: 'Cautiously Credulous', css: 'grade-C' };
+  if (pct >= 60) return { letter: 'D', label: 'Fooled by Plausibility', css: 'grade-D' };
+  return { letter: 'F', label: 'Read More Papers', css: 'grade-F' };
+}
+
+function updateHeader() {
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('streak-display').textContent = streak;
+  const pct = answered_count > 0 ? Math.round((score / answered_count) * 100) : 0;
+  document.getElementById('accuracy-display').textContent = answered_count > 0 ? pct + '%' : '—';
+}
+
+function renderQuestion() {
+  if (current >= questions.length) {
+    showEndScreen();
+    return;
+  }
+
+  answered = false;
+  const q = questions[current];
+
+  const diffClass = 'tag-' + q.difficulty.toLowerCase();
+  document.getElementById('question-meta').innerHTML =
+    `<span class="tag tag-category" data-testid="category-tag">${q.category}</span>` +
+    `<span class="tag ${diffClass}" data-testid="difficulty-tag">${q.difficulty}</span>`;
+
+  document.getElementById('question-statement').textContent = q.statement;
+
+  const btnReal = document.getElementById('btn-real');
+  const btnFake = document.getElementById('btn-fake');
+  btnReal.disabled = false;
+  btnFake.disabled = false;
+  btnReal.className = 'btn btn-real';
+  btnFake.className = 'btn btn-fake';
+
+  const feedback = document.getElementById('feedback');
+  feedback.classList.remove('visible');
+
+  document.getElementById('next-btn-wrap').classList.remove('visible');
+
+  const pct = (current / questions.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = current + ' / ' + questions.length;
+}
+
+function handleAnswer(chosen) {
+  if (answered) return;
+  answered = true;
+  answered_count++;
+
+  const q = questions[current];
+  const correct = chosen === q.answer;
+
+  const btnReal = document.getElementById('btn-real');
+  const btnFake = document.getElementById('btn-fake');
+
+  if (correct) {
+    score++;
+    streak++;
+    if (streak > bestStreak) bestStreak = streak;
+    if (q.answer === 'real') realCorrect++; else fakeCorrect++;
+  } else {
+    streak = 0;
+    if (q.answer === 'real') realWrong++; else fakeWrong++;
+  }
+
+  // Highlight buttons
+  const correctBtn = q.answer === 'real' ? btnReal : btnFake;
+  const wrongBtn = q.answer === 'real' ? btnFake : btnReal;
+  const chosenBtn = chosen === 'real' ? btnReal : btnFake;
+
+  correctBtn.classList.add('correct');
+  if (!correct) wrongBtn.classList.add('wrong');
+  if (correct) {
+    wrongBtn.classList.add('neutral-reveal');
+  }
+
+  btnReal.disabled = true;
+  btnFake.disabled = true;
+
+  // Show feedback
+  const verdict = document.getElementById('feedback-verdict');
+  verdict.textContent = correct ? '✓ Correct' : '✗ Incorrect';
+  verdict.className = 'feedback-verdict ' + (correct ? 'correct' : 'wrong');
+  document.getElementById('feedback-text').textContent = q.explanation;
+  document.getElementById('feedback').classList.add('visible');
+  document.getElementById('next-btn-wrap').classList.add('visible');
+
+  updateHeader();
+}
+
+function nextQuestion() {
+  current++;
+  renderQuestion();
+}
+
+function showEndScreen() {
+  document.getElementById('game-area').classList.remove('visible');
+  const pct = Math.round((score / questions.length) * 100);
+  const grade = computeGrade(pct);
+
+  const gradeEl = document.getElementById('end-grade');
+  gradeEl.textContent = grade.letter;
+  gradeEl.className = 'end-grade ' + grade.css;
+
+  document.getElementById('end-title').textContent = grade.label;
+  document.getElementById('end-subtitle').textContent =
+    `You correctly identified ${score} out of ${questions.length} claims.`;
+  document.getElementById('end-score').textContent = score + '/' + questions.length;
+  document.getElementById('end-pct').textContent = pct + '%';
+  document.getElementById('end-streak').textContent = bestStreak;
+  document.getElementById('bd-real-correct').textContent = realCorrect + '/15';
+  document.getElementById('bd-fake-correct').textContent = fakeCorrect + '/15';
+  document.getElementById('bd-real-wrong').textContent = realWrong;
+  document.getElementById('bd-fake-wrong').textContent = fakeWrong;
+
+  const pctFill = document.getElementById('progress-fill');
+  pctFill.style.width = '100%';
+  document.getElementById('progress-text').textContent = '30 / 30';
+
+  document.getElementById('end-screen').classList.add('visible');
+}
+
+function startGame() {
+  questions = shuffle(QUESTIONS);
+  current = 0;
+  score = 0;
+  streak = 0;
+  bestStreak = 0;
+  answered = false;
+  answered_count = 0;
+  realCorrect = 0;
+  realWrong = 0;
+  fakeCorrect = 0;
+  fakeWrong = 0;
+
+  document.getElementById('intro-screen').classList.add('hidden');
+  document.getElementById('end-screen').classList.remove('visible');
+  document.getElementById('game-area').classList.add('visible');
+
+  updateHeader();
+  renderQuestion();
+}
+
+document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('btn-real').addEventListener('click', () => handleAnswer('real'));
+document.getElementById('btn-fake').addEventListener('click', () => handleAnswer('fake'));
+document.getElementById('btn-next').addEventListener('click', nextQuestion);
+document.getElementById('btn-restart').addEventListener('click', startGame);
+</script>
+</body>
+</html>
