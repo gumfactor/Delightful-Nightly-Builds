@@ -50,6 +50,8 @@ always generates fresh ideas.
 | 10 | 2026-06-17 | F | ambitious | SEC EDGAR Financial History Extractor | Uses SEC EDGAR public API (no auth) to pull 5 years of income statement and balance sheet data for any list of US tickers; outputs clean CSV and a comparison summary HTML; useful for investment research and financial modeling | — | — | — | pending |
 | 11 | 2026-06-18 | G | ambitious | Market Cap Higher or Lower | Browser game using baked-in Yahoo Finance data: given two company names with sector/industry hints, guess which has the higher market cap. Tracks accuracy and streak per session. Teaches market intuition through play. | — | — | — | pending |
 | 12 | 2026-06-18 | G | ambitious | Stock Chart Direction Quiz | Show a real historical stock chart (last 6 months) with sector and key metrics visible; guess whether the stock went up, down, or flat over the next quarter. Uses pre-generated yfinance data as static JSON. Trains pattern recognition and market intuition. | — | — | — | pending |
+| 13 | 2026-07-03 | D | ambitious | Market Mood Chronicle | Generative daily poem + abstract SVG mood board derived from live yfinance portfolio movement — market direction/volatility drive tone, color, and imagery of a short generated piece | — | — | — | pending |
+| 14 | 2026-07-03 | D | ambitious | Canada Badge Forge | Procedural SVG badge/crest generator for The Canada List — input a product category and province, get a deterministically generated regional badge (palette + motif + typography), with batch mode for a CSV of businesses | — | — | — | pending |
 
 ---
 
