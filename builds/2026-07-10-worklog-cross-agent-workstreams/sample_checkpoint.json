@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "provider": "claude",
+  "session_id": "example-session-001",
+  "objective": "Add CSV validation before ingestion (#41)",
+  "accomplished": [
+    "Added schema checks before ingestion",
+    "Wrote fixtures for malformed rows"
+  ],
+  "decisions": [
+    {
+      "summary": "Reject automatic type coercion",
+      "reason": "Silent coercion can corrupt identifier columns without a visible error"
+    }
+  ],
+  "unresolved": [
+    "Decide whether blank optional columns should warn or pass silently"
+  ],
+  "next_steps": [
+    "Add malformed-row fixtures for the encoding-detection path"
+  ],
+  "validation": [
+    {"command": "python -m pytest tests/test_validation.py -v", "result": "passed"}
+  ],
+  "files": [
+    "src/validation.py",
+    "tests/test_validation.py"
+  ],
+  "source_refs": [
+    {"commit": "0000000000000000000000000000000000000000"}
+  ]
+}
