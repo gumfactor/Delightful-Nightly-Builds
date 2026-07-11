@@ -8,25 +8,25 @@
 
 ## Stats
 
-- **Total builds:** 19
-- **Completed:** 16
+- **Total builds:** 30
+- **Completed:** 27
 - **Partial:** 0
 - **Aborted:** 0
 - **Discarded:** 3
-- **Last build date:** 2026-06-24
+- **Last build date:** 2026-07-06
 - **Categories used (all time):** A, B, C, D, E, F, G, H, I
 
 ---
 
 ## Last 7 Builds (Quick Reference for Decision-Making)
 
-- 2026-06-18 — [G] — ambitious — Regex Dojo (complete)
-- 2026-06-19 — [H] — ambitious — dep-check: Python Dependency Auditor (complete)
-- 2026-06-20 — [I] — solid — Run Planner (complete)
-- 2026-06-21 — [A] — ambitious — GitHub Repository Health Scorecard (complete)
-- 2026-06-22 — [B] — ambitious — Morning Briefing (complete)
-- 2026-06-23 — [C] — ambitious — Paper Lens (complete)
-- 2026-06-24 — [D] — ambitious — AI Lecture Builder (complete)
+- 2026-06-30 — [A] — ambitious — GitHub Developer Analytics Dashboard (complete)
+- 2026-07-01 — [B] — ambitious — BIDS Dataset Organizer & Validator (complete)
+- 2026-07-02 — [C] — ambitious — PubMed Research Radar (complete)
+- 2026-07-03 — [D] — ambitious — WeatherSong (complete)
+- 2026-07-04 — [E] — ambitious — Power Lab (complete)
+- 2026-07-05 — [F] — ambitious — TrialScope: Behavioral & Reaction-Time Data QC Explorer (complete)
+- 2026-07-06 — [G] — ambitious — Synapse Sort (complete)
 
 ---
 
@@ -49,6 +49,17 @@
 | 2026-06-22 | B | ambitious | Morning Briefing | Python CLI combining GitHub activity, yfinance portfolio pulse, Open-Meteo weather windows scored for run/golf/boat, and Claude Haiku AI synthesis into a single daily HTML dashboard and markdown file | Python 3, yfinance, Open-Meteo, GITHUB_TOKEN, Anthropic API, Chart.js, pytest | complete | 5 | Right concept — multi-source daily digest with AI synthesis is genuinely useful. But ChatGPT's scheduling feature achieves the same result with a 2-minute setup, which undercuts the "this build solves something I couldn't otherwise do" argument. The value is real but the build is over-engineered for a use case existing tools cover adequately. |
 | 2026-06-23 | C | ambitious | Paper Lens | Python CLI that queries arXiv across 4 topic areas, batches abstracts to Claude Haiku for relevance scoring (1–10) and plain-English summaries, stores results in SQLite with deduplication, and renders a dark-mode HTML inbox with filter tabs, search, and read-state tracking | Python 3, arXiv API, Anthropic API, SQLite, pytest | complete | 6 | Solid concept — AI relevance scoring is the right differentiating layer that turns a raw paper feed into a prioritized inbox. Limited by arXiv-only sourcing; a neuroscience researcher needs PubMed and Google Scholar at minimum. Worth extending rather than discarding — the core pipeline is sound. |
 | 2026-06-24 | D | ambitious | AI Lecture Builder | Python CLI using Anthropic API to generate a complete 7-section lecture package (objectives, outline, hook, discussion questions, quiz, key concepts, homework) and render it as a tabbed dark-mode HTML viewer with copy and export functions | Python 3, Anthropic API, pytest | complete | 2 | The AI-generated content is the right core value, but a tabbed HTML viewer adds overhead without adding capability the user can't get from a single Claude prompt. Needs a genuinely differentiating layer: integration with existing course materials, Canvas/LMS export, or a persistent lecture library. As built, a power user replicates this with one prompt in the Claude interface. |
+| 2026-06-26 | F | ambitious | GitHub Developer Activity Explorer | Python CLI that fetches all GitHub repos via GITHUB_TOKEN, analyzes commit patterns across 12 months, and renders a dark-mode HTML dashboard with hourly heatmap, day-of-week distribution, 52-week volume trend, repo focus map, streak analytics, and an AI developer profile via Claude Haiku | Python 3, GITHUB_TOKEN, Chart.js 4.4.4, Anthropic API, pytest | complete | — | — |
+| 2026-06-27 | G | ambitious | Neurofact | Self-contained browser quiz game: 30 neuroscience claims (15 real research findings, 15 AI-generated plausible fakes) presented one at a time — players press Real Finding or AI Generated, then see the correct answer and explanation; final screen shows grade (A–F), accuracy, streak, and a real-vs-fake breakdown | Vanilla HTML/CSS/JS, Playwright, Python 3, pytest | complete | — | — |
+| 2026-06-28 | H | ambitious | ci-pulse: GitHub Actions Performance Analyzer | Python CLI that fetches all completed GitHub Actions runs across every repo via GITHUB_TOKEN, computes per-workflow avg/p95 duration and failure rates, ranks by improvement potential, and generates a dark-mode HTML dashboard with 3 Chart.js charts (slowest workflows, failure rates, 30-day trend) and a sortable per-workflow table; AI insights panel via Claude Haiku when ANTHROPIC_API_KEY is set | Python 3, GITHUB_TOKEN, Chart.js 4.4.4, Anthropic API, pytest | complete | — | — |
+| 2026-06-29 | I | ambitious | Project Pulse: Multi-Project Context Manager | Python CLI to register and track multiple simultaneous projects — syncs GitHub commits via GITHUB_TOKEN, records manual activity notes (idempotent), generates AI context briefs via Claude Haiku with text fallback, and renders a dark-mode HTML dashboard with a 30-day stacked bar Chart.js timeline, staleness badges (green/yellow/orange/red), project cards with type/repo tags, and a type filter | Python 3, GITHUB_TOKEN, Chart.js 4.4.4, Anthropic API, SQLite, pytest | complete | — | — |
+| 2026-06-30 | A | ambitious | GitHub Developer Analytics Dashboard | Python CLI that fetches all owned repos via GITHUB_TOKEN, collects 12 months of commit history, and renders a dark-mode HTML dashboard with four tabs: Overview (hero stats + top repos bar), Timeline (CSS grid heatmap: repo × month), Rhythm (hour-of-day + weekday bar charts), and Languages (stacked horizontal bar by repo) | Python 3, GITHUB_TOKEN, Chart.js 4.4.4, requests, pytest | complete | — | — |
+| 2026-07-01 | B | ambitious | BIDS Dataset Organizer & Validator | Python CLI that scans a neuroimaging dataset directory against core BIDS naming rules (entity order, required JSON sidecars, events.tsv for task runs, dataset_description.json, zero-padding consistency, duplicate detection, session consistency), produces text/JSON/dark-mode HTML reports, safely auto-fixes zero-padding mismatches with a dry-run-by-default `--apply` flag, and generates an optional Claude Haiku plain-English action list from the structural findings | Python 3, stdlib, Anthropic API (optional), pytest | complete | — | — |
+| 2026-07-02 | C | ambitious | PubMed Research Radar | Python CLI that queries PubMed E-utilities (free, no auth) across 5 saved topics seeded from forensic/affective neuroscience research interests, dedupes articles by PMID in SQLite, scores relevance 1-10 with a plain-English summary and methodology tag via Claude Haiku (with a deterministic keyword-overlap fallback when no API key is set), and renders a dark-mode HTML radar report with topic tabs, relevance sorting, client-side search, and localStorage star/read state | Python 3, PubMed E-utilities, Anthropic API (optional), SQLite, pytest | complete | — | — |
+| 2026-07-03 | D | ambitious | WeatherSong | Browser instrument that fetches live weather (Open-Meteo) for a chosen city and deterministically maps temperature/wind/cloud cover/precipitation/weather code into a native Web Audio synthesis engine (drone oscillator, filter, procedurally generated convolution reverb, scheduled percussion — no external audio library) and a synchronized Canvas 2D generative visual; includes a localStorage Weather Journal that replays a saved day's exact parameters | Vanilla HTML/CSS/JS, native Web Audio + Canvas 2D APIs, Open-Meteo, Playwright | complete | — | — |
+| 2026-07-04 | E | ambitious | Power Lab | Interactive statistical power, sample-size, and effect-size trainer — a Power Explorer tab with live overlapping-distribution and power-vs-N charts (hand-drawn Canvas 2D, no charting library), a Sample Size Calculator producing a grant-ready summary sentence, a Cohen's d ↔ Pearson's r ↔ t-statistic effect-size converter, and an 18-scenario "guess the power bucket" quiz whose answers are always derived live from the same power formula (never hardcoded) | Vanilla HTML/CSS/JS (classic scripts, no ES modules so it opens directly via file://), native Canvas 2D, Playwright | complete | — | — |
+| 2026-07-05 | F | ambitious | TrialScope: Behavioral & Reaction-Time Data QC Explorer | Python CLI that ingests a trial-level behavioral/RT CSV export (auto-detecting or explicit column mapping), computes per-subject/condition stats, flags anticipatory guessing, robust median/MAD-based RT outliers, chance-level performance (binomial test), incomplete data, and implausible-ceiling performance from configurable live-computed rules, recommends exclusions, and renders a dark-mode interactive HTML report (sortable/searchable subject table, hand-drawn SVG RT histograms and learning curves) plus a cleaned CSV and an AI-or-template "Participants & Data Quality" methods paragraph | Python 3, stdlib only (urllib for the optional Anthropic API call), pytest | complete | — | — |
+| 2026-07-06 | G | ambitious | Synapse Sort | Daily Connections-style category-sorting puzzle game with a hand-curated 30-puzzle bank drawn from the user's own interests (neuroscience/psychology, AI & agentic workflows, investing/markets, Canadian business, running/golf/boating) — deterministic daily puzzle by UTC date, archive/practice mode for any puzzle, one-away hints, 4-mistake limit, colorblind-safe difficulty labels, shareable emoji result grid, and localStorage streak/stats tracking | Vanilla HTML/CSS/JS (classic scripts, no ES modules so it opens directly via file://), Playwright | complete | — | — |
 
 ---
 

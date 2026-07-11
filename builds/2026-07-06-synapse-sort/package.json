@@ -1,0 +1,11 @@
+{
+  "name": "synapse-sort",
+  "version": "1.0.0",
+  "description": "Daily Connections-style category-sorting puzzle game with a personally-curated puzzle bank",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

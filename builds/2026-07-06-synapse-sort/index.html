@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synapse Sort</title>
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title-row">
+      <h1>Synapse Sort</h1>
+      <button id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">&#127769;</button>
+    </div>
+    <div id="puzzle-meta">
+      <span id="puzzle-title"></span>
+      <span id="puzzle-counter"></span>
+    </div>
+    <div class="header-buttons">
+      <button id="stats-btn">Stats</button>
+      <button id="archive-btn">Archive</button>
+    </div>
+  </header>
+
+  <p id="instructions">Find four groups of four related tiles. Select four tiles, then submit. Four wrong guesses ends the puzzle.</p>
+
+  <div id="mistakes-tracker" aria-live="polite"></div>
+  <div id="message-banner" aria-live="polite"></div>
+
+  <div id="solved-categories"></div>
+
+  <div id="tile-grid" role="group" aria-label="Puzzle tiles"></div>
+
+  <div id="controls">
+    <button id="shuffle-btn">Shuffle</button>
+    <button id="deselect-btn">Deselect All</button>
+    <button id="submit-btn" disabled>Submit</button>
+  </div>
+
+  <div id="result-panel" hidden>
+    <h2 id="result-heading"></h2>
+    <pre id="share-grid-text"></pre>
+    <button id="copy-share-btn">Copy Result</button>
+  </div>
+
+  <div id="archive-panel" hidden>
+    <h2>Archive — Practice Any Puzzle</h2>
+    <p>Practice puzzles don't affect your daily streak.</p>
+    <ul id="archive-list"></ul>
+    <button id="back-to-daily-btn">Back to Today's Puzzle</button>
+  </div>
+
+  <div id="stats-panel" hidden>
+    <h2>Your Stats</h2>
+    <dl id="stats-content"></dl>
+    <button id="close-stats-btn">Close</button>
+  </div>
+</div>
+
+<script src="src/puzzles.js"></script>
+<script src="src/storage.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>
