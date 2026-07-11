@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeatherSong — a live-weather generative instrument</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <h1>WeatherSong</h1>
+      <p class="subtitle">Live weather, rendered as an evolving drone and generative field.</p>
+    </header>
+
+    <section class="controls" aria-label="Location controls">
+      <label for="city-select">City</label>
+      <select id="city-select" data-testid="city-select"></select>
+
+      <div id="custom-coords" class="custom-coords" hidden>
+        <label for="custom-latitude">Latitude</label>
+        <input id="custom-latitude" data-testid="custom-latitude" type="text" inputmode="decimal" placeholder="e.g. 43.65" />
+        <label for="custom-longitude">Longitude</label>
+        <input id="custom-longitude" data-testid="custom-longitude" type="text" inputmode="decimal" placeholder="e.g. -79.38" />
+        <button id="fetch-custom-button" data-testid="fetch-custom-button" type="button">Use these coordinates</button>
+      </div>
+    </section>
+
+    <p id="error-banner" class="error-banner" data-testid="error-banner" role="alert" hidden></p>
+    <button id="demo-weather-button" data-testid="demo-weather-button" class="demo-button" type="button">Use Demo Weather</button>
+
+    <section id="weather-panel" class="weather-panel" data-testid="weather-panel" hidden aria-label="Current weather">
+      <h2 id="weather-city" data-testid="weather-city"></h2>
+      <dl class="weather-stats">
+        <div><dt>Temperature</dt><dd id="weather-temp" data-testid="weather-temp"></dd></div>
+        <div><dt>Wind</dt><dd id="weather-wind" data-testid="weather-wind"></dd></div>
+        <div><dt>Cloud cover</dt><dd id="weather-cloud" data-testid="weather-cloud"></dd></div>
+        <div><dt>Precipitation chance</dt><dd id="weather-precip" data-testid="weather-precip"></dd></div>
+      </dl>
+      <p id="weather-caption" class="weather-caption" data-testid="weather-caption"></p>
+    </section>
+
+    <canvas id="visual-canvas" data-testid="visual-canvas" width="640" height="360"></canvas>
+
+    <section class="playback-controls" aria-label="Playback controls">
+      <button id="play-pause-button" data-testid="play-pause-button" type="button">Play</button>
+      <label for="volume-slider">Volume</label>
+      <input id="volume-slider" data-testid="volume-slider" type="range" min="0" max="1" step="0.01" value="0.6" />
+      <button id="save-journal-button" data-testid="save-journal-button" type="button">Save Today to Journal</button>
+    </section>
+
+    <section class="journal" aria-label="Weather journal">
+      <h2>Weather Journal</h2>
+      <ul id="journal-list" data-testid="journal-list"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

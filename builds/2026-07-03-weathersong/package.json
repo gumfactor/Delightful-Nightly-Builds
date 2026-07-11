@@ -1,0 +1,12 @@
+{
+  "name": "weathersong",
+  "version": "1.0.0",
+  "description": "A live-weather-driven generative ambient audio/visual instrument with a local Weather Journal",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
