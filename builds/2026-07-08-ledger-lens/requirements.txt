@@ -1,0 +1,3 @@
+# Ledger Lens has zero third-party runtime dependencies (stdlib only).
+# Chart.js is loaded via a pinned CDN URL inside the generated HTML report,
+# not a Python dependency.
