@@ -181,15 +181,20 @@ Claude should read this section when selecting and designing builds. Prefer buil
 - **Canadian government open data** — Statistics Canada, Health Canada datasets (relevant to Canada List work)
 - **GitHub public API** — public repo metadata, commits, releases, issues (no auth for public data; higher limits with token)
 
-### Available via environment variables already set in the build environment
-- **GitHub API** — full authenticated access via `GITHUB_TOKEN` (automatically available in GitHub Actions) — use for repo data, commit history, PR state, issue tracking
-- **Anthropic API** — via `ANTHROPIC_API_KEY` — use whenever AI processing adds meaningful value: classification, extraction, summarization, generation, evaluation, or explanation. Does not need to be the "core" feature — an AI-powered layer on a dashboard or data tool is often what makes it genuinely useful rather than redundant
+### Available via environment variables in the build environment
+- **GitHub API** — full authenticated access via `GITHUB_TOKEN` (available in GitHub Actions) — use for repo data, commit history, PR state, issue tracking. Test with mocks; do not make live GitHub API calls in tests.
+
+### Runtime-only credentials (not present during the build; user supplies when running locally)
+- **Anthropic API** — `ANTHROPIC_API_KEY` is not set in the build container. Design builds that accept it as a runtime environment variable. Tests must mock all Anthropic API calls. The user will supply the key when they choose to run the tool. Builds that integrate Anthropic API at runtime are strongly encouraged — AI processing (classification, extraction, summarization, generation, evaluation) is often the differentiating layer that makes a build genuinely useful rather than redundant.
 
 ### Available if added as GitHub repo secrets
-The following credentials exist but must be added to repo secrets before Claude can use them in nightly builds. To add: github.com/gumfactor/Delightful-Nightly-Builds → Settings → Secrets and variables → Actions.
+The following credentials exist but must be added to repo secrets before the build agent can use them at build time. To add: github.com/gumfactor/Delightful-Nightly-Builds → Settings → Secrets and variables → Actions.
 - **OpenAI** — `OPENAI_API_KEY`
 - **Teamwork.com** — API token (`TEAMWORK_API_KEY`)
 - **Coda** — API token (`CODA_API_KEY`)
+
+### Build container network policy
+The build container routes all outbound HTTPS through a restricted egress proxy. Most external API hosts return 403. This does not affect what the build should do — design tools that call real external APIs (Yahoo Finance, Open-Meteo, arXiv, PubMed, SEC EDGAR, etc.) and mock those calls in tests. The user runs tools locally where those APIs are freely accessible. A 403 during the build is never a reason to redesign the tool around mock or static data.
 
 ### Local-only (not available in GitHub Actions; usable when running tools manually)
 - **IBKR TWS API** — requires a running TWS or IB Gateway instance on localhost; practical only for tools the user runs locally

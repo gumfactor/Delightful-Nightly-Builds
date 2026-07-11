@@ -127,10 +127,15 @@ If the selected backlog row has a link in `Idea Brief`: read it fully before wri
 - Node.js utility → Jest or Vitest
 - MCP server → when the value is best exposed as callable tools across Claude contexts
 
-**Always-available APIs — use them:**
-- `ANTHROPIC_API_KEY` is always set in the build environment. Use it whenever AI processing adds meaningful value.
-- `GITHUB_TOKEN` is always set. Any developer tool that touches repos or activity should use it.
-- Yahoo Finance (via `yfinance`) and Open-Meteo are available with no auth. Prefer real data over mock data.
+**API access — design for the user's runtime, not the build container:**
+
+The build container's egress proxy blocks most external hosts. A 403 during the build is a build-environment constraint, not a signal to redesign the tool. Do not pivot to mock data or a lesser implementation because an API returned 403 during the build session.
+
+- **Design for the user's runtime:** write code that calls real external APIs (Yahoo Finance, Open-Meteo, arXiv, PubMed, SEC EDGAR, etc.). The user runs the tool locally where those APIs are freely accessible. The build container's network policy is irrelevant to what the tool does.
+- **Mock all external API calls in tests:** every test that would call an external API must use a mock, fixture, or stub. A test that fails because an API is unreachable is a broken test. Never make live API calls in tests.
+- **`ANTHROPIC_API_KEY` is not set in the build environment.** Design builds that accept it as a runtime environment variable. Tests must mock all Anthropic API calls. The user will supply their own key when they run the tool.
+- **`GITHUB_TOKEN` is set** and can be used for git operations during the build itself. Any developer tool that reads repo data should use it — but test those calls with mocks too.
+- **The one exception:** if the build deliverable is pre-fetched static data (a snapshot report, a baked-in dataset), the build genuinely requires live API access at build time. In that case, document the constraint in `BUILD_LOG.md` and `PRD.md`, and mark the build `partial` only if the data fetch fails and cannot be worked around.
 
 **Deployment model — decide before writing code:**
 - Runs on a schedule → Claude Code Routine
