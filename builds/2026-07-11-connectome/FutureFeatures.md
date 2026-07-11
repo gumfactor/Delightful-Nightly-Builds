@@ -10,7 +10,7 @@
 1. **Watch mode** — a `connectome watch --notes-dir DIR` command that polls the folder every few seconds and re-runs `index` automatically on change, so the knowledge base stays current without manually re-running the CLI.
 2. **`--top` flag on `related`/`search`** — let the user control how many results come back from the CLI, rather than the hardcoded top-5 default in `related_to`.
 3. **Export a note's related-notes list as Markdown** — a `connectome export <note>` command that writes a "See also" block (with shared-concept explanations) that can be pasted directly into the source note file.
-4. **Phrase-level extraction** — currently concepts are single tokens; capturing simple two-word noun phrases ("stress response", "concept graph") alongside single terms would make the tag cloud and shared-concept explanations noticeably more readable.
+4. ~~**Phrase-level extraction**~~ — **Done (2026-07-11 follow-up).** `extraction.extract_bigrams()` now forms two-word phrases from literally adjacent content words (a stopword between two words blocks the join, so "stress and coping" doesn't become "stress coping") and feeds them into `compute_document_frequencies`/`extract_concepts` in the same term space as single words — a phrase wins a slot in a note's top concepts purely on TF-IDF score, no reserved quota. Verified against the real `sample_notes/` corpus: phrases like "canada list", "semiconductor capex", "screening workflow", and "affective empathy" now surface as top concepts for their notes. See `BUILD_LOG.md` for the session log.
 
 ## Medium Effort (roughly one nightly build session)
 
@@ -39,7 +39,7 @@
 
 | Limitation | Suggested Fix |
 |------------|---------------|
-| Concept extraction is single-token only, so multi-word ideas ("stress response", "market cap") get split into separate, less meaningful tokens | Add simple bigram/trigram candidate extraction alongside unigrams (Future Feature #4) |
-| Extraction quality depends on having enough repeated vocabulary within a note; very short or highly idiosyncratic notes may extract few useful concepts, and top_n tuning (raised from 8 to 15 during tonight's build) is still a rough heuristic rather than a principled threshold | Add a minimum-weight cutoff instead of a fixed top_n, and/or the phrase-extraction improvement above |
+| ~~Concept extraction is single-token only~~ — **Fixed (2026-07-11 follow-up)**, see Future Feature #4. Remaining gap: only two-word phrases are formed, and overlapping bigrams from a longer run of content words (e.g. "research design outline" → "research design" + "design outline") aren't merged into one three-word phrase | Extend to trigrams, or detect and merge chained overlapping bigrams into a single longer phrase |
+| Extraction quality depends on having enough repeated vocabulary within a note; very short or highly idiosyncratic notes may extract few useful concepts, and top_n tuning (raised from 8 to 15 during tonight's build) is still a rough heuristic rather than a principled threshold | Add a minimum-weight cutoff instead of a fixed top_n |
 | `--ai` enrichment could not be exercised against the real Claude API this session (`ANTHROPIC_API_KEY` unset in this sandbox) — only the mocked success/failure paths are verified | Re-verify the live path the next time this build runs in an environment where the key is set; the fallback behavior is already tested and safe either way |
 | No de-duplication across near-identical concepts (e.g. "context" vs "contexts" if pluralization varies) | Add simple stemming (e.g. strip trailing "s") before document-frequency counting |

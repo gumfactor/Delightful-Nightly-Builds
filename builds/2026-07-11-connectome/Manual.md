@@ -132,7 +132,7 @@ Writes a single self-contained `output/index.html`. Open it directly in a browse
 
 ## Known Limitations
 
-- Concept extraction is single-word only — multi-word ideas get split into separate tokens rather than recognized as one phrase.
+- Concept extraction recognizes single words and two-word phrases (e.g. "canada list", "semiconductor capex") — it does not yet form three-word-or-longer phrases, so a run like "research design outline" produces two overlapping two-word phrases rather than one three-word one.
 - Renaming a note file is indistinguishable from deleting the old one and adding a new one; the note's link history isn't preserved across a rename.
 - Only `.md` and `.txt` files are supported — no PDF, Word, or other formats yet.
 - The `--ai` enrichment path could not be exercised against a live Claude API key during this build session (none was available in the build sandbox); it is fully covered by mocked tests and degrades safely, but has not been manually verified against a real API response.

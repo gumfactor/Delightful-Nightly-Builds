@@ -37,11 +37,36 @@ def tokenize(text: str) -> list[str]:
     return [t for t in tokens if t not in STOPWORDS and len(t) >= MIN_TOKEN_LEN]
 
 
+def _is_content_word(word: str) -> bool:
+    return word not in STOPWORDS and len(word) >= MIN_TOKEN_LEN
+
+
+def extract_bigrams(text: str) -> list[str]:
+    """Two-word phrases ("stress response") from literally adjacent content words.
+
+    Adjacency is checked in the raw word stream, not the stopword-filtered
+    one, so a stopword between two content words ("stress and coping") never
+    joins them into a phrase — both words of a bigram must themselves pass
+    the same filter tokenize() applies to unigrams.
+    """
+    words = TOKEN_PATTERN.findall(text.lower())
+    return [
+        f"{a} {b}"
+        for a, b in zip(words, words[1:])
+        if _is_content_word(a) and _is_content_word(b)
+    ]
+
+
 def compute_document_frequencies(note_bodies: dict[str, str]) -> Counter:
-    """Given {note_path: body}, return concept -> number of notes containing it."""
+    """Given {note_path: body}, return concept -> number of notes containing it.
+
+    Concepts include both single-word tokens and two-word phrases, scored in
+    the same space so a phrase can outrank or lose to a single word purely on
+    TF-IDF, not a fixed carve-out.
+    """
     doc_freq: Counter = Counter()
     for body in note_bodies.values():
-        unique_terms = set(tokenize(body))
+        unique_terms = set(tokenize(body)) | set(extract_bigrams(body))
         for term in unique_terms:
             doc_freq[term] += 1
     return doc_freq
@@ -57,12 +82,16 @@ def extract_concepts(
 
     Uses smoothed IDF (log((N+1)/(df+1)) + 1) so a term appearing in every
     note (df == total_notes) never divides by zero and still receives a
-    positive, non-dominant weight.
+    positive, non-dominant weight. Single words and two-word phrases compete
+    in the same ranked list — a phrase wins a slot only if its TF-IDF score
+    earns it, not via a reserved quota.
     """
     tokens = tokenize(body)
-    if not tokens:
+    bigrams = extract_bigrams(body)
+    if not tokens and not bigrams:
         return []
     term_freq = Counter(tokens)
+    term_freq.update(bigrams)
     scored = []
     for term, tf in term_freq.items():
         df = doc_freq.get(term, 1)

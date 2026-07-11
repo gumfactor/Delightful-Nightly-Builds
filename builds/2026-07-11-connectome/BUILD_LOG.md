@@ -122,3 +122,31 @@ Ran the full flow against a real, git-committed copy of `sample_notes/` (not jus
 Updated `PRD.md` (moved this capability from Out of Scope into In Scope with the guardrail description, updated Folder Structure and Testing Strategy), `Manual.md` (new command section, config table rows, troubleshooting rows, known-limitations rows), and `FutureFeatures.md` (marked item #6 done with a summary of what shipped, added two new follow-on ideas: frontmatter-aware insertion point, and a proactive rename warning).
 
 Follow-up session complete. All tests passing (80/80). Guardrails manually verified against real git states, not just mocked ones.
+
+---
+
+## Follow-up Session 2 — 2026-07-11 (same day, user-requested)
+
+### [14:05 UTC] Scope
+
+User asked for `FutureFeatures.md` item #4 ("Phrase-level extraction") next: capture simple two-word phrases alongside single-token concepts.
+
+### [14:10 UTC] Design
+
+Added `extraction.extract_bigrams()`: joins literally-adjacent word pairs in the raw (pre-stopword-filter) token stream, requiring *both* words to individually pass the same content-word filter `tokenize()` uses (not a stopword, `len >= MIN_TOKEN_LEN`). This means a stopword sitting between two content words ("stress and coping") correctly blocks the join, rather than skipping over it. `compute_document_frequencies()` and `extract_concepts()` were extended to fold bigram phrases into the same term/score space as unigrams — a phrase only wins a top_n slot on its own TF-IDF score, not a reserved quota, per the FutureFeatures wording ("alongside single terms").
+
+### [14:20 UTC] Tests
+
+Added 6 new tests to `tests/test_extraction.py`: bigram formation across adjacent content words, exclusion when a stopword sits between the words, exclusion when either word is below `MIN_TOKEN_LEN`, empty/single-word input produces no bigrams, `compute_document_frequencies` counts a phrase across notes (not occurrences within one), and `extract_concepts` includes a bigram in its ranked output ahead of a lower-scoring single word.
+
+Tests: 86 passed, 0 failed (`python -m pytest tests/ -v`) — up from 80.
+
+### [14:25 UTC] Manual verification
+
+Re-indexed the real `sample_notes/` corpus (not just fixtures) and inspected the stored per-note concepts directly: phrases like "canada list", "semiconductor capex", "screening workflow", and "affective empathy" now appear as top-ranked concepts for their respective notes — exactly the kind of two-word idea that was previously split into two separate, less meaningful single-word tokens. Rendered `output/index.html` and confirmed phrase terms are present in the embedded tag-cloud JSON (a small number make the top-40 tag cloud specifically, since a phrase's document frequency across only 6 notes is usually 1, competing against single words with the same rarity — expected given the corpus size, not a bug). `related`/link output for this corpus is unchanged (3 links, same pairs) since the specific note pairs in `sample_notes/` happen to share single words, not identical phrases — the phrase-sharing case is covered by the new unit test instead.
+
+### [14:30 UTC] Documentation
+
+Updated `PRD.md` (Scope and Testing Strategy), `Manual.md` (Known Limitations — replaced "single-word only" with the new two-word capability and its remaining three-word-phrase gap), and `FutureFeatures.md` (marked item #4 done with a verification summary; updated the corresponding Known Limitations table row, replacing the fixed limitation and adding the residual overlapping-bigram gap as a new suggested fix).
+
+Follow-up session 2 complete. All tests passing (86/86). Verified against the real sample_notes corpus, not just fixtures.

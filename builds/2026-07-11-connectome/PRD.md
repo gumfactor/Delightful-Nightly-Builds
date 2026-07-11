@@ -18,7 +18,7 @@ As a researcher and founder who accumulates notes across many separate contexts 
 
 ### In Scope
 - CLI `index` command: scan a directory of `.md`/`.txt` files, extract per-note concepts, compute cross-note links, store everything in a local SQLite database (incremental — unchanged files are skipped via content hash, matching mtime+hash change detection)
-- Deterministic concept extraction: corpus-wide TF-IDF-style scoring (stdlib only) so extraction quality doesn't depend on any external service being reachable
+- Deterministic concept extraction: corpus-wide TF-IDF-style scoring (stdlib only) so extraction quality doesn't depend on any external service being reachable. Includes both single-word tokens and two-word phrases (`extraction.extract_bigrams()`, added 2026-07-11 same-day follow-up) — phrases are formed only from literally adjacent content words (a stopword between them blocks the join) and compete for ranking slots in the same TF-IDF space as single words, not a reserved quota.
 - Optional AI enrichment layer: when `ANTHROPIC_API_KEY` is set, a note's concepts/one-line gist are refined by Claude Haiku via `urllib` (no SDK); deterministic extraction is always computed first and used as the fallback when no key is set or the call fails
 - Note-to-note linking: score every pair of notes by shared-concept overlap weighted by how rare each concept is across the corpus (rarer shared concepts count for more than shared common words); store as a ranked edge list per note
 - CLI `search <query>`: rank notes by matches across title/body/concepts
@@ -102,7 +102,7 @@ builds/2026-07-11-connectome/
 - **Test file location:** `tests/test_*.py`
 - **Run command:** `python -m pytest tests/ -v`
 - **What will be tested:**
-  - Deterministic concept extraction: stopword filtering, minimum-length filtering, corpus-wide document-frequency weighting, empty-note handling
+  - Deterministic concept extraction: stopword filtering, minimum-length filtering, corpus-wide document-frequency weighting, empty-note handling; bigram phrases only join literally adjacent content words (a stopword between them blocks the join), are excluded when either word fails the length/stopword filter, and compete with single words in the same ranked `extract_concepts` output
   - Linking: symmetric scoring (order-independent), no self-links, rarer shared concepts outscore common shared concepts, notes with zero shared concepts produce no edge
   - Incremental indexing: unchanged file (same content hash) is skipped on re-index; changed file content triggers re-extraction; deleted file is removed from the index; non-`.md`/`.txt` files are ignored; empty notes directory handled without crashing
   - SQLite storage: schema creation is idempotent, re-indexing the same files does not duplicate rows, `search` matches are case-insensitive across title/body/concept

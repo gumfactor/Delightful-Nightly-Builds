@@ -25,6 +25,42 @@ def test_tokenize_empty_string_returns_empty_list():
     assert extraction.tokenize("") == []
 
 
+def test_extract_bigrams_joins_adjacent_content_words():
+    bigrams = extraction.extract_bigrams("the stress response system")
+    assert "stress response" in bigrams
+    assert "response system" in bigrams
+
+
+def test_extract_bigrams_excludes_pairs_spanning_a_stopword():
+    # "and" sits between "quick" and "lazy" in the raw text, so they must not
+    # be joined even though both individually pass the content-word filter.
+    bigrams = extraction.extract_bigrams("quick and lazy fox")
+    assert "quick lazy" not in bigrams
+    assert "quick and" not in bigrams
+
+
+def test_extract_bigrams_excludes_pair_with_short_word():
+    # "ok" is below MIN_TOKEN_LEN (3), so it can't anchor a bigram either side.
+    bigrams = extraction.extract_bigrams("ok fine plan")
+    assert "ok fine" not in bigrams
+    assert "fine plan" in bigrams
+
+
+def test_extract_bigrams_empty_and_single_word_produce_no_bigrams():
+    assert extraction.extract_bigrams("") == []
+    assert extraction.extract_bigrams("workflow") == []
+
+
+def test_compute_document_frequencies_counts_bigram_phrases_across_notes():
+    bodies = {
+        "a": "stress response system overview",
+        "b": "the stress response varies by person",
+        "c": "completely unrelated golf content",
+    }
+    doc_freq = extraction.compute_document_frequencies(bodies)
+    assert doc_freq["stress response"] == 2
+
+
 def test_compute_document_frequencies_counts_notes_not_occurrences():
     bodies = {
         "a": "workflow workflow workflow context",
@@ -67,6 +103,21 @@ def test_extract_concepts_handles_term_in_every_note_without_zero_division():
 def test_extract_concepts_empty_body_returns_empty_list():
     doc_freq = extraction.compute_document_frequencies({"a": "something"})
     assert extraction.extract_concepts("", doc_freq, 1) == []
+
+
+def test_extract_concepts_includes_bigram_phrases_alongside_single_words():
+    bodies = {
+        "a": "stress response research design covers stress response mechanisms",
+        "b": "an unrelated note about golf swing mechanics entirely",
+    }
+    doc_freq = extraction.compute_document_frequencies(bodies)
+    total = len(bodies)
+    concepts = extraction.extract_concepts(bodies["a"], doc_freq, total, top_n=10)
+    terms = [term for term, _ in concepts]
+    assert "stress response" in terms
+    # The phrase repeats twice in note "a" (tf=2), so it should outrank a
+    # same-rarity single word that only appears once.
+    assert terms.index("stress response") < terms.index("design")
 
 
 def test_extract_concepts_respects_top_n():
