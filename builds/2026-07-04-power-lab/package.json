@@ -1,0 +1,11 @@
+{
+  "name": "power-lab",
+  "version": "1.0.0",
+  "description": "Interactive statistical power, sample-size, and effect-size explorer with a power-intuition quiz",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

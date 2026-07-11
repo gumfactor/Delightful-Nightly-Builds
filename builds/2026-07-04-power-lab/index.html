@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Power Lab — Statistical Power &amp; Sample Size Trainer</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Power Lab</h1>
+      <p>Statistical power, sample size, and effect-size trainer</p>
+    </div>
+    <button id="theme-toggle" data-testid="theme-toggle" aria-label="Toggle dark or light theme">Light mode</button>
+  </header>
+
+  <nav data-testid="tab-nav">
+    <button class="tab-btn active" data-tab="explorer" data-testid="tab-btn-explorer">Power Explorer</button>
+    <button class="tab-btn" data-tab="sample-size" data-testid="tab-btn-sample-size">Sample Size Calculator</button>
+    <button class="tab-btn" data-tab="effect-size" data-testid="tab-btn-effect-size">Effect Size Converter</button>
+    <button class="tab-btn" data-tab="quiz" data-testid="tab-btn-quiz">Power Intuition Quiz</button>
+  </nav>
+
+  <main>
+    <!-- Power Explorer -->
+    <section class="tab-panel active" data-tab-panel="explorer" data-testid="panel-explorer">
+      <div class="panel-grid">
+        <div class="card">
+          <div class="control-row">
+            <label for="d-range">Effect size (Cohen's d): <span id="d-value">0.50</span> — <span id="d-label"></span></label>
+            <div class="paired">
+              <input type="range" id="d-range" data-testid="d-range" min="0.05" max="2" step="0.05" value="0.5" />
+              <input type="number" id="d-number" data-testid="d-number" min="0.05" max="2" step="0.05" value="0.5" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label for="n-range">Sample size per group (N): <span id="n-value">64</span></label>
+            <div class="paired">
+              <input type="range" id="n-range" data-testid="n-range" min="5" max="500" step="1" value="64" />
+              <input type="number" id="n-number" data-testid="n-number" min="2" max="5000" step="1" value="64" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label for="alpha-select">Alpha (significance level)</label>
+            <select id="alpha-select" data-testid="alpha-select">
+              <option value="0.01">.01</option>
+              <option value="0.05" selected>.05</option>
+              <option value="0.10">.10</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <label for="test-type-select">Design</label>
+            <select id="test-type-select" data-testid="test-type-select">
+              <option value="two-sample" selected>Two independent groups</option>
+              <option value="one-sample">One-sample / paired</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <label for="tails-select">Tails</label>
+            <select id="tails-select" data-testid="tails-select">
+              <option value="two" selected>Two-tailed</option>
+              <option value="one">One-tailed</option>
+            </select>
+          </div>
+
+          <div class="readout" data-testid="power-readout">80.7%</div>
+          <span class="readout-label" id="power-label" data-testid="power-label">adequate</span>
+          <p style="color: var(--text-dim); font-size: 0.8rem; margin-top: 0.9rem;">
+            Power computed via a normal approximation to the noncentral-t distribution — accurate to roughly ±1–3 percentage points for N ≥ 20 per group. Not a substitute for exact software (G*Power, R's <code>pwr</code>) for pre-registration figures.
+          </p>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3 style="margin-top:0;">Sampling distributions</h3>
+            <div class="chart-wrap"><canvas id="distribution-chart" data-testid="distribution-chart"></canvas></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0;">Power vs. sample size</h3>
+            <div class="chart-wrap"><canvas id="power-curve-chart" data-testid="power-curve-chart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sample Size Calculator -->
+    <section class="tab-panel" data-tab-panel="sample-size" data-testid="panel-sample-size">
+      <div class="card" style="max-width: 480px;">
+        <h3 style="margin-top:0;">Required sample size</h3>
+
+        <div class="control-row">
+          <label for="ss-power">Target power</label>
+          <input type="number" id="ss-power" data-testid="ss-power" min="0.01" max="0.99" step="0.01" value="0.80" />
+        </div>
+
+        <div class="control-row">
+          <label for="ss-d">Effect size (Cohen's d)</label>
+          <input type="number" id="ss-d" data-testid="ss-d" min="0.01" max="3" step="0.01" value="0.5" />
+        </div>
+
+        <div class="control-row">
+          <label for="ss-alpha">Alpha</label>
+          <select id="ss-alpha" data-testid="ss-alpha">
+            <option value="0.01">.01</option>
+            <option value="0.05" selected>.05</option>
+            <option value="0.10">.10</option>
+          </select>
+        </div>
+
+        <div class="control-row">
+          <label for="ss-test-type">Design</label>
+          <select id="ss-test-type" data-testid="ss-test-type">
+            <option value="two-sample" selected>Two independent groups</option>
+            <option value="one-sample">One-sample / paired</option>
+          </select>
+        </div>
+
+        <div class="control-row">
+          <label for="ss-tails">Tails</label>
+          <select id="ss-tails" data-testid="ss-tails">
+            <option value="two" selected>Two-tailed</option>
+            <option value="one">One-tailed</option>
+          </select>
+        </div>
+
+        <div class="result-box" data-testid="sample-size-result"></div>
+        <p class="error-msg" data-testid="sample-size-error"></p>
+        <button class="primary" id="copy-summary-btn" data-testid="copy-summary-btn">Copy summary sentence</button>
+        <p style="color: var(--text-dim); font-size: 0.8rem;" data-testid="copy-status"></p>
+      </div>
+    </section>
+
+    <!-- Effect Size Converter -->
+    <section class="tab-panel" data-tab-panel="effect-size" data-testid="panel-effect-size">
+      <div class="card" style="max-width: 480px;">
+        <h3 style="margin-top:0;">Convert between effect-size metrics</h3>
+
+        <div class="control-row">
+          <label for="conversion-direction">Conversion</label>
+          <select id="conversion-direction" data-testid="conversion-direction">
+            <option value="d-to-r">Cohen's d → Pearson's r</option>
+            <option value="r-to-d">Pearson's r → Cohen's d</option>
+            <option value="t-to-d">t-statistic + N → Cohen's d</option>
+          </select>
+        </div>
+
+        <div class="control-row" data-input-for="d-to-r,r-to-d">
+          <label for="es-d-input" id="es-d-label">Cohen's d</label>
+          <input type="number" id="es-d-input" data-testid="es-primary-input" step="0.01" value="0.5" />
+        </div>
+
+        <div class="control-row" data-input-for="t-to-d" hidden>
+          <label for="es-t-input">t-statistic</label>
+          <input type="number" id="es-t-input" data-testid="es-t-input" step="0.01" value="2.0" />
+        </div>
+
+        <div class="control-row" data-input-for="t-to-d" hidden>
+          <label for="es-n-input">N per group (two-sample) or N (one-sample)</label>
+          <input type="number" id="es-n-input" data-testid="es-n-input" min="2" step="1" value="30" />
+        </div>
+
+        <div class="control-row" data-input-for="t-to-d" hidden>
+          <label for="es-test-type-input">Design</label>
+          <select id="es-test-type-input" data-testid="es-test-type-input">
+            <option value="two-sample" selected>Two independent groups</option>
+            <option value="one-sample">One-sample / paired</option>
+          </select>
+        </div>
+
+        <div class="result-box" data-testid="effect-size-result"></div>
+        <p class="error-msg" data-testid="effect-size-error"></p>
+      </div>
+    </section>
+
+    <!-- Power Intuition Quiz -->
+    <section class="tab-panel" data-tab-panel="quiz" data-testid="panel-quiz">
+      <div class="card" style="max-width: 640px;">
+        <div class="quiz-stats">
+          <span data-testid="quiz-score">Score: 0</span>
+          <span data-testid="quiz-streak">Streak: 0 (best: 0)</span>
+        </div>
+        <h3 data-testid="quiz-question" style="min-height: 3.5em;"></h3>
+        <p style="color: var(--text-dim); font-size: 0.85rem;">Guess the statistical power bucket for this scenario (alpha = .05 unless stated otherwise):</p>
+        <div class="quiz-buckets" data-testid="quiz-buckets">
+          <button class="quiz-bucket-btn" data-testid="quiz-bucket-btn" data-bucket="&lt;50%">&lt;50%</button>
+          <button class="quiz-bucket-btn" data-testid="quiz-bucket-btn" data-bucket="50-70%">50-70%</button>
+          <button class="quiz-bucket-btn" data-testid="quiz-bucket-btn" data-bucket="70-90%">70-90%</button>
+          <button class="quiz-bucket-btn" data-testid="quiz-bucket-btn" data-bucket="&gt;90%">&gt;90%</button>
+        </div>
+        <p data-testid="quiz-feedback" hidden></p>
+        <button class="primary" data-testid="quiz-next-btn" hidden>Next question</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>Power Lab — built 2026-07-04. All computation runs locally in your browser; nothing is sent anywhere.</footer>
+
+  <!--
+    Classic (non-module) scripts loaded in dependency order, each attaching
+    its API to a namespaced window global (PowerLabStats, PowerLabQuizData,
+    PowerLabCharts, PowerLabQuiz). ES modules (type="module") are avoided
+    deliberately: Chromium refuses to load them at all when a page is opened
+    via a plain file:// URL, which this app must support with no server.
+  -->
+  <script src="src/stats.js"></script>
+  <script src="src/quiz-data.js"></script>
+  <script src="src/charts.js"></script>
+  <script src="src/quiz.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
