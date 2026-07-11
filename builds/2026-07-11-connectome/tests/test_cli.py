@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import tempfile
 
 import pytest
@@ -133,3 +134,116 @@ def test_derive_title_prefers_markdown_heading():
 def test_derive_title_falls_back_to_filename():
     title = cli.derive_title("my-cool-note.md", "no heading here")
     assert title == "My Cool Note"
+
+
+def run_backlinks(workspace, extra_args=None):
+    parser = cli.build_parser()
+    args = parser.parse_args(
+        ["--db", workspace["db_path"], "backlinks", "--notes-dir", workspace["notes_dir"]]
+        + (extra_args or [])
+    )
+    args.func(args)
+
+
+def read_note(workspace, filename):
+    with open(os.path.join(workspace["notes_dir"], filename), encoding="utf-8") as f:
+        return f.read()
+
+
+def test_backlinks_dry_run_does_not_modify_files(workspace, capsys):
+    run_index(workspace)
+    before = read_note(workspace, "note_a.md")
+    capsys.readouterr()
+    run_backlinks(workspace)
+    out = capsys.readouterr().out
+    assert "Dry run" in out
+    assert read_note(workspace, "note_a.md") == before
+
+
+def test_backlinks_write_without_git_repo_refuses_and_leaves_files_unchanged(workspace):
+    run_index(workspace)
+    before = read_note(workspace, "note_a.md")
+    with pytest.raises(SystemExit):
+        run_backlinks(workspace, ["--write"])
+    assert read_note(workspace, "note_a.md") == before
+
+
+def git_commit_all(directory):
+    subprocess.run(["git", "init", "-q", directory], check=True)
+    subprocess.run(["git", "-C", directory, "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", directory, "-c", "user.email=test@example.com", "-c", "user.name=Test",
+         "commit", "-q", "-m", "initial notes"],
+        check=True,
+    )
+
+
+def test_backlinks_write_refuses_when_git_repo_has_no_commits_yet(workspace):
+    subprocess.run(["git", "init", "-q", workspace["notes_dir"]], check=True)
+    run_index(workspace)
+    before = read_note(workspace, "note_a.md")
+    with pytest.raises(SystemExit):
+        run_backlinks(workspace, ["--write"])
+    assert read_note(workspace, "note_a.md") == before
+
+
+def test_backlinks_write_refuses_when_working_tree_is_dirty(workspace):
+    git_commit_all(workspace["notes_dir"])
+    with open(os.path.join(workspace["notes_dir"], "note_a.md"), "a", encoding="utf-8") as f:
+        f.write("\nuncommitted local edit\n")
+    run_index(workspace)
+    before = read_note(workspace, "note_a.md")
+    with pytest.raises(SystemExit):
+        run_backlinks(workspace, ["--write"])
+    assert read_note(workspace, "note_a.md") == before
+
+
+def test_backlinks_write_skip_git_check_bypasses_the_guardrail(workspace, capsys):
+    run_index(workspace)
+    capsys.readouterr()
+    run_backlinks(workspace, ["--write", "--skip-git-check"])
+    out = capsys.readouterr().out
+    assert "Wrote backlinks to" in out
+
+
+def test_backlinks_write_in_git_repo_inserts_wiki_links_and_is_idempotent(workspace, capsys):
+    git_commit_all(workspace["notes_dir"])
+    run_index(workspace)
+    capsys.readouterr()
+    run_backlinks(workspace, ["--write"])
+    out = capsys.readouterr().out
+    assert "Wrote backlinks to" in out
+    updated = read_note(workspace, "note_a.md")
+    assert "[[note_b|Investment Workflow]]" in updated
+
+    # Re-running against unchanged notes on disk should be a no-op.
+    capsys.readouterr()
+    run_backlinks(workspace, ["--write"])
+    out = capsys.readouterr().out
+    assert "already up to date" in out
+
+
+def test_backlinks_write_syncs_db_so_next_index_run_skips_written_notes(workspace, capsys):
+    git_commit_all(workspace["notes_dir"])
+    run_index(workspace)
+    run_backlinks(workspace, ["--write"])
+    capsys.readouterr()
+    run_index(workspace)
+    out = capsys.readouterr().out
+    assert "Indexed 0 new/changed note(s)" in out
+
+
+def test_backlinks_write_skips_note_edited_since_last_index(workspace, capsys):
+    git_commit_all(workspace["notes_dir"])
+    run_index(workspace)
+    with open(os.path.join(workspace["notes_dir"], "note_a.md"), "a", encoding="utf-8") as f:
+        f.write("\nEdited after indexing, before backlinks was run.\n")
+    # Commit the edit so the git-baseline guardrail passes and we can isolate
+    # the separate content-hash staleness guard inside write_plans itself.
+    git_commit_all(workspace["notes_dir"])
+    capsys.readouterr()
+    run_backlinks(workspace, ["--write"])
+    out = capsys.readouterr().out
+    assert "Skipped" in out
+    assert "note_a.md" in out
+    assert "Edited after indexing, before backlinks was run." in read_note(workspace, "note_a.md")

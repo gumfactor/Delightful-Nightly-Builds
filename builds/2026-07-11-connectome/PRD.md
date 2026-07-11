@@ -28,9 +28,10 @@ As a researcher and founder who accumulates notes across many separate contexts 
 - A bundled `sample_notes/` folder of synthetic, thematically relevant demo notes (AI workflows, neuroscience research, investing, course prep) so the tool is immediately explorable without the user having a notes folder ready
 - Safe HTML generation: note bodies are HTML-escaped before display; graph/search data is embedded as a `<script type="application/json">` block (not raw string interpolation into executable JS) to eliminate script-injection risk from note content
 
+- CLI `backlinks` command (added 2026-07-11, same day, as a follow-up): writes a delimited `[[wiki-link]]` "See also" block into each note's own file, pointing at its top related notes. Dry-run by default (`--write` required to touch disk); `--write` additionally requires `--notes-dir` to be a git repository with a committed, clean working tree (checked via `git_baseline_problem()` in `backlinks.py`), so every edit is a reviewable, revertible `git diff`/`git checkout` away from undone — `--skip-git-check` is available as an explicit, documented override. A per-note content-hash check skips (rather than silently overwrites) any note edited on disk since the last `index` run. See `Manual.md` for full usage.
+
 ### Out of Scope
 - Vector embeddings / semantic similarity (deliberately deterministic and offline; see `FutureFeatures.md`)
-- Editing notes from within the tool (read-only indexer, not a notes editor)
 - Real-time file watching (index is run on demand via CLI)
 - Syncing to any external service (Notion, Obsidian, Coda) — local files only
 - Non-text formats (PDF, Word, images) — `.md`/`.txt` only tonight
@@ -79,7 +80,8 @@ builds/2026-07-11-connectome/
 │   ├── extraction.py      # concept extraction (deterministic + optional AI enrichment)
 │   ├── linking.py         # note-to-note link scoring
 │   ├── storage.py         # SQLite schema + read/write helpers
-│   └── render.py          # HTML knowledge base generation
+│   ├── render.py          # HTML knowledge base generation
+│   └── backlinks.py       # writes [[wiki-link]] blocks into note files (dry-run + git-guarded)
 └── tests/
     ├── fixtures/
     │   ├── note_a.md
@@ -90,7 +92,8 @@ builds/2026-07-11-connectome/
     ├── test_linking.py
     ├── test_storage.py
     ├── test_cli.py
-    └── test_render.py
+    ├── test_render.py
+    └── test_backlinks.py
 ```
 
 ## Testing Strategy
@@ -106,6 +109,7 @@ builds/2026-07-11-connectome/
   - CLI: `search` with no matches returns a clean empty result (not a crash); `related` on a note with no links reports that clearly; `stats` computes correct aggregate counts
   - AI enrichment layer: mocked successful Claude response is used; missing `ANTHROPIC_API_KEY` falls back to deterministic extraction; a simulated API failure (timeout/HTTP error) falls back cleanly without crashing the index run
   - HTML rendering: generated HTML is valid and self-contained; a note body containing `<script>`, `</script>`, and raw quotes is escaped/embedded safely (does not break out of the embedded JSON block or execute)
+  - Backlinks: block insert/replace/remove is idempotent (re-running against an already-written body is a no-op); the git-baseline guard correctly refuses a non-git directory, a git repo with no commits, and a git repo with a dirty working tree, and accepts a clean committed one; a note edited on disk after the last `index` but before `backlinks --write` is skipped, not silently overwritten; writing updates the note's stored body/hash so a subsequent `index` run doesn't re-flag it as changed
 
 ## Success Criteria
 

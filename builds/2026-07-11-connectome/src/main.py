@@ -14,6 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import backlinks
 import extraction
 import linking
 import render
@@ -156,6 +157,49 @@ def cmd_stats(args: argparse.Namespace) -> None:
             print(f"  - {id_to_title.get(note_id, '?')} ({count} links)")
 
 
+def cmd_backlinks(args: argparse.Namespace) -> None:
+    conn = storage.connect(args.db)
+    notes = storage.all_notes(conn)
+    all_links = storage.get_all_links(conn)
+    plans = backlinks.plan_backlinks(notes, all_links, top_n=args.top)
+    changed = [plan for plan in plans if plan["changed"]]
+
+    if not changed:
+        print("No backlink changes to make — every note's See Also block is already up to date.")
+        return
+
+    if not args.write:
+        print(f"Dry run: {len(changed)} note(s) would be updated. Re-run with --write to apply.\n")
+        for plan in changed:
+            print(backlinks.diff_text(plan["path"], plan["old_body"], plan["new_body"]))
+        return
+
+    if not args.skip_git_check:
+        problem = backlinks.git_baseline_problem(args.notes_dir)
+        if problem:
+            print(
+                f"Refusing to write: {problem}, so there is no reliable way to review or undo "
+                "these edits. Commit your notes first (`git init && git add -A && git commit`), "
+                "or pass --skip-git-check to proceed anyway (not recommended)."
+            )
+            raise SystemExit(1)
+
+    written, stale = backlinks.write_plans(args.notes_dir, changed)
+    if written:
+        written_set = set(written)
+        for plan in changed:
+            if plan["path"] in written_set:
+                digest = backlinks.content_hash(plan["new_body"])
+                storage.upsert_note(conn, plan["path"], plan["title"], plan["new_body"], digest)
+        conn.commit()
+    print(f"Wrote backlinks to {len(written)} note(s).")
+    if stale:
+        print(
+            f"Skipped {len(stale)} note(s) that changed on disk since the last `index` run "
+            f"(re-run `index` then `backlinks` to include them): {', '.join(stale)}"
+        )
+
+
 def cmd_build(args: argparse.Namespace) -> None:
     conn = storage.connect(args.db)
     output_path = render.render_knowledge_base(conn, args.output_dir)
@@ -187,6 +231,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_build = subparsers.add_parser("build", help="Render the HTML knowledge base")
     p_build.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
     p_build.set_defaults(func=cmd_build)
+
+    p_backlinks = subparsers.add_parser(
+        "backlinks", help="Write [[wiki-link]] See Also blocks into your note files"
+    )
+    p_backlinks.add_argument("--notes-dir", default="sample_notes",
+                              help="Folder of .md/.txt notes — must match what was last indexed")
+    p_backlinks.add_argument("--top", type=int, default=5, help="Max related notes per See Also block")
+    p_backlinks.add_argument("--write", action="store_true",
+                              help="Actually write changes (default is dry-run: prints a diff, touches nothing)")
+    p_backlinks.add_argument("--skip-git-check", action="store_true",
+                              help="Allow writing even if --notes-dir isn't a git repo (not recommended: no undo path)")
+    p_backlinks.set_defaults(func=cmd_backlinks)
 
     return parser
 

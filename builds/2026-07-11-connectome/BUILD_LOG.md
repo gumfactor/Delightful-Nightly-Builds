@@ -80,3 +80,45 @@ Two test bugs found and fixed during this run, not app bugs: `test_extract_conce
 - Optional Claude call sends only note body text (something the user already owns and chose to index) — no other personal data collected or transmitted.
 
 Build complete. Success criteria reviewed. All tests passing.
+
+---
+
+## Follow-up Session — 2026-07-11 (same day, user-requested)
+
+### [12:50 UTC] Scope
+
+User reviewed `FutureFeatures.md` item #6 ("Backlink-aware Markdown export") and asked for it to be built, with explicit guardrails since it's the first Connectome feature that writes to files it didn't create itself. Implementing as an addition to tonight's build rather than a separate build folder, since it's a direct extension of the same tool.
+
+### [13:05 UTC] Design
+
+New `src/backlinks.py` module: `format_block()`/`find_block()`/`apply_block()` handle a single idempotent delimited block (`<!-- connectome:links:start -->` … `:end -->`) per note, inserted/replaced/removed via string offsets — no note content outside the block is ever touched. Link targets use the note's filename stem (`[[note-a|Display Title]]`), matching how Obsidian actually resolves `[[links]]`.
+
+New `backlinks` CLI subcommand in `main.py`: dry-run by default (prints a unified diff, writes nothing); `--write` required to touch disk.
+
+### [13:15 UTC] Guardrail: git baseline required for `--write`
+
+First pass gated `--write` on `is_git_repo()` (bare `git rev-parse --is-inside-work-tree`). Manual verification caught a real gap: a freshly `git init`'d directory with nothing committed passes that check but gives no actual undo path — `git diff` has nothing to compare against. Replaced the gate with `git_baseline_problem()`, which additionally requires a commit to exist (`git rev-parse --verify HEAD`) and a clean working tree (`git status --porcelain` empty), with a distinct, specific refusal message for each failure mode (not a repo / no commits yet / uncommitted changes present). `--skip-git-check` remains as an explicit, named escape hatch. Re-verified manually: `backlinks --write` against a directory with committed sample notes now produces a `git diff` that cleanly shows exactly the inserted blocks, revertible with `git checkout -- .`.
+
+### [13:20 UTC] Guardrail: don't overwrite un-indexed edits
+
+`write_plans()` re-reads each file from disk immediately before writing and compares its content hash to the body that was actually indexed; if they differ (the user edited the note after `index` but before `backlinks --write`), that note is skipped with a named warning instead of silently clobbering the edit.
+
+### [13:25 UTC] Bug found during manual smoke test: DB left stale after writing
+
+Manual run against real `sample_notes/` (indexed, then `backlinks --write`, then `backlinks --write` again) showed the second run reporting notes as "skipped (changed on disk)" instead of "already up to date" — because writing to disk updated the files but not the `notes` table, so the next run's staleness check compared the DB's pre-write body against the now-updated disk content and (correctly, but confusingly) flagged a mismatch. Fixed by having `cmd_backlinks` call `storage.upsert_note()` for each successfully written note immediately after writing, keeping the DB's body/content_hash in sync with what's now on disk. Added `test_backlinks_write_syncs_db_so_next_index_run_skips_written_notes` as a regression test.
+
+### [13:35 UTC] Tests
+
+Added `tests/test_backlinks.py` (21 tests: block formatting, find/insert/replace/remove, idempotency, `git_baseline_problem()` across all four states, `write_plans()` staleness handling) and 8 new CLI-level tests in `tests/test_cli.py` (dry-run leaves files untouched; `--write` refused for no-git / no-commit / dirty-tree; `--skip-git-check` bypasses the guard; a full write-then-reindex round trip; stale-note skip at the CLI level).
+
+Tests: 80 passed, 0 failed (`python -m pytest tests/ -v`) — up from 48.
+
+### [13:45 UTC] Manual verification
+
+Ran the full flow against a real, git-committed copy of `sample_notes/` (not just pytest fixtures): `index` → `backlinks` (dry run, confirmed correct diffs for all 6 notes) → `backlinks --write` (confirmed `git diff --stat` shows exactly the 6 files with clean, additive hunks) → `backlinks --write` again (confirmed "already up to date", not a duplicate block). Separately confirmed `--write` against an uncommitted `git init`-only directory refuses with the "no commits yet" message, and against a directory with local uncommitted changes refuses with the "uncommitted changes" message — both leaving the target files byte-for-byte unchanged.
+
+### [13:50 UTC] Documentation
+
+Updated `PRD.md` (moved this capability from Out of Scope into In Scope with the guardrail description, updated Folder Structure and Testing Strategy), `Manual.md` (new command section, config table rows, troubleshooting rows, known-limitations rows), and `FutureFeatures.md` (marked item #6 done with a summary of what shipped, added two new follow-on ideas: frontmatter-aware insertion point, and a proactive rename warning).
+
+Follow-up session complete. All tests passing (80/80). Guardrails manually verified against real git states, not just mocked ones.
