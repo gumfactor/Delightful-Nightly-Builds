@@ -1,0 +1,56 @@
+{
+  "populations": [
+    {"id": "p_forensic_offenders", "label": "incarcerated adults with elevated psychopathic traits", "tags": ["forensic", "adult", "psychopathy"]},
+    {"id": "p_community_psychopathy", "label": "community-dwelling adults scoring high on subclinical psychopathy measures", "tags": ["community", "adult", "psychopathy"]},
+    {"id": "p_chronic_stress", "label": "adults reporting chronic occupational stress", "tags": ["community", "adult", "stress"]},
+    {"id": "p_early_trauma", "label": "adults with a documented history of early-life adversity", "tags": ["community", "adult", "stress", "trauma"]},
+    {"id": "p_caregivers", "label": "informal caregivers of chronically ill family members", "tags": ["community", "adult", "stress", "empathy"]},
+    {"id": "p_frontline_clinicians", "label": "frontline clinicians and first responders", "tags": ["community", "adult", "stress", "empathy"]},
+    {"id": "p_adolescent_cd", "label": "adolescents with conduct problems and callous-unemotional traits", "tags": ["forensic", "adolescent", "psychopathy"]},
+    {"id": "p_healthy_controls", "label": "healthy adult volunteers with no reported psychiatric history", "tags": ["community", "adult", "control"]},
+    {"id": "p_intimate_partner", "label": "adults involved in high-conflict intimate partner relationships", "tags": ["community", "adult", "empathy"]},
+    {"id": "p_students_stress", "label": "graduate students during high-stakes evaluation periods (comprehensive exams, defenses)", "tags": ["community", "adult", "stress"]}
+  ],
+  "constructs": [
+    {"id": "c_empathic_accuracy", "label": "empathic accuracy (correctly inferring another's affective state)", "tags": ["empathy", "behavioral", "self-report"]},
+    {"id": "c_affective_empathy", "label": "affective empathy (shared emotional resonance with another's state)", "tags": ["empathy", "self-report", "neural"]},
+    {"id": "c_cognitive_empathy", "label": "cognitive empathy / theory-of-mind inference", "tags": ["empathy", "behavioral", "neural"]},
+    {"id": "c_cortisol_reactivity", "label": "cortisol reactivity to acute psychosocial stress", "tags": ["stress", "physiological"]},
+    {"id": "c_allostatic_load", "label": "cumulative allostatic load (multi-system physiological wear)", "tags": ["stress", "physiological"]},
+    {"id": "c_oxytocin_admin", "label": "intranasal oxytocin administration", "tags": ["empathy", "physiological", "neural"]},
+    {"id": "c_attentional_bias_threat", "label": "attentional bias toward threat-related facial expressions", "tags": ["stress", "behavioral", "neural"]},
+    {"id": "c_emotion_regulation", "label": "habitual emotion regulation strategy (reappraisal vs. suppression)", "tags": ["stress", "self-report", "neural"]},
+    {"id": "c_callous_unemotional", "label": "callous-unemotional trait severity", "tags": ["psychopathy", "self-report"]},
+    {"id": "c_moral_disengagement", "label": "moral disengagement (cognitive justification of harmful acts)", "tags": ["psychopathy", "self-report", "behavioral"]}
+  ],
+  "outcomes": [
+    {"id": "o_recidivism_risk", "label": "risk of reoffending at 12-month follow-up", "tags": ["behavioral", "forensic"]},
+    {"id": "o_prosocial_behavior", "label": "spontaneous prosocial (helping) behavior in a lab paradigm", "tags": ["behavioral"]},
+    {"id": "o_aggression", "label": "reactive aggression in a provocation paradigm", "tags": ["behavioral"]},
+    {"id": "o_amygdala_reactivity", "label": "amygdala reactivity to distress cues", "tags": ["neural"]},
+    {"id": "o_pfc_connectivity", "label": "prefrontal-amygdala functional connectivity", "tags": ["neural"]},
+    {"id": "o_self_reported_burnout", "label": "self-reported burnout severity", "tags": ["self-report"]},
+    {"id": "o_relationship_satisfaction", "label": "self-reported relationship or caregiving-relationship satisfaction", "tags": ["self-report"]},
+    {"id": "o_hpa_axis_dysregulation", "label": "long-term HPA-axis dysregulation", "tags": ["physiological"]},
+    {"id": "o_deception_detection", "label": "accuracy detecting deception in others", "tags": ["behavioral"]},
+    {"id": "o_treatment_response", "label": "response to a brief empathy- or stress-focused intervention", "tags": ["behavioral", "self-report"]}
+  ],
+  "methods": [
+    {"id": "m_fmri", "label": "task-based fMRI", "requires_tags": ["neural"], "excludes_tags": []},
+    {"id": "m_eeg", "label": "EEG / ERP", "requires_tags": ["neural"], "excludes_tags": []},
+    {"id": "m_salivary_cortisol", "label": "salivary cortisol sampling across a stress-induction protocol", "requires_tags": ["physiological"], "excludes_tags": []},
+    {"id": "m_behavioral_task", "label": "a computerized behavioral task with response-time and accuracy measures", "requires_tags": ["behavioral"], "excludes_tags": []},
+    {"id": "m_survey_longitudinal", "label": "a longitudinal self-report survey design with repeated measures", "requires_tags": ["self-report"], "excludes_tags": []},
+    {"id": "m_ema", "label": "ecological momentary assessment (smartphone-prompted in-the-moment ratings)", "requires_tags": ["self-report"], "excludes_tags": []},
+    {"id": "m_rct", "label": "a randomized controlled trial with an active comparison condition", "requires_tags": ["behavioral", "self-report"], "excludes_tags": []}
+  ],
+  "frames": [
+    {"id": "f_allostatic_load", "label": "allostatic load theory", "tags": ["stress"]},
+    {"id": "f_predictive_coding", "label": "predictive coding / interoceptive inference", "tags": ["stress", "empathy"]},
+    {"id": "f_dual_process_empathy", "label": "dual-process (affective vs. cognitive route) models of empathy", "tags": ["empathy"]},
+    {"id": "f_triarchic_psychopathy", "label": "the triarchic model of psychopathy (boldness, meanness, disinhibition)", "tags": ["psychopathy"]},
+    {"id": "f_social_baseline", "label": "social baseline theory (co-regulation reduces individual physiological burden)", "tags": ["stress", "empathy"]},
+    {"id": "f_biosocial_cd", "label": "biosocial models of callous-unemotional trait development", "tags": ["psychopathy"]},
+    {"id": "f_polyvagal", "label": "polyvagal theory of autonomic regulation and social engagement", "tags": ["stress", "empathy"]}
+  ]
+}

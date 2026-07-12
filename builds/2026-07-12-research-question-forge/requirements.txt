@@ -1,0 +1,5 @@
+# Research Question Forge — stdlib only, zero third-party runtime dependencies.
+# The optional Anthropic API call in src/ai_polish.py uses urllib.request directly.
+#
+# Development/test dependency (not required to run the tool):
+#   pytest
