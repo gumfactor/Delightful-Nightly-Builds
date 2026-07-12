@@ -1,0 +1,4 @@
+connectome.db
+output/
+.pytest_cache/
+__pycache__/

@@ -1,0 +1,3 @@
+# Connectome is stdlib-only. No third-party runtime dependencies.
+# pytest is required to run the test suite (tests/):
+pytest>=7.0
