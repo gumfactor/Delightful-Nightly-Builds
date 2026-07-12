@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import backlinks
+import clustering
 import extraction
 import linking
 import render
@@ -54,10 +55,11 @@ def content_hash(body: str) -> str:
 
 def cmd_index(args: argparse.Namespace) -> None:
     conn = storage.connect(args.db)
+    category = args.category
     notes_on_disk = read_notes_dir(args.notes_dir)
     api_key = os.environ.get("ANTHROPIC_API_KEY") if args.ai else None
 
-    existing_notes = {row["path"]: row for row in storage.all_notes(conn)}
+    existing_notes = {row["path"]: row for row in storage.all_notes(conn, category=category)}
     seen_paths = set(notes_on_disk.keys())
 
     removed = [path for path in existing_notes if path not in seen_paths]
@@ -76,7 +78,7 @@ def cmd_index(args: argparse.Namespace) -> None:
             skipped += 1
             continue
         title = derive_title(path, body)
-        note_id = storage.upsert_note(conn, path, title, body, digest)
+        note_id = storage.upsert_note(conn, path, category, title, body, digest)
         base_concepts = extraction.extract_concepts(body, doc_freq_estimate, total_notes)
         final_concepts = extraction.enrich_with_claude(body, base_concepts, api_key)
         storage.replace_note_concepts(conn, note_id, final_concepts)
@@ -85,29 +87,39 @@ def cmd_index(args: argparse.Namespace) -> None:
     storage.recompute_doc_frequencies(conn)
 
     if changed_note_ids or removed:
+        # Recomputed over the WHOLE corpus, not just this category, so links
+        # and subcategories connect across Notes/Papers/News — that's the
+        # point of having categories share one graph.
         all_note_concepts = storage.get_all_note_concepts(conn)
         doc_freq = storage.get_doc_frequencies(conn)
         links = linking.compute_links(all_note_concepts, doc_freq, len(all_note_concepts))
         storage.replace_all_links(conn, links)
 
+        all_notes_global = storage.all_notes(conn)
+        subcategories = clustering.assign_subcategories(
+            all_notes_global, links, all_note_concepts, api_key=api_key
+        )
+        for note_id, subcategory in subcategories.items():
+            storage.set_subcategory(conn, note_id, subcategory)
+
     conn.commit()
     print(f"Indexed {len(changed_note_ids)} new/changed note(s), skipped {skipped} unchanged, "
-          f"removed {len(removed)}. Total notes: {len(notes_on_disk)}.")
+          f"removed {len(removed)}. Total notes: {len(notes_on_disk)}. Category: '{category}'.")
 
 
 def cmd_search(args: argparse.Namespace) -> None:
     conn = storage.connect(args.db)
-    results = storage.search_notes(conn, args.query)
+    results = storage.search_notes(conn, args.query, category=args.category)
     if not results:
         print(f"No notes match '{args.query}'.")
         return
     for row in results:
-        print(f"- {row['title']} ({row['path']})")
+        print(f"- {row['title']} ({row['path']}) [{row['category']}]")
 
 
 def cmd_related(args: argparse.Namespace) -> None:
     conn = storage.connect(args.db)
-    note = storage.get_note_by_path(conn, args.note) or _find_by_title(conn, args.note)
+    note = storage.find_note_by_path_any_category(conn, args.note) or _find_by_title(conn, args.note)
     if not note:
         print(f"No note found matching '{args.note}'.")
         return
@@ -116,12 +128,14 @@ def cmd_related(args: argparse.Namespace) -> None:
     if not related:
         print(f"'{note['title']}' has no related notes yet.")
         return
-    id_to_title = {row["id"]: row["title"] for row in storage.all_notes(conn)}
-    print(f"Notes related to '{note['title']}':")
+    id_to_row = {row["id"]: row for row in storage.all_notes(conn)}
+    print(f"Notes related to '{note['title']}' [{note['category']}]:")
     for link in related:
-        other_title = id_to_title.get(link.note_b, "?")
+        other = id_to_row.get(link.note_b)
+        other_title = other["title"] if other else "?"
+        other_category = other["category"] if other else "?"
         shared = ", ".join(link.shared_concepts[:5])
-        print(f"  - {other_title} (score {link.score:.3f}; shared: {shared})")
+        print(f"  - {other_title} [{other_category}] (score {link.score:.3f}; shared: {shared})")
 
 
 def _find_by_title(conn, title: str):
@@ -133,9 +147,13 @@ def _find_by_title(conn, title: str):
 
 def cmd_stats(args: argparse.Namespace) -> None:
     conn = storage.connect(args.db)
-    notes = storage.all_notes(conn)
+    category = args.category
+    notes = storage.all_notes(conn, category=category)
     doc_freq = storage.get_doc_frequencies(conn)
     all_links = storage.get_all_links(conn)
+    if category:
+        note_ids = {row["id"] for row in notes}
+        all_links = [link for link in all_links if link.note_a in note_ids and link.note_b in note_ids]
 
     print(f"Notes: {len(notes)}")
     print(f"Concepts: {len(doc_freq)}")
@@ -156,12 +174,22 @@ def cmd_stats(args: argparse.Namespace) -> None:
         for note_id, count in hubs:
             print(f"  - {id_to_title.get(note_id, '?')} ({count} links)")
 
+    if not category:
+        by_category: dict[str, int] = {}
+        for row in notes:
+            by_category[row["category"]] = by_category.get(row["category"], 0) + 1
+        if len(by_category) > 1:
+            print("By category:")
+            for cat, count in sorted(by_category.items()):
+                print(f"  - {cat}: {count}")
+
 
 def cmd_backlinks(args: argparse.Namespace) -> None:
     conn = storage.connect(args.db)
-    notes = storage.all_notes(conn)
+    notes = storage.all_notes(conn, category=args.category)
+    all_notes_global = storage.all_notes(conn)
     all_links = storage.get_all_links(conn)
-    plans = backlinks.plan_backlinks(notes, all_links, top_n=args.top)
+    plans = backlinks.plan_backlinks(notes, all_links, top_n=args.top, lookup_notes=all_notes_global)
     changed = [plan for plan in plans if plan["changed"]]
 
     if not changed:
@@ -190,7 +218,7 @@ def cmd_backlinks(args: argparse.Namespace) -> None:
         for plan in changed:
             if plan["path"] in written_set:
                 digest = backlinks.content_hash(plan["new_body"])
-                storage.upsert_note(conn, plan["path"], plan["title"], plan["new_body"], digest)
+                storage.upsert_note(conn, plan["path"], args.category, plan["title"], plan["new_body"], digest)
         conn.commit()
     print(f"Wrote backlinks to {len(written)} note(s).")
     if stale:
@@ -213,12 +241,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_index = subparsers.add_parser("index", help="Index a folder of notes")
     p_index.add_argument("--notes-dir", default="sample_notes", help="Folder of .md/.txt notes")
+    p_index.add_argument("--category", default=storage.DEFAULT_CATEGORY,
+                          help="Category to file these notes under (e.g. 'Notes', 'Academic Papers', "
+                               "'News Articles'). Run index once per category/folder — the graph and "
+                               "subcategories span all categories in the database.")
     p_index.add_argument("--ai", action="store_true",
-                          help="Use ANTHROPIC_API_KEY (if set) to refine concept extraction")
+                          help="Use ANTHROPIC_API_KEY (if set) to refine concept extraction and subcategory names")
     p_index.set_defaults(func=cmd_index)
 
     p_search = subparsers.add_parser("search", help="Search notes by title/body/concept")
     p_search.add_argument("query")
+    p_search.add_argument("--category", default=None, help="Restrict results to one category")
     p_search.set_defaults(func=cmd_search)
 
     p_related = subparsers.add_parser("related", help="Show notes related to a given note")
@@ -226,6 +259,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_related.set_defaults(func=cmd_related)
 
     p_stats = subparsers.add_parser("stats", help="Show corpus statistics")
+    p_stats.add_argument("--category", default=None, help="Restrict stats to one category")
     p_stats.set_defaults(func=cmd_stats)
 
     p_build = subparsers.add_parser("build", help="Render the HTML knowledge base")
@@ -237,6 +271,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_backlinks.add_argument("--notes-dir", default="sample_notes",
                               help="Folder of .md/.txt notes — must match what was last indexed")
+    p_backlinks.add_argument("--category", default=storage.DEFAULT_CATEGORY,
+                              help="Category matching what --notes-dir was indexed under")
     p_backlinks.add_argument("--top", type=int, default=5, help="Max related notes per See Also block")
     p_backlinks.add_argument("--write", action="store_true",
                               help="Actually write changes (default is dry-run: prints a diff, touches nothing)")

@@ -84,15 +84,25 @@ def apply_block(body: str, block: str | None) -> str:
     return before or after
 
 
-def plan_backlinks(notes: list, all_links: list, top_n: int = 5) -> list[dict]:
+def plan_backlinks(
+    notes: list, all_links: list, top_n: int = 5, lookup_notes: list | None = None
+) -> list[dict]:
     """Compute the See Also block each note should have, without writing anything.
 
-    notes: sqlite3.Row list from storage.all_notes(). all_links: from
-    storage.get_all_links(). Returns one plan dict per note with old/new body
-    and whether it actually changed.
+    notes: which notes to generate write-plans for — sqlite3.Row list from
+    storage.all_notes(), typically scoped to one category since only files
+    under a single --notes-dir get written to. lookup_notes: the universe
+    used to resolve a related item's title/path for display in the See Also
+    block; defaults to `notes` itself, but pass the full multi-category
+    corpus here when `notes` is scoped, so a related item in another
+    category (e.g. a paper related to a note) still resolves correctly
+    instead of rendering as a broken [[|?]] link.
+    all_links: from storage.get_all_links(). Returns one plan dict per note
+    in `notes` with old/new body and whether it actually changed.
     """
-    id_to_title = {note["id"]: note["title"] for note in notes}
-    id_to_path = {note["id"]: note["path"] for note in notes}
+    universe = lookup_notes if lookup_notes is not None else notes
+    id_to_title = {note["id"]: note["title"] for note in universe}
+    id_to_path = {note["id"]: note["path"] for note in universe}
 
     plans = []
     for note in notes:

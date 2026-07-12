@@ -150,3 +150,49 @@ Re-indexed the real `sample_notes/` corpus (not just fixtures) and inspected the
 Updated `PRD.md` (Scope and Testing Strategy), `Manual.md` (Known Limitations — replaced "single-word only" with the new two-word capability and its remaining three-word-phrase gap), and `FutureFeatures.md` (marked item #4 done with a verification summary; updated the corresponding Known Limitations table row, replacing the fixed limitation and adding the residual overlapping-bigram gap as a new suggested fix).
 
 Follow-up session 2 complete. All tests passing (86/86). Verified against the real sample_notes corpus, not just fixtures.
+
+---
+
+## Follow-up Session 3 — 2026-07-11 (same day, user-requested)
+
+### [15:00 UTC] Scope
+
+User asked, after a discussion about semantic (embedding-based) linking (FutureFeatures #10 — investigated and explicitly deferred this session; see that entry for the PyPI-reachable/HuggingFace-blocked findings), whether Connectome could span more than notes — notes, academic papers, news articles — with filterable categories, plus a "subcategory" layer derived from the existing keyword extraction. Explicit user framing: "ingesting isn't the feature, displaying the connectome is" — so real Papers/News data sources were deliberately out of scope; synthetic sample data was used instead, confirmed with the user before starting (Recommended option in an AskUserQuestion). Subcategory mechanism was also confirmed with the user: hybrid — deterministic clustering by default, optional AI relabeling as polish (matching the existing `--ai` graceful-fallback pattern used elsewhere in this build).
+
+### [15:10 UTC] Schema
+
+Added `category TEXT NOT NULL DEFAULT 'Notes'` and `subcategory TEXT` to `notes`; uniqueness moved from `UNIQUE(path)` to `UNIQUE(category, path)` so the same relative filename can exist independently in two categories. `storage._migrate_schema()` adds both columns via `ALTER TABLE` to a pre-existing table (checked via `PRAGMA table_info`) — a migrated table keeps its old single-column unique constraint since SQLite can't alter table constraints in place; documented as a known limitation rather than silently worked around. `storage.upsert_note`/`get_note_by_path` now take a `category` argument; added `find_note_by_path_any_category` (category-agnostic, for CLI convenience lookups like `related`), `all_notes(category=...)`, `get_categories`, `set_subcategory`, and a `category`-scoped `search_notes`.
+
+### [15:25 UTC] Subcategory clustering (new `clustering.py`)
+
+Deterministic subcategory assignment reuses the note-to-note links `linking.py` already computes — no separate concept graph needed. Union-find groups notes whose link score is at or above the corpus's median link score (a rough heuristic, consistent with this build's other tuning constants like `top_n`); an isolated note becomes its own singleton cluster. Each cluster is named from its own aggregate top concepts (e.g. "Session / Context / Agent"). An optional batched Claude call (`relabel_with_claude`, one API call for the whole corpus's clusters, not one per cluster) proposes cleaner names; any cluster missing from the response, or the whole call on total failure (no key/network error/bad status/malformed JSON), falls back to the deterministic name — proven per-cluster, not all-or-nothing, via a dedicated test.
+
+### [15:35 UTC] Wiring into `main.py`
+
+`index` gained `--category` (default `"Notes"`). Critical correctness point caught during design, not by accident: "removed" (file-no-longer-on-disk) detection had to be scoped to the *current* category's existing notes only — the original single-category code compared the whole `notes` table against `seen_paths`, which would have made indexing a second category (e.g. `sample_papers/`) look like every `Notes`-category file had been deleted, since none of them are in the papers folder. Fixed by scoping `existing_notes` to `storage.all_notes(conn, category=category)`. Links, doc frequencies, and subcategories are still recomputed over `storage.all_notes(conn)` (unscoped) after any category's index run, so cross-category connections form. `search`/`stats` gained an optional `--category` filter (`stats` without one now also prints a per-category breakdown). `backlinks` gained `--category`; `plan_backlinks` in `backlinks.py` gained an optional `lookup_notes` parameter so a category-scoped write can still correctly resolve a related item's title/path when that item lives in a *different* category (otherwise it would render as a broken `[[|?]]` link) — backward compatible, defaults to the old single-list behavior when omitted.
+
+### [15:50 UTC] Rendering
+
+`render.build_data` now includes `category`/`subcategory` per note and a top-level `categories` list. The HTML template gained a category filter panel (single-select, same interaction pattern as the existing tag cloud, for consistency), category badges on note-list items and the note-detail header, a subcategory label, and category-colored concept-graph nodes (a small fixed 6-color palette cycled by category index) with a legend shown whenever more than one category is indexed.
+
+### [16:00 UTC] Sample data
+
+Added `sample_papers/` (3 fictional paper abstracts) and `sample_news/` (3 fictional news articles) alongside the existing `sample_notes/`. Content was deliberately written, not generic filler, to share vocabulary with three specific existing sample notes so the demo graph is populated immediately: AI agent session handoffs ↔ an agent-context-continuity paper ↔ a coding-agent-tooling news article; the semiconductor capex thesis note ↔ a capex-cycle paper ↔ a hyperscaler capex-guidance news article; the Canada List ownership note ↔ a foreign-ownership-classification news article. All content is fictional/illustrative, matching the existing sample data's disclosed-synthetic pattern.
+
+### [16:10 UTC] Tests
+
+Added `tests/test_clustering.py` (19 tests: union-find grouping/threshold/transitivity, cluster naming, AI relabeling success/partial-fallback/total-fallback, end-to-end `assign_subcategories`). Extended `tests/test_storage.py` (+11: cross-category same-path uniqueness, category-scoped vs. unscoped lookups, `get_categories`, `set_subcategory`, category-scoped search, and a dedicated migration test that hand-builds a pre-2026-07-11 `notes` table and confirms `storage.connect()` upgrades it in place). Extended `tests/test_cli.py` (+8: a second category's `index` run doesn't remove the first category's notes, a real cross-category link forms from deliberately overlapping fixture vocabulary, every note gets a non-null subcategory, `search --category` and `stats --category` scope correctly, `related` surfaces and labels a cross-category match, and an `--ai` end-to-end test proving both the per-note enrichment call *and* the batched subcategory-relabeling call fire). Extended `tests/test_render.py` (+3: category/subcategory in the JSON payload, the `categories` list, category text present in the rendered detail div).
+
+One real bug caught by the `--ai` end-to-end test's design, not by inspection: `extraction.py` and `clustering.py` both `import urllib.request`, which is the same cached module object in both — patching `extraction.urllib.request.urlopen` and `clustering.urllib.request.urlopen` as two separate mocks in the same test silently made the second patch clobber the first, so the "extraction" mock never actually intercepted anything. Fixed by using a single shared mock and asserting on total call count (4 per-note enrichment calls + 1 batched cluster-relabel call = 5) instead of two independently-asserted mocks.
+
+Tests: 125 passed, 0 failed (`python -m pytest tests/ -v`) — up from 86.
+
+### [16:25 UTC] Manual verification
+
+Indexed all three real sample folders into one database (`index --category Notes`, `--category "Academic Papers"`, `--category "News Articles"`) — 12 items total, 15 links, all three deliberately-seeded topic clusters confirmed linking across all three categories via `related` (e.g. "AI Agent Session Handoffs" → a paper and a news article, both correctly labeled by category, sharing concepts including the bigram phrase "power cooling" from the earlier phrase-extraction follow-up). `stats` showed the correct per-category breakdown (Notes: 6, Academic Papers: 3, News Articles: 3). Rendered `output/index.html` and drove it in real headless Chromium via Playwright (installed fresh this session; the Chromium binary was already pre-provisioned): confirmed 12 note items render, clicking the "Academic Papers" category chip narrows the list to exactly 3 items, the legend shows 3 category dots, clicking a note shows its category and subcategory in the detail header and a correctly cross-category-labeled related list — zero console or page errors throughout.
+
+### [16:35 UTC] Documentation
+
+Updated `PRD.md` (Goal/User Story extended, two new In Scope bullets, four new Out of Scope bullets including the embedding-model investigation findings, schema/folder-structure/testing-strategy updates, two new Success Criteria), `Manual.md` (version bump, "What This Is" and Quick Start extended, new "Categories and subcategories" section, category flags threaded through Searching/Related/Stats/Backlinks/Build, Configuration table rows, Troubleshooting rows, five new Known Limitations covering single-select filtering, cross-category path-lookup ambiguity, deferred real ingestion, and the embedding-model findings), and `FutureFeatures.md` (item #10 marked investigated-not-built with findings; item #8 annotated with what the new category system does and doesn't provide; new item #13 marking tonight's work done with a full summary; two new items, #14 real ingestion and #15 multi-select filtering, as the natural next steps).
+
+Follow-up session 3 complete. All tests passing (125/125). Verified against real seeded cross-category data in both the CLI and a real browser, not mocked.

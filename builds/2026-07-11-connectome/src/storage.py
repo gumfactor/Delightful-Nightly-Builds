@@ -6,14 +6,19 @@ import sqlite3
 from datetime import datetime, timezone
 from typing import Optional
 
+DEFAULT_CATEGORY = "Notes"
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    path TEXT UNIQUE NOT NULL,
+    path TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'Notes',
+    subcategory TEXT,
     title TEXT NOT NULL,
     body TEXT NOT NULL,
     content_hash TEXT NOT NULL,
-    indexed_at TEXT NOT NULL
+    indexed_at TEXT NOT NULL,
+    UNIQUE(category, path)
 );
 
 CREATE TABLE IF NOT EXISTS concepts (
@@ -39,10 +44,26 @@ CREATE TABLE IF NOT EXISTS links (
 """
 
 
+def _migrate_schema(conn: sqlite3.Connection) -> None:
+    """Add category/subcategory columns to a notes table created before they existed.
+
+    A pre-existing table keeps its old single-column UNIQUE(path) constraint
+    (SQLite can't alter table constraints in place) — same-path-different-
+    category collisions on a migrated DB are avoided by deleting connectome.db
+    and re-indexing, same as any other schema change to this build.
+    """
+    existing_cols = {row["name"] for row in conn.execute("PRAGMA table_info(notes)")}
+    if "category" not in existing_cols:
+        conn.execute(f"ALTER TABLE notes ADD COLUMN category TEXT NOT NULL DEFAULT '{DEFAULT_CATEGORY}'")
+    if "subcategory" not in existing_cols:
+        conn.execute("ALTER TABLE notes ADD COLUMN subcategory TEXT")
+
+
 def connect(db_path: str) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    _migrate_schema(conn)
     return conn
 
 
@@ -50,16 +71,43 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def get_note_by_path(conn: sqlite3.Connection, path: str) -> Optional[sqlite3.Row]:
-    return conn.execute("SELECT * FROM notes WHERE path = ?", (path,)).fetchone()
+def get_note_by_path(conn: sqlite3.Connection, path: str, category: str) -> Optional[sqlite3.Row]:
+    return conn.execute(
+        "SELECT * FROM notes WHERE path = ? AND category = ?", (path, category)
+    ).fetchone()
 
 
-def all_notes(conn: sqlite3.Connection) -> list[sqlite3.Row]:
-    return conn.execute("SELECT * FROM notes ORDER BY title").fetchall()
+def find_note_by_path_any_category(conn: sqlite3.Connection, path: str) -> Optional[sqlite3.Row]:
+    """Category-agnostic path lookup for CLI convenience commands (e.g. `related`).
+
+    If the same relative filename exists in more than one category, this
+    returns an arbitrary one of them — a known limitation, not a crash.
+    """
+    return conn.execute("SELECT * FROM notes WHERE path = ? LIMIT 1", (path,)).fetchone()
 
 
-def upsert_note(conn: sqlite3.Connection, path: str, title: str, body: str, content_hash: str) -> int:
-    existing = get_note_by_path(conn, path)
+def all_notes(conn: sqlite3.Connection, category: Optional[str] = None) -> list[sqlite3.Row]:
+    if category is None:
+        return conn.execute("SELECT * FROM notes ORDER BY title").fetchall()
+    return conn.execute(
+        "SELECT * FROM notes WHERE LOWER(category) = LOWER(?) ORDER BY title", (category,)
+    ).fetchall()
+
+
+def get_categories(conn: sqlite3.Connection) -> list[str]:
+    rows = conn.execute("SELECT DISTINCT category FROM notes ORDER BY category").fetchall()
+    return [row["category"] for row in rows]
+
+
+def upsert_note(
+    conn: sqlite3.Connection,
+    path: str,
+    category: str,
+    title: str,
+    body: str,
+    content_hash: str,
+) -> int:
+    existing = get_note_by_path(conn, path, category)
     if existing:
         conn.execute(
             "UPDATE notes SET title=?, body=?, content_hash=?, indexed_at=? WHERE id=?",
@@ -67,8 +115,9 @@ def upsert_note(conn: sqlite3.Connection, path: str, title: str, body: str, cont
         )
         return existing["id"]
     cursor = conn.execute(
-        "INSERT INTO notes (path, title, body, content_hash, indexed_at) VALUES (?, ?, ?, ?, ?)",
-        (path, title, body, content_hash, now_iso()),
+        "INSERT INTO notes (path, category, title, body, content_hash, indexed_at) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (path, category, title, body, content_hash, now_iso()),
     )
     return cursor.lastrowid
 
@@ -77,6 +126,10 @@ def delete_note(conn: sqlite3.Connection, note_id: int) -> None:
     conn.execute("DELETE FROM note_concepts WHERE note_id = ?", (note_id,))
     conn.execute("DELETE FROM links WHERE note_a = ? OR note_b = ?", (note_id, note_id))
     conn.execute("DELETE FROM notes WHERE id = ?", (note_id,))
+
+
+def set_subcategory(conn: sqlite3.Connection, note_id: int, subcategory: Optional[str]) -> None:
+    conn.execute("UPDATE notes SET subcategory = ? WHERE id = ?", (subcategory, note_id))
 
 
 def replace_note_concepts(conn: sqlite3.Connection, note_id: int, concepts: list[tuple[str, float]]) -> None:
@@ -150,12 +203,21 @@ def get_all_links(conn: sqlite3.Connection):
     ]
 
 
-def search_notes(conn: sqlite3.Connection, query: str) -> list[sqlite3.Row]:
+def search_notes(conn: sqlite3.Connection, query: str, category: Optional[str] = None) -> list[sqlite3.Row]:
     like = f"%{query.lower()}%"
+    if category is None:
+        return conn.execute("""
+            SELECT DISTINCT n.* FROM notes n
+            LEFT JOIN note_concepts nc ON nc.note_id = n.id
+            LEFT JOIN concepts c ON c.id = nc.concept_id
+            WHERE LOWER(n.title) LIKE ? OR LOWER(n.body) LIKE ? OR LOWER(c.term) LIKE ?
+            ORDER BY n.title
+        """, (like, like, like)).fetchall()
     return conn.execute("""
         SELECT DISTINCT n.* FROM notes n
         LEFT JOIN note_concepts nc ON nc.note_id = n.id
         LEFT JOIN concepts c ON c.id = nc.concept_id
-        WHERE LOWER(n.title) LIKE ? OR LOWER(n.body) LIKE ? OR LOWER(c.term) LIKE ?
+        WHERE (LOWER(n.title) LIKE ? OR LOWER(n.body) LIKE ? OR LOWER(c.term) LIKE ?)
+          AND LOWER(n.category) = LOWER(?)
         ORDER BY n.title
-    """, (like, like, like)).fetchall()
+    """, (like, like, like, category)).fetchall()

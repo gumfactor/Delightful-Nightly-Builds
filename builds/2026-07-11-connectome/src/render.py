@@ -33,6 +33,7 @@ def build_data(conn: sqlite3.Connection) -> dict:
     notes = storage.all_notes(conn)
     doc_freq = storage.get_doc_frequencies(conn)
     all_links = storage.get_all_links(conn)
+    categories = storage.get_categories(conn)
 
     note_concepts = {row["id"]: storage.get_note_concepts(conn, row["id"]) for row in notes}
     link_counts: dict[int, int] = {}
@@ -48,6 +49,8 @@ def build_data(conn: sqlite3.Connection) -> dict:
             "id": row["id"],
             "title": row["title"],
             "path": row["path"],
+            "category": row["category"],
+            "subcategory": row["subcategory"],
             "snippet": snippet,
             "concepts": [term for term, _ in concepts[:8]],
             "link_count": link_counts.get(row["id"], 0),
@@ -67,6 +70,7 @@ def build_data(conn: sqlite3.Connection) -> dict:
 
     return {
         "notes": notes_payload,
+        "categories": categories,
         "tag_cloud": [{"term": term, "count": count} for term, count in tag_cloud],
         "links": links_payload,
     }
@@ -79,9 +83,13 @@ def render_knowledge_base(conn: sqlite3.Connection, output_dir: str) -> str:
 
     detail_divs = []
     for row in notes:
+        meta = html.escape(row["category"])
+        if row["subcategory"]:
+            meta += " · " + html.escape(row["subcategory"])
         detail_divs.append(
             f'<div class="note-detail" data-note-id="{row["id"]}" hidden>'
             f'<h2>{html.escape(row["title"])}</h2>'
+            f'<div class="note-meta">{meta}</div>'
             f'<div class="note-path">{html.escape(row["path"])}</div>'
             f'<div class="note-body">{_escaped_body_html(row["body"])}</div>'
             f'</div>'
@@ -139,13 +147,22 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
     background: #232838; color: var(--accent); font-size: 0.8rem; cursor: pointer; border: 1px solid var(--border);
   }}
   .tag.active {{ background: var(--accent); color: #0c0e13; }}
+  .category-chip {{
+    display: inline-flex; align-items: center; gap: 0.35rem; margin: 0.15rem; padding: 0.2rem 0.6rem;
+    border-radius: 999px; background: #232838; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--border);
+  }}
+  .category-chip .dot {{ width: 0.6rem; height: 0.6rem; border-radius: 50%; flex-shrink: 0; }}
+  .category-chip.active {{ border-color: var(--accent); background: var(--accent-dim); }}
+  .note-item .item-meta {{ color: var(--muted); font-size: 0.75rem; margin-top: 0.1rem; }}
   .note-detail h2 {{ margin-top: 0; color: var(--text); text-transform: none; letter-spacing: 0; font-size: 1.15rem; }}
+  .note-meta {{ color: var(--muted); font-size: 0.8rem; margin-bottom: 0.25rem; }}
   .note-path {{ color: var(--muted); font-size: 0.8rem; margin-bottom: 0.75rem; }}
   .note-body {{ line-height: 1.5; white-space: normal; }}
   .related-list {{ margin-top: 1rem; }}
   .related-list li {{ margin-bottom: 0.4rem; cursor: pointer; }}
   .related-list .score {{ color: var(--muted); font-size: 0.8rem; }}
   canvas {{ display: block; width: 100%; height: 360px; background: #0c0e13; border-radius: 8px; }}
+  #graph-legend {{ margin-top: 0.6rem; }}
   .empty {{ color: var(--muted); font-style: italic; }}
 </style>
 </head>
@@ -160,6 +177,10 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <h2>Search</h2>
       <input type="search" id="search-box" placeholder="Search notes and concepts...">
       <div id="note-list" style="margin-top: 0.75rem;"></div>
+    </div>
+    <div class="panel">
+      <h2>Category</h2>
+      <div id="category-filter"></div>
     </div>
     <div class="panel">
       <h2>Tag Cloud</h2>
@@ -178,6 +199,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       <h2>Concept Graph</h2>
       <canvas id="graph-canvas" width="360" height="360"></canvas>
       <p class="empty" id="graph-empty" hidden>No links yet — index more notes to see connections.</p>
+      <div id="graph-legend"></div>
     </div>
   </div>
 </div>
@@ -189,7 +211,13 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
 (function() {{
   const DATA = JSON.parse(document.getElementById('connectome-data').textContent);
   const noteById = Object.fromEntries(DATA.notes.map(n => [n.id, n]));
+  const CATEGORY_COLORS = ['#f2b632', '#5fd0a0', '#e0708c', '#8f9bff', '#5fc4d0', '#d98f4a'];
+  function categoryColor(name) {{
+    const idx = DATA.categories.indexOf(name);
+    return CATEGORY_COLORS[(idx < 0 ? 0 : idx) % CATEGORY_COLORS.length];
+  }}
   let activeTag = null;
+  let activeCategory = null;
 
   function renderNoteList(filterText) {{
     const list = document.getElementById('note-list');
@@ -197,9 +225,10 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
     const q = (filterText || '').toLowerCase();
     const filtered = DATA.notes.filter(n => {{
       const matchesTag = !activeTag || n.concepts.includes(activeTag);
+      const matchesCategory = !activeCategory || n.category === activeCategory;
       const matchesText = !q || n.title.toLowerCase().includes(q) ||
         n.snippet.toLowerCase().includes(q) || n.concepts.some(c => c.includes(q));
-      return matchesTag && matchesText;
+      return matchesTag && matchesCategory && matchesText;
     }});
     if (filtered.length === 0) {{
       list.innerHTML = '<p class="empty">No notes match.</p>';
@@ -215,10 +244,59 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       const snippet = document.createElement('div');
       snippet.className = 'snippet';
       snippet.textContent = note.snippet;
+      const meta = document.createElement('div');
+      meta.className = 'item-meta';
+      meta.textContent = note.category + (note.subcategory ? ' · ' + note.subcategory : '');
       item.appendChild(title);
       item.appendChild(snippet);
+      item.appendChild(meta);
       item.addEventListener('click', () => showNote(note.id));
       list.appendChild(item);
+    }}
+  }}
+
+  function renderCategoryFilter() {{
+    const container = document.getElementById('category-filter');
+    container.innerHTML = '';
+    if (DATA.categories.length <= 1) {{
+      container.innerHTML = '<p class="empty">Only one category indexed.</p>';
+      return;
+    }}
+    for (const category of DATA.categories) {{
+      const chip = document.createElement('span');
+      chip.className = 'category-chip' + (category === activeCategory ? ' active' : '');
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = categoryColor(category);
+      const label = document.createElement('span');
+      label.textContent = category;
+      chip.appendChild(dot);
+      chip.appendChild(label);
+      chip.addEventListener('click', () => {{
+        activeCategory = (activeCategory === category) ? null : category;
+        renderCategoryFilter();
+        renderNoteList(document.getElementById('search-box').value);
+      }});
+      container.appendChild(chip);
+    }}
+  }}
+
+  function renderGraphLegend() {{
+    const legend = document.getElementById('graph-legend');
+    legend.innerHTML = '';
+    if (DATA.categories.length <= 1) return;
+    for (const category of DATA.categories) {{
+      const entry = document.createElement('span');
+      entry.className = 'category-chip';
+      entry.style.cursor = 'default';
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = categoryColor(category);
+      const label = document.createElement('span');
+      label.textContent = category;
+      entry.appendChild(dot);
+      entry.appendChild(label);
+      legend.appendChild(entry);
     }}
   }}
 
@@ -322,7 +400,7 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
       const size = 4 + Math.min(note.link_count, 8);
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, size, 0, 2 * Math.PI);
-      ctx.fillStyle = note.id === highlightId ? '#6ea8fe' : '#3a4256';
+      ctx.fillStyle = note.id === highlightId ? '#6ea8fe' : categoryColor(note.category);
       ctx.fill();
       ctx.strokeStyle = '#e6e8ee';
       ctx.lineWidth = note.id === highlightId ? 2 : 0.5;
@@ -350,7 +428,9 @@ _PAGE_TEMPLATE = """<!DOCTYPE html>
   document.getElementById('search-box').addEventListener('input', (e) => renderNoteList(e.target.value));
 
   renderNoteList('');
+  renderCategoryFilter();
   renderTagCloud();
+  renderGraphLegend();
   drawGraph(null);
   if (DATA.notes.length > 0) showNote(DATA.notes[0].id);
 }})();

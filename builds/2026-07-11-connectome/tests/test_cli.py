@@ -1,7 +1,9 @@
+import json
 import os
 import shutil
 import subprocess
 import tempfile
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -25,6 +27,24 @@ def run_index(workspace, ai=False):
     args = parser.parse_args(["--db", workspace["db_path"], "index",
                                "--notes-dir", workspace["notes_dir"]] + (["--ai"] if ai else []))
     args.func(args)
+
+
+def run_index_category(workspace, notes_dir, category, ai=False):
+    parser = cli.build_parser()
+    args_list = ["--db", workspace["db_path"], "index", "--notes-dir", notes_dir, "--category", category]
+    if ai:
+        args_list.append("--ai")
+    args = parser.parse_args(args_list)
+    args.func(args)
+
+
+def _fake_anthropic_response(text_payload):
+    resp = MagicMock()
+    resp.status = 200
+    resp.read.return_value = json.dumps({"content": [{"text": text_payload}]}).encode("utf-8")
+    resp.__enter__.return_value = resp
+    resp.__exit__.return_value = False
+    return resp
 
 
 def test_index_populates_notes_and_links(workspace, capsys):
@@ -247,3 +267,122 @@ def test_backlinks_write_skips_note_edited_since_last_index(workspace, capsys):
     assert "Skipped" in out
     assert "note_a.md" in out
     assert "Edited after indexing, before backlinks was run." in read_note(workspace, "note_a.md")
+
+
+def _write_paper_fixture(workspace, filename="paper_a.md", body=None):
+    papers_dir = os.path.join(workspace["tmp_dir"], "papers")
+    os.makedirs(papers_dir, exist_ok=True)
+    if body is None:
+        body = (
+            "# Workflow Research Paper\n\n"
+            "This paper studies agent workflow automation and context retention "
+            "across long-running sessions.\n"
+        )
+    with open(os.path.join(papers_dir, filename), "w", encoding="utf-8") as f:
+        f.write(body)
+    return papers_dir
+
+
+def test_index_second_category_does_not_remove_first_categorys_notes(workspace, capsys):
+    run_index(workspace)  # 4 fixture notes under the default "Notes" category
+    papers_dir = _write_paper_fixture(workspace)
+    capsys.readouterr()
+    run_index_category(workspace, papers_dir, "Academic Papers")
+    out = capsys.readouterr().out
+    assert "Category: 'Academic Papers'" in out
+
+    conn = cli.storage.connect(workspace["db_path"])
+    notes_only = cli.storage.all_notes(conn, category="Notes")
+    papers_only = cli.storage.all_notes(conn, category="Academic Papers")
+    assert len(notes_only) == 4
+    assert len(papers_only) == 1
+
+
+def test_index_forms_cross_category_link_when_vocabulary_overlaps(workspace):
+    run_index(workspace)
+    papers_dir = _write_paper_fixture(workspace)
+    run_index_category(workspace, papers_dir, "Academic Papers")
+
+    conn = cli.storage.connect(workspace["db_path"])
+    paper = cli.storage.get_note_by_path(conn, "paper_a.md", "Academic Papers")
+    all_links = cli.storage.get_all_links(conn)
+    related = cli.linking.related_to(paper["id"], all_links)
+    assert len(related) >= 1
+
+
+def test_index_assigns_a_subcategory_to_every_note(workspace):
+    run_index(workspace)
+    conn = cli.storage.connect(workspace["db_path"])
+    notes = cli.storage.all_notes(conn)
+    assert notes
+    assert all(row["subcategory"] is not None for row in notes)
+
+
+def test_search_respects_category_filter(workspace, capsys):
+    run_index(workspace)
+    papers_dir = _write_paper_fixture(workspace, body="# Workflow Paper\n\nworkflow content here.\n")
+    run_index_category(workspace, papers_dir, "Academic Papers")
+
+    parser = cli.build_parser()
+    args = parser.parse_args(["--db", workspace["db_path"], "search", "workflow", "--category", "Notes"])
+    capsys.readouterr()
+    args.func(args)
+    out = capsys.readouterr().out
+    assert "[Notes]" in out
+    assert "[Academic Papers]" not in out
+
+
+def test_stats_shows_category_breakdown_when_multiple_categories(workspace, capsys):
+    run_index(workspace)
+    papers_dir = _write_paper_fixture(workspace, body="# Paper\n\nsome content.\n")
+    run_index_category(workspace, papers_dir, "Academic Papers")
+
+    parser = cli.build_parser()
+    args = parser.parse_args(["--db", workspace["db_path"], "stats"])
+    capsys.readouterr()
+    args.func(args)
+    out = capsys.readouterr().out
+    assert "By category:" in out
+    assert "Academic Papers: 1" in out
+
+
+def test_stats_category_filter_scopes_counts(workspace, capsys):
+    run_index(workspace)
+    papers_dir = _write_paper_fixture(workspace, body="# Paper\n\nsome content.\n")
+    run_index_category(workspace, papers_dir, "Academic Papers")
+
+    parser = cli.build_parser()
+    args = parser.parse_args(["--db", workspace["db_path"], "stats", "--category", "Academic Papers"])
+    capsys.readouterr()
+    args.func(args)
+    out = capsys.readouterr().out
+    assert "Notes: 1" in out
+    assert "By category:" not in out
+
+
+def test_related_surfaces_cross_category_match_with_category_label(workspace, capsys):
+    run_index(workspace)
+    papers_dir = _write_paper_fixture(workspace)
+    run_index_category(workspace, papers_dir, "Academic Papers")
+
+    parser = cli.build_parser()
+    args = parser.parse_args(["--db", workspace["db_path"], "related", "Agent Workflow"])
+    capsys.readouterr()
+    args.func(args)
+    out = capsys.readouterr().out
+    assert "Workflow Research Paper" in out
+    assert "[Academic Papers]" in out
+
+
+def test_index_with_ai_flag_invokes_both_enrichment_and_subcategory_relabeling(workspace):
+    # extraction.py and clustering.py both `import urllib.request` — that's the
+    # same cached module object in both, so a single mock on urllib.request.urlopen
+    # intercepts calls from either module; patching it twice under two different
+    # import paths would just have the second patch silently clobber the first.
+    response = _fake_anthropic_response(json.dumps(["workflow", "context", "automation"]))
+    with patch("extraction.urllib.request.urlopen", return_value=response) as mock_urlopen, \
+         patch.dict(os.environ, {"ANTHROPIC_API_KEY": "fake-key"}):
+        run_index(workspace, ai=True)
+    # 4 fixture notes each trigger one concept-enrichment call, plus exactly one
+    # batched subcategory-relabeling call — proves both code paths fired.
+    assert mock_urlopen.call_count == 5
