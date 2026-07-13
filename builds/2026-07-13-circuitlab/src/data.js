@@ -1,0 +1,228 @@
+/* CircuitLab content data: regions, circuits, vignettes.
+   Loaded as a classic script before mastery-store.js / quiz-engine.js / app.js. */
+
+var REGIONS = {
+  dlpfc: {
+    id: 'dlpfc',
+    name: 'Dorsolateral Prefrontal Cortex',
+    abbr: 'dlPFC',
+    view: 'lateral',
+    fn: 'Top-down cognitive control: working memory, planning, and deliberate regulation of emotional responses.',
+    relevance: 'Engaged during effortful reappraisal of emotion; reduced dlPFC recruitment during regulation tasks has been reported in some antisocial/psychopathic samples, consistent with weaker top-down control over affect.',
+    circuits: ['cognitive-reappraisal'],
+  },
+  vlpfc: {
+    id: 'vlpfc',
+    name: 'Ventrolateral Prefrontal Cortex',
+    abbr: 'vlPFC',
+    view: 'lateral',
+    fn: 'Response inhibition and the generation of reappraisal strategies; helps translate a regulation goal into an actual cognitive strategy.',
+    relevance: 'Works alongside dlPFC in cognitive reappraisal paradigms; implicated in inhibitory control deficits studied in impulsive-aggressive populations.',
+    circuits: ['cognitive-reappraisal'],
+  },
+  insula: {
+    id: 'insula',
+    name: 'Anterior Insula',
+    abbr: 'Insula',
+    view: 'lateral',
+    fn: 'Interoception and the affective, subjective feeling of internal states; core node for disgust and for the affective share of pain.',
+    relevance: 'Together with ACC, one of the two most consistently activated regions in empathy-for-pain studies (the "affective pain matrix").',
+    circuits: ['empathy-pain'],
+  },
+  sts: {
+    id: 'sts',
+    name: 'Superior Temporal Sulcus',
+    abbr: 'STS',
+    view: 'lateral',
+    fn: 'Processes biological motion, gaze direction, and cues to others’ intentions from dynamic social stimuli.',
+    relevance: 'A core "social perception" node feeding into mentalizing and empathy circuits; reduced STS engagement to social/emotional stimuli has been reported in psychopathy research.',
+    circuits: ['empathy-pain', 'mentalizing'],
+  },
+  temporal_pole: {
+    id: 'temporal_pole',
+    name: 'Temporal Pole',
+    abbr: 'TP',
+    view: 'lateral',
+    fn: 'Integrates social and semantic knowledge — linking a perceived person or scenario to stored conceptual and emotional associations.',
+    relevance: 'Connects amygdala-driven affect with abstract social knowledge; implicated alongside amygdala in the "integrated emotion systems" account of psychopathy.',
+    circuits: ['mentalizing'],
+  },
+  tpj: {
+    id: 'tpj',
+    name: 'Temporoparietal Junction',
+    abbr: 'TPJ',
+    view: 'lateral',
+    fn: 'Computes perspective-taking — representing what another person believes, knows, or intends, distinct from one’s own viewpoint.',
+    relevance: 'The signature region for cognitive theory-of-mind; dissociations between intact TPJ-based perspective-taking and impaired affective empathy are a key theme in forensic empathy research.',
+    circuits: ['mentalizing'],
+  },
+  vmpfc: {
+    id: 'vmpfc',
+    name: 'Ventromedial Prefrontal Cortex',
+    abbr: 'vmPFC',
+    view: 'medial',
+    fn: 'Integrates emotional value into decisions; drives extinction of learned fear and supports moral/social judgment.',
+    relevance: 'Damage produces the classic Damasio "somatic marker" profile: poor real-world decisions with preserved verbal knowledge of what is disadvantageous (e.g. Iowa Gambling Task deficits).',
+    circuits: ['fear-conditioning', 'reward-decision', 'cognitive-reappraisal'],
+  },
+  ofc: {
+    id: 'ofc',
+    name: 'Orbitofrontal Cortex',
+    abbr: 'OFC',
+    view: 'medial',
+    fn: 'Represents the value of expected outcomes and updates behavior when reward contingencies reverse (reversal learning).',
+    relevance: 'Orbitofrontal dysfunction is repeatedly linked to poor stimulus-reinforcement learning and impulsivity, both prominent in psychopathy and antisocial behavior research.',
+    circuits: ['reward-decision'],
+  },
+  acc: {
+    id: 'acc',
+    name: 'Anterior Cingulate Cortex',
+    abbr: 'ACC',
+    view: 'medial',
+    fn: 'Monitors conflict and errors, and — in its more rostral/subgenual portions — integrates affect with cognitive control.',
+    relevance: 'The second core node (with anterior insula) of the empathy-for-pain network, and a key relay in cognitive reappraisal of emotion.',
+    circuits: ['empathy-pain', 'cognitive-reappraisal'],
+  },
+  amygdala: {
+    id: 'amygdala',
+    name: 'Amygdala',
+    abbr: 'Amyg',
+    view: 'medial',
+    fn: 'Rapid detection of threat and emotional salience; central to fear conditioning and reading fearful/distressed facial expressions.',
+    relevance: 'Blunted amygdala reactivity to fearful expressions and impaired passive-avoidance learning are among the most replicated findings in psychopathy research (Blair’s violence inhibition / integrated emotion systems models).',
+    circuits: ['fear-conditioning', 'hpa-stress', 'cognitive-reappraisal'],
+  },
+  hippocampus: {
+    id: 'hippocampus',
+    name: 'Hippocampus',
+    abbr: 'Hipp',
+    view: 'medial',
+    fn: 'Encodes the spatial/contextual details of memory and provides negative-feedback regulation of the stress axis.',
+    relevance: 'Needed for context-dependent fear (fearing a shock only in the room it occurred in); chronic stress-related hippocampal changes are a recurring theme in stress and PTSD research.',
+    circuits: ['fear-conditioning', 'hpa-stress'],
+  },
+  hypothalamus: {
+    id: 'hypothalamus',
+    name: 'Hypothalamus',
+    abbr: 'Hypo',
+    view: 'medial',
+    fn: 'Initiates the neuroendocrine stress response by releasing CRH, triggering the pituitary-adrenal cascade that raises cortisol.',
+    relevance: 'The "H" in the HPA axis — the master node linking psychological stress appraisal to a measurable hormonal cascade used throughout stress-and-coping research.',
+    circuits: ['hpa-stress'],
+  },
+  ventral_striatum: {
+    id: 'ventral_striatum',
+    name: 'Ventral Striatum',
+    abbr: 'VStr',
+    view: 'medial',
+    fn: 'Signals reward prediction and prediction error; drives approach behavior toward rewarding or reinforcing stimuli.',
+    relevance: 'Altered reward sensitivity in the ventral striatum is studied in relation to the impulsive/antisocial behavioral facet of psychopathy, distinct from its callous-affective facet.',
+    circuits: ['reward-decision'],
+  },
+};
+
+var REGION_ORDER = [
+  'dlpfc', 'vlpfc', 'insula', 'sts', 'temporal_pole', 'tpj',
+  'vmpfc', 'ofc', 'acc', 'amygdala', 'hippocampus', 'hypothalamus', 'ventral_striatum',
+];
+
+var CIRCUITS = {
+  'fear-conditioning': {
+    id: 'fear-conditioning',
+    name: 'Fear conditioning & extinction',
+    sequence: ['amygdala', 'hippocampus', 'vmpfc'],
+    description: 'The amygdala rapidly links a cue to threat; the hippocampus supplies the surrounding context; vmPFC later drives extinction, inhibiting the learned fear response when the threat no longer applies.',
+  },
+  'cognitive-reappraisal': {
+    id: 'cognitive-reappraisal',
+    name: 'Cognitive reappraisal of emotion',
+    sequence: ['dlpfc', 'vlpfc', 'acc', 'amygdala'],
+    description: 'dlPFC holds the regulation goal in mind; vlPFC generates a reappraisal strategy; ACC monitors the conflict between the automatic and regulated response; the net effect is reduced amygdala output.',
+  },
+  'empathy-pain': {
+    id: 'empathy-pain',
+    name: 'Empathy for pain',
+    sequence: ['insula', 'acc', 'sts'],
+    description: 'Anterior insula and ACC form the core "affective sharing" pain network activated both by one’s own pain and by witnessing another’s; STS contributes the social/visual read of the other person’s distress cues.',
+  },
+  'reward-decision': {
+    id: 'reward-decision',
+    name: 'Reward-based decision making',
+    sequence: ['ofc', 'ventral_striatum', 'vmpfc'],
+    description: 'OFC represents the value of specific expected outcomes; ventral striatum signals reward prediction error; vmPFC integrates these signals into an overall value comparison that guides the choice.',
+  },
+  'hpa-stress': {
+    id: 'hpa-stress',
+    name: 'HPA-axis stress response',
+    sequence: ['hypothalamus', 'amygdala', 'hippocampus'],
+    description: 'The amygdala flags a stressor and drives hypothalamic CRH release, triggering the cortisol cascade; the hippocampus, rich in cortisol receptors, then provides negative feedback that shuts the response down.',
+  },
+  mentalizing: {
+    id: 'mentalizing',
+    name: 'Mentalizing / theory of mind',
+    sequence: ['sts', 'tpj', 'temporal_pole'],
+    description: 'STS extracts intentionality cues from biological motion and gaze; TPJ computes an explicit representation of another’s belief or perspective; temporal pole links that representation to stored social-semantic knowledge.',
+  },
+};
+
+var CIRCUIT_ORDER = [
+  'fear-conditioning', 'cognitive-reappraisal', 'empathy-pain',
+  'reward-decision', 'hpa-stress', 'mentalizing',
+];
+
+var VIGNETTES = [
+  {
+    id: 1,
+    text: 'A 34-year-old man with a history of repeated violent offending shows markedly reduced skin-conductance responses to distressed facial expressions and performs poorly on a passive-avoidance learning task, despite intact general intelligence.',
+    targetRegion: 'amygdala',
+    explanation: 'This is the classic profile linked to blunted amygdala reactivity to distress cues and impaired stimulus-reinforcement (passive-avoidance) learning described in psychopathy research.',
+  },
+  {
+    id: 2,
+    text: 'A patient with a lesion restricted to the ventral, orbital surface of the frontal lobe develops impulsive, socially inappropriate behavior and poor real-world decision-making despite normal performance on standard IQ and working-memory tests.',
+    targetRegion: 'ofc',
+    explanation: 'This is the orbitofrontal syndrome: value representation and reversal learning are disrupted while general intelligence and working memory, which depend on other circuits, remain intact.',
+  },
+  {
+    id: 3,
+    text: 'During an fMRI study, watching a loved one receive a painful electric shock activates the same regions activated when the participant experiences pain directly — specifically the affective, but not the sensory-discriminative, pain network.',
+    targetRegion: 'insula',
+    targetCircuit: 'empathy-pain',
+    explanation: 'The anterior insula (with ACC) is the affective core of the pain network shared between felt and witnessed pain — the basis of the "shared representations" account of empathy.',
+  },
+  {
+    id: 4,
+    text: 'A research participant undergoing a stressful public-speaking task shows a sharp rise in salivary cortisol beginning about 20 minutes after task onset, consistent with activation of the neuroendocrine stress axis.',
+    targetRegion: 'hypothalamus',
+    targetCircuit: 'hpa-stress',
+    explanation: 'The hypothalamus initiates the HPA cascade (CRH → ACTH → cortisol) that produces this delayed cortisol rise — the standard biomarker of the neuroendocrine stress response.',
+  },
+  {
+    id: 5,
+    text: 'After bilateral damage to a medial temporal structure, a patient can still learn that a tone predicts a shock (intact simple fear conditioning) but cannot learn that the shock only occurs in one specific room and not another (context-dependent fear is lost).',
+    targetRegion: 'hippocampus',
+    targetCircuit: 'fear-conditioning',
+    explanation: 'This double dissociation is a classic demonstration that simple cue-based fear conditioning depends on the amygdala, while context-dependent fear specifically requires the hippocampus.',
+  },
+  {
+    id: 6,
+    text: 'A participant asked to suppress their anger at an insulting comment shows increased activity in a set of dorsal and ventral frontal regions coupled with decreased downstream activity in a subcortical threat-detection structure.',
+    targetRegion: 'dlpfc',
+    targetCircuit: 'cognitive-reappraisal',
+    explanation: 'This is the signature pattern of cognitive reappraisal: dlPFC/vlPFC recruitment coupled with reduced amygdala output as the emotional response is regulated.',
+  },
+  {
+    id: 7,
+    text: 'A clinician evaluating competency to stand trial notes that the defendant can accurately state the roles of judge, jury, and defense counsel, but seems unable to take the perspective of the jury when explaining how his own testimony might be perceived — a selective failure of perspective-taking rather than factual knowledge.',
+    targetRegion: 'tpj',
+    targetCircuit: 'mentalizing',
+    explanation: 'This dissociates factual/semantic knowledge from the perspective-taking computation attributed specifically to the temporoparietal junction.',
+  },
+  {
+    id: 8,
+    text: 'In a gambling task, a patient continues to choose from a disadvantageous deck long after healthy controls have switched away, and shows no anticipatory skin-conductance rise before selecting from the risky deck — despite being able to verbally state which deck is worse.',
+    targetRegion: 'vmpfc',
+    targetCircuit: 'reward-decision',
+    explanation: 'This is Damasio’s somatic-marker finding from the Iowa Gambling Task: vmPFC damage strips decisions of their anticipatory emotional signal even though explicit verbal knowledge is preserved.',
+  },
+];
