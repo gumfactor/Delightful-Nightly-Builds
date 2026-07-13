@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CircuitLab — Affective &amp; Forensic Neuroscience Circuit Trainer</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>CircuitLab</h1>
+  <p class="subtitle">Affective &amp; forensic neuroscience circuit trainer</p>
+</header>
+
+<nav id="mode-nav" role="tablist" aria-label="Practice mode">
+  <button class="mode-tab active" data-mode="explore" data-testid="mode-tab-explore" role="tab" aria-selected="true">Explore</button>
+  <button class="mode-tab" data-mode="label" data-testid="mode-tab-label" role="tab" aria-selected="false">Label Quiz</button>
+  <button class="mode-tab" data-mode="function" data-testid="mode-tab-function" role="tab" aria-selected="false">Function Match</button>
+  <button class="mode-tab" data-mode="circuit" data-testid="mode-tab-circuit" role="tab" aria-selected="false">Circuit Trace</button>
+  <button class="mode-tab" data-mode="vignette" data-testid="mode-tab-vignette" role="tab" aria-selected="false">Case Vignettes</button>
+</nav>
+
+<div id="stats-panel">
+  <span>Overall mastery: <strong id="overall-mastery">0%</strong></span>
+  <span>Mastered regions: <strong id="mastered-count">0 / 13</strong></span>
+  <button id="reset-progress-btn" data-testid="reset-progress-btn" type="button">Reset Progress</button>
+</div>
+
+<main class="app-main">
+  <section id="diagram-column">
+    <div id="view-tabs" role="tablist" aria-label="Brain view">
+      <button class="view-tab active" data-view="lateral" data-testid="view-tab-lateral" role="tab" aria-selected="true">Lateral (Surface) View</button>
+      <button class="view-tab" data-view="medial" data-testid="view-tab-medial" role="tab" aria-selected="false">Medial / Subcortical View</button>
+    </div>
+
+    <div id="brain-views" data-view-mode="single">
+
+      <div class="brain-view active-view" data-view="lateral" id="view-lateral" data-testid="brain-view-lateral">
+        <h2 class="view-title">Lateral (Surface) View</h2>
+        <svg viewBox="0 0 600 400" role="img" aria-label="Lateral brain diagram">
+          <path class="brain-outline" d="M90 170 C70 110,130 60,220 50 C320 20,440 30,500 80 C560 110,560 170,530 200 C550 230,520 250,470 245 C460 260,420 255,400 240 C300 260,200 250,150 230 C110 215,95 195,90 170 Z" />
+          <path class="brain-outline brain-outline-secondary" d="M140 235 C130 260,140 290,180 300 C230 315,300 305,340 280 C360 265,350 245,320 240 C260 250,190 250,140 235 Z" />
+
+          <g class="region" data-region="dlpfc" data-view="lateral" tabindex="0" role="button" aria-label="Dorsolateral Prefrontal Cortex">
+            <ellipse class="region-shape" cx="195" cy="90" rx="48" ry="24" />
+            <text class="region-label" x="195" y="95">dlPFC</text>
+          </g>
+
+          <g class="region" data-region="vlpfc" data-view="lateral" tabindex="0" role="button" aria-label="Ventrolateral Prefrontal Cortex">
+            <ellipse class="region-shape" cx="185" cy="150" rx="44" ry="21" />
+            <text class="region-label" x="185" y="155">vlPFC</text>
+          </g>
+
+          <g class="region region-buried" data-region="insula" data-view="lateral" tabindex="0" role="button" aria-label="Anterior Insula (buried within the sylvian fissure)">
+            <ellipse class="region-shape" cx="335" cy="195" rx="30" ry="18" />
+            <text class="region-label" x="335" y="200">Insula</text>
+          </g>
+
+          <g class="region" data-region="sts" data-view="lateral" tabindex="0" role="button" aria-label="Superior Temporal Sulcus">
+            <ellipse class="region-shape" cx="235" cy="272" rx="56" ry="14" />
+            <text class="region-label" x="235" y="276">STS</text>
+          </g>
+
+          <g class="region" data-region="temporal_pole" data-view="lateral" tabindex="0" role="button" aria-label="Temporal Pole">
+            <ellipse class="region-shape" cx="155" cy="267" rx="26" ry="18" />
+            <text class="region-label" x="155" y="271">TP</text>
+          </g>
+
+          <g class="region" data-region="tpj" data-view="lateral" tabindex="0" role="button" aria-label="Temporoparietal Junction">
+            <ellipse class="region-shape" cx="460" cy="150" rx="40" ry="22" />
+            <text class="region-label" x="460" y="155">TPJ</text>
+          </g>
+
+          <text class="axis-label axis-anterior" x="60" y="345">anterior</text>
+          <text class="axis-label axis-posterior" x="500" y="345">posterior</text>
+        </svg>
+      </div>
+
+      <div class="brain-view" data-view="medial" id="view-medial" data-testid="brain-view-medial">
+        <h2 class="view-title">Medial / Subcortical View</h2>
+        <svg viewBox="0 0 600 400" role="img" aria-label="Medial brain diagram with subcortical cutaway">
+          <path class="brain-outline" d="M90 160 C70 100,140 50,230 45 C330 15,450 30,510 80 C565 115,560 175,525 205 C545 240,500 275,440 270 C420 300,370 310,330 295 C260 310,190 290,150 260 C110 235,95 195,90 160 Z" />
+          <path class="brainstem" d="M330 295 C336 315,342 330,348 342 L362 340 C354 320,346 305,340 292 Z" />
+
+          <g class="region" data-region="vmpfc" data-view="medial" tabindex="0" role="button" aria-label="Ventromedial Prefrontal Cortex">
+            <ellipse class="region-shape" cx="150" cy="215" rx="34" ry="18" />
+            <text class="region-label" x="150" y="219">vmPFC</text>
+          </g>
+
+          <g class="region" data-region="ofc" data-view="medial" tabindex="0" role="button" aria-label="Orbitofrontal Cortex">
+            <ellipse class="region-shape" cx="130" cy="258" rx="30" ry="15" />
+            <text class="region-label" x="130" y="262">OFC</text>
+          </g>
+
+          <g class="region" data-region="acc" data-view="medial" tabindex="0" role="button" aria-label="Anterior Cingulate Cortex">
+            <ellipse class="region-shape" cx="300" cy="95" rx="78" ry="16" />
+            <text class="region-label" x="300" y="100">ACC</text>
+          </g>
+
+          <g class="region" data-region="amygdala" data-view="medial" tabindex="0" role="button" aria-label="Amygdala">
+            <circle class="region-shape" cx="215" cy="225" r="15" />
+            <text class="region-label" x="215" y="229">Amyg</text>
+          </g>
+
+          <g class="region" data-region="hippocampus" data-view="medial" tabindex="0" role="button" aria-label="Hippocampus">
+            <ellipse class="region-shape" cx="305" cy="248" rx="60" ry="13" transform="rotate(8 305 248)" />
+            <text class="region-label" x="305" y="252" transform="rotate(8 305 248)">Hipp</text>
+          </g>
+
+          <g class="region" data-region="hypothalamus" data-view="medial" tabindex="0" role="button" aria-label="Hypothalamus">
+            <circle class="region-shape" cx="215" cy="262" r="10" />
+            <text class="region-label region-label-small" x="215" y="265">Hypo</text>
+          </g>
+
+          <g class="region" data-region="ventral_striatum" data-view="medial" tabindex="0" role="button" aria-label="Ventral Striatum">
+            <ellipse class="region-shape" cx="250" cy="165" rx="28" ry="14" />
+            <text class="region-label" x="250" y="169">VStr</text>
+          </g>
+
+          <text class="axis-label axis-anterior" x="60" y="345">anterior</text>
+          <text class="axis-label axis-posterior" x="490" y="345">posterior</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section id="panels-column">
+
+    <div class="mode-panel active-panel" data-panel="explore" data-testid="panel-explore">
+      <h2>Explore</h2>
+      <p class="muted">Switch between views above and click any region to read what it does.</p>
+      <div id="explore-detail" data-testid="explore-detail">
+        <p class="muted">Click any labeled region on the diagram to see what it does.</p>
+      </div>
+    </div>
+
+    <div class="mode-panel" data-panel="label" data-testid="panel-label">
+      <h2>Label Quiz <span class="progress" id="label-progress" data-testid="label-progress"></span></h2>
+      <p>A region is highlighted on the diagram. Which one is it?</p>
+      <div id="label-choices" data-testid="label-choices"></div>
+      <p class="feedback" id="label-feedback" data-testid="label-feedback"></p>
+      <button id="label-next" data-testid="label-next" type="button" disabled>Next</button>
+    </div>
+
+    <div class="mode-panel" data-panel="function" data-testid="panel-function">
+      <h2>Function Match <span class="progress" id="function-progress" data-testid="function-progress"></span></h2>
+      <p id="function-prompt" data-testid="function-prompt"></p>
+      <p class="muted">Click the matching region directly on either diagram above.</p>
+      <p class="feedback" id="function-feedback" data-testid="function-feedback"></p>
+      <button id="function-next" data-testid="function-next" type="button" disabled>Next</button>
+    </div>
+
+    <div class="mode-panel" data-panel="circuit" data-testid="panel-circuit">
+      <h2>Circuit Trace <span class="progress" id="circuit-progress-label" data-testid="circuit-progress-label"></span></h2>
+      <p>Circuit: <strong id="circuit-name" data-testid="circuit-name"></strong></p>
+      <p class="muted">Click the regions on the diagrams above in the correct order.</p>
+      <p id="circuit-steps" data-testid="circuit-steps"></p>
+      <p class="feedback" id="circuit-feedback" data-testid="circuit-feedback"></p>
+      <button id="circuit-next" data-testid="circuit-next" type="button" disabled>Next</button>
+    </div>
+
+    <div class="mode-panel" data-panel="vignette" data-testid="panel-vignette">
+      <h2>Case Vignettes <span class="progress" id="vignette-progress" data-testid="vignette-progress"></span></h2>
+      <p class="source-tag">Source: <span id="vignette-source" data-testid="vignette-source"></span></p>
+      <p id="vignette-text" data-testid="vignette-text"></p>
+      <div id="vignette-choices" data-testid="vignette-choices"></div>
+      <p class="feedback" id="vignette-feedback" data-testid="vignette-feedback"></p>
+      <button id="vignette-next" data-testid="vignette-next" type="button" disabled>Next</button>
+
+      <div id="ai-vignette-controls">
+        <h3>Generate a new vignette with AI (optional)</h3>
+        <p class="muted">Paste your own Anthropic API key to generate a fresh vignette. The key is kept only in this page's memory for this session — it is never saved to disk or sent anywhere except directly to Anthropic's API.</p>
+        <label for="anthropic-key-input">Anthropic API key</label>
+        <input type="password" id="anthropic-key-input" data-testid="anthropic-key-input" autocomplete="off" placeholder="sk-ant-..." />
+        <button id="generate-vignette-btn" data-testid="generate-vignette-btn" type="button" disabled>Generate New Vignette</button>
+        <p id="vignette-ai-status" class="ai-status" data-testid="vignette-ai-status"></p>
+      </div>
+    </div>
+
+    <div class="mode-panel" data-panel="__summary__" id="panel-session-summary" data-testid="panel-session-summary">
+      <h2>Session Complete</h2>
+      <p id="summary-text" data-testid="summary-text"></p>
+      <button id="summary-try-again" data-testid="summary-try-again" type="button">Try Again</button>
+      <button id="summary-explore" data-testid="summary-explore" type="button">Back to Explore</button>
+    </div>
+
+  </section>
+</main>
+
+<footer class="app-footer">
+  <p>Mastery legend: <span class="legend-swatch mastery-0"></span>New <span class="legend-swatch mastery-1"></span>Learning <span class="legend-swatch mastery-2"></span>Reviewing <span class="legend-swatch mastery-3"></span>Mastered</p>
+</footer>
+
+<script src="src/data.js"></script>
+<script src="src/mastery-store.js"></script>
+<script src="src/quiz-engine.js"></script>
+<script src="src/brain-diagram.js"></script>
+<script src="src/ai-vignette.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

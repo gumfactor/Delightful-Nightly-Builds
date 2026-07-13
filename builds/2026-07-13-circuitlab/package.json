@@ -1,0 +1,11 @@
+{
+  "name": "circuitlab",
+  "version": "1.0.0",
+  "description": "Interactive brain-circuit trainer for affective and forensic neuroscience — labeled diagrams, quiz modes, mastery tracking, and case vignettes",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
