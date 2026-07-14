@@ -1,0 +1,3 @@
+# GrantScope has zero third-party runtime dependencies (stdlib only).
+# pytest is required to run the test suite.
+pytest>=7.0
