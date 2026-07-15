@@ -1,0 +1,11 @@
+{
+  "name": "confound-hunter",
+  "version": "1.0.0",
+  "description": "Browser game — diagnose the methodological flaw in short research-study vignettes",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

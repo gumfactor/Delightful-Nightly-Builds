@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Confound Hunter</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>🔎 Confound Hunter</h1>
+    <p class="tagline">Spot the flaw. Sharpen your research-methods instincts.</p>
+  </header>
+
+  <main id="app">
+
+    <!-- MENU -->
+    <section id="screen-menu" class="screen" data-testid="screen-menu">
+      <nav class="menu-grid">
+        <button id="nav-practice" data-testid="nav-practice" class="menu-btn">📖 Practice</button>
+        <button id="nav-daily" data-testid="nav-daily" class="menu-btn">🗓️ Daily Challenge</button>
+        <button id="nav-mastery" data-testid="nav-mastery" class="menu-btn">📊 Mastery Dashboard</button>
+        <button id="nav-reset" data-testid="nav-reset" class="menu-btn menu-btn-danger">↺ Reset Progress</button>
+      </nav>
+    </section>
+
+    <!-- CHAPTER SELECT -->
+    <section id="screen-chapters" class="screen hidden" data-testid="screen-chapters">
+      <button data-testid="back-to-menu-1" class="back-btn">← Menu</button>
+      <h2>Practice</h2>
+      <div class="chapter-list" id="chapter-list"></div>
+    </section>
+
+    <!-- PLAY (shared by practice + daily) -->
+    <section id="screen-play" class="screen hidden" data-testid="screen-play">
+      <div class="play-hud">
+        <span data-testid="progress-display" id="progress-display"></span>
+        <span data-testid="streak-display" id="streak-display">Streak: 0</span>
+      </div>
+      <p class="vignette-text" data-testid="vignette-text" id="vignette-text"></p>
+      <div class="options-grid" id="options-grid" data-testid="options-grid"></div>
+      <div class="feedback-panel hidden" id="feedback-panel" data-testid="feedback-panel">
+        <p id="feedback-verdict" data-testid="feedback-verdict"></p>
+        <p id="feedback-explanation" data-testid="feedback-explanation"></p>
+        <button id="next-btn" data-testid="next-btn">Next →</button>
+      </div>
+    </section>
+
+    <!-- CHAPTER END -->
+    <section id="screen-chapter-end" class="screen hidden" data-testid="screen-chapter-end">
+      <h2>Round Complete</h2>
+      <p data-testid="chapter-end-grade" id="chapter-end-grade"></p>
+      <p data-testid="chapter-end-accuracy" id="chapter-end-accuracy"></p>
+      <p data-testid="chapter-end-unlock" id="chapter-end-unlock"></p>
+      <button data-testid="chapter-end-continue" id="chapter-end-continue" class="menu-btn">Continue</button>
+    </section>
+
+    <!-- DAILY RESULT -->
+    <section id="screen-daily-result" class="screen hidden" data-testid="screen-daily-result">
+      <button data-testid="back-to-menu-2" class="back-btn">← Menu</button>
+      <h2>Today's Daily Challenge</h2>
+      <p data-testid="daily-result-score" id="daily-result-score"></p>
+      <pre data-testid="daily-result-text" id="daily-result-text"></pre>
+      <button data-testid="daily-share-btn" id="daily-share-btn" class="menu-btn">Copy Share Text</button>
+      <p class="copy-confirm hidden" data-testid="daily-copy-confirm" id="daily-copy-confirm">Copied!</p>
+    </section>
+
+    <!-- MASTERY DASHBOARD -->
+    <section id="screen-mastery" class="screen hidden" data-testid="screen-mastery">
+      <button data-testid="back-to-menu-3" class="back-btn">← Menu</button>
+      <h2>Mastery Dashboard</h2>
+      <div id="mastery-list" data-testid="mastery-list"></div>
+    </section>
+
+    <!-- RESET CONFIRM -->
+    <div id="reset-confirm-modal" class="modal hidden" data-testid="reset-confirm-modal">
+      <div class="modal-box">
+        <p>Reset all progress? This clears chapter unlocks, mastery stats, and today's daily result.</p>
+        <button data-testid="reset-confirm-btn" id="reset-confirm-btn" class="menu-btn menu-btn-danger">Yes, reset</button>
+        <button data-testid="reset-cancel-btn" id="reset-cancel-btn" class="menu-btn">Cancel</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="src/data.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
