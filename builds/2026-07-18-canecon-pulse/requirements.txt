@@ -1,0 +1,3 @@
+# stdlib only — no third-party runtime dependencies.
+# pytest is required to run the test suite (tests/), not the tool itself.
+pytest>=7.0
