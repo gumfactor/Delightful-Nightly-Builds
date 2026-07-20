@@ -1,0 +1,7 @@
+# Core functionality (Wikidata/Wikipedia lookup, SQLite storage, HTML export)
+# uses only the Python standard library — no install required.
+#
+# Optional: only needed if you set ANTHROPIC_API_KEY to enable the Claude
+# enrichment pass. The tool works fully without it (deterministic fallback).
+anthropic>=0.40.0
+pytest>=8.0.0
