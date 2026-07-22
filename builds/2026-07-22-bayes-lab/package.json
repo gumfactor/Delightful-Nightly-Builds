@@ -1,0 +1,12 @@
+{
+  "name": "bayes-lab",
+  "version": "1.0.0",
+  "description": "Interactive Bayesian (Beta-Binomial) inference trainer for psychology/neuroscience research scenarios.",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
