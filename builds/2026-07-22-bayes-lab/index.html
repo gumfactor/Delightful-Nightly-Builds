@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bayes Lab — Bayesian Inference Trainer</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>Bayes Lab</h1>
+  <p class="tagline">Set a prior, add trial data, watch the posterior update — a hands-on Beta-Binomial Bayesian inference trainer.</p>
+</header>
+
+<main>
+  <section class="panel" aria-labelledby="scenario-heading">
+    <h2 id="scenario-heading">1. Choose a Scenario</h2>
+    <label for="scenario-select">Scenario</label>
+    <select id="scenario-select"></select>
+
+    <label for="scenario-description">Description</label>
+    <textarea id="scenario-description" rows="2" data-testid="scenario-description"></textarea>
+
+    <label for="p0-input">Threshold / null value (p0)</label>
+    <input type="number" id="p0-input" min="0.01" max="0.99" step="0.01" data-testid="p0-input" />
+  </section>
+
+  <section class="panel" aria-labelledby="prior-heading">
+    <h2 id="prior-heading">2. Set Your Prior</h2>
+    <div class="mode-toggle" role="tablist">
+      <button type="button" id="prior-mode-belief" class="mode-btn active" data-testid="prior-mode-belief">Belief mode</button>
+      <button type="button" id="prior-mode-advanced" class="mode-btn" data-testid="prior-mode-advanced">Advanced mode</button>
+    </div>
+
+    <div id="belief-mode-inputs">
+      <label for="belief-rate">Believed rate: <span id="belief-rate-value">50</span>%</label>
+      <input type="range" id="belief-rate" min="1" max="99" value="50" data-testid="belief-rate" />
+
+      <label for="belief-weight">Prior confidence (equivalent sample size): <span id="belief-weight-value">2</span></label>
+      <input type="range" id="belief-weight" min="2" max="200" value="2" data-testid="belief-weight" />
+    </div>
+
+    <div id="advanced-mode-inputs" class="hidden">
+      <label for="prior-alpha">&alpha; (prior successes + 1)</label>
+      <input type="number" id="prior-alpha" min="0.01" step="0.01" value="1" data-testid="prior-alpha" />
+      <label for="prior-beta">&beta; (prior failures + 1)</label>
+      <input type="number" id="prior-beta" min="0.01" step="0.01" value="1" data-testid="prior-beta" />
+    </div>
+
+    <p id="prior-readout" data-testid="prior-readout">Prior: Beta(&alpha;=1.00, &beta;=1.00)</p>
+  </section>
+
+  <section class="panel" aria-labelledby="trials-heading">
+    <h2 id="trials-heading">3. Add Trial Data</h2>
+    <div class="button-row">
+      <button type="button" id="btn-add-success" data-testid="btn-add-success">+ Success</button>
+      <button type="button" id="btn-add-failure" data-testid="btn-add-failure">+ Failure</button>
+      <button type="button" id="btn-undo" data-testid="btn-undo">Undo</button>
+      <button type="button" id="btn-reset" data-testid="btn-reset">Reset trials</button>
+    </div>
+    <div class="batch-row">
+      <label for="batch-successes">Batch successes</label>
+      <input type="number" id="batch-successes" min="0" step="1" value="0" data-testid="batch-successes" />
+      <label for="batch-failures">Batch failures</label>
+      <input type="number" id="batch-failures" min="0" step="1" value="0" data-testid="batch-failures" />
+      <button type="button" id="btn-batch-add" data-testid="btn-batch-add">Add batch</button>
+    </div>
+    <p id="trial-summary" data-testid="trial-summary">n = 0 (0 successes, 0 failures)</p>
+  </section>
+
+  <section class="panel" aria-labelledby="chart-heading">
+    <h2 id="chart-heading">Prior vs. Posterior</h2>
+    <canvas id="beta-chart" width="640" height="280" data-testid="beta-chart"></canvas>
+    <table id="history-table" data-testid="history-table">
+      <thead><tr><th>Step</th><th>n</th><th>Posterior mean</th><th>95% CI</th></tr></thead>
+      <tbody id="history-body"></tbody>
+    </table>
+  </section>
+
+  <section class="panel two-col" aria-labelledby="results-heading">
+    <div>
+      <h2 id="results-heading">Bayesian Summary</h2>
+      <dl class="stat-list">
+        <dt>Posterior mean</dt><dd id="posterior-mean" data-testid="posterior-mean">—</dd>
+        <dt>Posterior mode</dt><dd id="posterior-mode" data-testid="posterior-mode">—</dd>
+        <dt>Posterior SD</dt><dd id="posterior-sd" data-testid="posterior-sd">—</dd>
+        <dt>95% credible interval</dt><dd id="posterior-ci" data-testid="posterior-ci">—</dd>
+        <dt>P(true rate &gt; p0)</dt><dd id="posterior-prob-greater" data-testid="posterior-prob-greater">—</dd>
+      </dl>
+      <h3>Bayes Factor (Savage-Dickey at p0)</h3>
+      <dl class="stat-list">
+        <dt>BF10</dt><dd id="bf10-value" data-testid="bf10-value">—</dd>
+        <dt>BF01</dt><dd id="bf01-value" data-testid="bf01-value">—</dd>
+        <dt>Interpretation</dt><dd id="bf-label" data-testid="bf-label">—</dd>
+      </dl>
+    </div>
+    <div>
+      <h2>Frequentist Contrast</h2>
+      <dl class="stat-list">
+        <dt>MLE (point estimate)</dt><dd id="freq-mle" data-testid="freq-mle">—</dd>
+        <dt>95% Wilson score CI</dt><dd id="freq-wilson-ci" data-testid="freq-wilson-ci">—</dd>
+        <dt>Exact binomial test p-value (vs. p0)</dt><dd id="freq-pvalue" data-testid="freq-pvalue">—</dd>
+      </dl>
+      <p class="note">A confidence interval is a statement about the long-run behavior of the procedure across repeated samples. A credible interval is a direct probability statement about where the true rate lies, given this prior and this data. They answer different questions even when the numbers look similar.</p>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="ai-heading">
+    <h2 id="ai-heading">Plain-English Interpretation</h2>
+    <label for="api-key-input">Anthropic API key (optional, session-only — never stored, never sent anywhere but api.anthropic.com)</label>
+    <input type="password" id="api-key-input" autocomplete="off" data-testid="api-key-input" />
+    <button type="button" id="btn-generate-narrative" data-testid="btn-generate-narrative">Generate interpretation</button>
+    <div id="narrative-output" data-testid="narrative-output" aria-live="polite"></div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <p>Bayes Lab — a self-contained browser tool. No data leaves your machine unless you supply an API key.</p>
+</footer>
+
+<script src="src/beta-math.js"></script>
+<script src="src/ai-narrative.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
