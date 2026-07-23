@@ -1,0 +1,16 @@
+business_name,category,province,website,canadian_ownership_pct,ownership_status,email,city
+Maple Ridge Roasters,Coffee Shop,ON,mapleridgeroasters.ca,100,canadian-owned,info@mapleridgeroasters.ca,Toronto
+,Bakery,BC,northernbakery.ca,100,canadian-owned,hello@northernbakery.ca,Vancouver
+Prairie Hardware,Retail,SK
+Rocky Mountain Gear,Outdoor,Ontari-o,rockymtngear.ca,100,canadian-owned,shop@rockymtngear.ca,Calgary
+Lakeside Books,Bookstore,MB,not a website!!,100,canadian-owned,books@lakesidebooks.ca,Winnipeg
+Eastside Grocers,Grocery,NS,eastsidegrocers.ca,150,canadian-owned,info@eastsidegrocers.ca,Halifax
+Harbor View Cafe,Cafe,NB,harborviewcafe.ca,mostly,canadian-owned,cafe@harborviewcafe.ca,Saint John
+Golden Valley Farms,Agriculture,AB,goldenvalleyfarms.ca,100,partially-canadian,farm@goldenvalleyfarms.ca,Calgary
+Sunset Diner,Restaurant,QC,sunsetdiner.ca,100,canadian-owned,not-an-email,Montreal
+Silver Creek Outfitters,Outdoor,BC,silvercreek.ca,100,canadian-owned,info@silvercreek.ca,Kelowna
+Silver Creek Outfitters,Outdoor,BC,silvercreek.ca,100,canadian-owned,info@silvercreek.ca,Kelowna
+Northern Lights Bakery Inc,Bakery,ON,northernlightsbakery.ca,100,canadian-owned,hello@nlbakery.ca,Ottawa
+Northern Lights Bakery,Bakery,ON,northernlightsbakery.com,100,canadian-owned,contact@nlbakery.com,Ottawa
+<script>alert(1)</script> Corp,Retail,ON,scriptcorp.ca,100,canadian-owned,info@scriptcorp.ca,Toronto
+Riverside Print Shop,Print & Design,YT,riversideprint.ca,100,canadian-owned,print@riversideprint.ca,Whitehorse
