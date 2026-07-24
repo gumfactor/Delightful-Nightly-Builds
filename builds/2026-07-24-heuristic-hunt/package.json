@@ -1,0 +1,12 @@
+{
+  "name": "heuristic-hunt",
+  "version": "1.0.0",
+  "description": "Browser game training recognition of cognitive biases and decision-making heuristics via real-world vignettes.",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}
