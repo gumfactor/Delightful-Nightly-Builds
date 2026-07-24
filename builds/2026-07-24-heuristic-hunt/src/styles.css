@@ -1,0 +1,145 @@
+:root {
+  --bg: #14161c;
+  --bg-elevated: #1c1f27;
+  --text: #eceef2;
+  --text-dim: #9aa1b1;
+  --accent: #7c9dff;
+  --accent-dim: #445;
+  --correct: #3ecf8e;
+  --incorrect: #ef5b5b;
+  --mid: #e8b84b;
+  --border: #2a2e3a;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f6f9;
+    --bg-elevated: #ffffff;
+    --text: #1b1e26;
+    --text-dim: #5a6072;
+    --accent: #3355cc;
+    --border: #dde1ea;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 64px;
+}
+
+#app {
+  width: 100%;
+  max-width: 640px;
+}
+
+.view {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+h1 { margin: 0 0 4px; font-size: 1.9rem; }
+h2 { margin: 0 0 16px; font-size: 1.4rem; }
+h3 { margin: 0 0 8px; font-size: 1.1rem; }
+
+.subtitle { color: var(--text-dim); margin: 0 0 20px; }
+.streak-line { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; }
+
+.menu-list { display: flex; flex-direction: column; gap: 12px; }
+
+.menu-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--accent);
+  color: #0b0e14;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.menu-btn:first-of-type { margin-top: 0; }
+.menu-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.menu-btn-secondary { background: transparent; color: var(--text); }
+.menu-btn-danger { background: var(--incorrect); color: #fff; }
+.menu-btn-list { text-align: left; font-weight: 400; background: var(--bg-elevated); color: var(--text); }
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0 0 16px;
+  display: block;
+}
+
+.chapter-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.progress-line { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 8px; }
+.vignette-text { font-size: 1.1rem; line-height: 1.5; margin: 0 0 20px; }
+
+.answers-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+.answer-btn {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+.answer-btn:disabled { cursor: default; }
+.answer-correct { border-color: var(--correct); background: rgba(62, 207, 142, 0.15); }
+.answer-incorrect { border-color: var(--incorrect); background: rgba(239, 91, 91, 0.15); }
+
+.feedback-panel { margin-top: 20px; padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+.feedback-correct { border-color: var(--correct); }
+.feedback-incorrect { border-color: var(--incorrect); }
+.feedback-headline { font-weight: 700; margin: 0 0 8px; }
+.explanation-text { color: var(--text-dim); margin: 0; line-height: 1.5; }
+
+.accuracy-line { font-size: 1.2rem; margin: 0 0 8px; }
+.unlock-message { color: var(--text-dim); margin: 0 0 20px; }
+
+.daily-locked { color: var(--text-dim); }
+.daily-grid { font-size: 1.6rem; letter-spacing: 4px; margin: 12px 0; }
+.daily-score { font-size: 1.1rem; }
+
+.practice-row { margin-bottom: 8px; }
+
+.mastery-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.mastery-name { flex: 0 0 150px; font-size: 0.9rem; }
+.mastery-bar-outer { flex: 1; height: 10px; background: var(--border); border-radius: 6px; overflow: hidden; }
+.mastery-bar-inner { height: 100%; border-radius: 6px; }
+.mastery-high { background: var(--correct); }
+.mastery-mid { background: var(--mid); }
+.mastery-low { background: var(--incorrect); }
+.mastery-none { background: var(--accent-dim); }
+.mastery-pct { flex: 0 0 110px; font-size: 0.8rem; color: var(--text-dim); text-align: right; }
+
+@media (max-width: 480px) {
+  .view { padding: 16px; }
+  h1 { font-size: 1.5rem; }
+  .mastery-name { flex-basis: 100px; font-size: 0.8rem; }
+  .mastery-pct { flex-basis: 90px; font-size: 0.75rem; }
+}
