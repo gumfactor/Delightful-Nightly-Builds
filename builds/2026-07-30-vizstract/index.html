@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vizstract — Visual Abstract Generator</title>
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <h1>Vizstract</h1>
+  <p class="tagline">Turn your study's key details into a downloadable visual abstract — no design tool required.</p>
+</header>
+
+<main class="layout">
+  <section class="panel form-panel" aria-labelledby="form-heading">
+    <h2 id="form-heading">Study Details</h2>
+
+    <label for="title-input">Title</label>
+    <input id="title-input" type="text" data-testid="field-title" maxlength="150" placeholder="e.g. Empathy Training Reduces Burnout in Clinical Trainees">
+
+    <label for="design-type-select">Study Design</label>
+    <select id="design-type-select" data-testid="field-design-type"></select>
+
+    <label for="population-input">Population / Sample</label>
+    <input id="population-input" type="text" data-testid="field-population" maxlength="120" placeholder="e.g. graduate clinical trainees">
+
+    <div class="field-row">
+      <div>
+        <label for="iv-input">Predictor / Manipulation</label>
+        <input id="iv-input" type="text" data-testid="field-iv" maxlength="90" placeholder="e.g. 8-week empathy training">
+      </div>
+      <div>
+        <label for="dv-input">Outcome Measured</label>
+        <input id="dv-input" type="text" data-testid="field-dv" maxlength="90" placeholder="e.g. burnout inventory score">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div>
+        <label for="n-input">Sample Size (N)</label>
+        <input id="n-input" type="text" data-testid="field-n" maxlength="20" placeholder="e.g. 84">
+      </div>
+      <div>
+        <label for="direction-select">Effect Direction</label>
+        <select id="direction-select" data-testid="field-direction">
+          <option value="increase">Increase</option>
+          <option value="decrease">Decrease</option>
+          <option value="none">No Change</option>
+          <option value="mixed">Mixed</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="finding-textarea">Headline Finding</label>
+    <textarea id="finding-textarea" data-testid="field-finding" maxlength="220" rows="3" placeholder="One sentence describing the main result"></textarea>
+
+    <label for="stat-input">Stat Detail (optional)</label>
+    <input id="stat-input" type="text" data-testid="field-stat" maxlength="40" placeholder="e.g. p &lt; .05">
+  </section>
+
+  <section class="panel preview-panel" aria-labelledby="preview-heading">
+    <h2 id="preview-heading">Preview</h2>
+    <div class="preview-frame" data-testid="preview-svg"></div>
+
+    <div class="theme-row" data-testid="theme-row"></div>
+
+    <div class="actions">
+      <input type="text" data-testid="field-library-name" id="library-name-input" placeholder="Name this abstract to save it">
+      <div class="button-row">
+        <button type="button" data-testid="btn-save">Save to Library</button>
+        <button type="button" data-testid="btn-download-svg">Download SVG</button>
+        <button type="button" data-testid="btn-download-png">Download PNG</button>
+        <button type="button" data-testid="btn-clear" class="secondary">New / Clear Form</button>
+      </div>
+      <p class="validation" data-testid="validation-message" hidden></p>
+      <p class="saved-note" data-testid="saved-note" hidden></p>
+    </div>
+  </section>
+
+  <section class="panel ai-panel" aria-labelledby="ai-heading">
+    <h2 id="ai-heading">Extract From a Pasted Abstract (optional)</h2>
+    <p class="hint">Paste a full study abstract. With an Anthropic API key, Claude Haiku extracts the fields above. Without one, a deterministic keyword extractor does its best — no network call is made.</p>
+    <textarea data-testid="field-abstract-paste" id="abstract-textarea" rows="5" placeholder="Paste a study abstract here…"></textarea>
+    <label for="apikey-input">Anthropic API Key (optional, used only for this session — never saved)</label>
+    <input type="password" id="apikey-input" data-testid="field-api-key" placeholder="sk-ant-...">
+    <button type="button" data-testid="btn-extract">Extract Fields</button>
+    <p class="extract-status" data-testid="extract-status" aria-live="polite"></p>
+  </section>
+
+  <section class="panel library-panel" aria-labelledby="library-heading">
+    <h2 id="library-heading">Saved Library</h2>
+    <div data-testid="library-list" class="library-list"></div>
+  </section>
+</main>
+
+<script src="src/icons.js"></script>
+<script src="src/templates.js"></script>
+<script src="src/render.js"></script>
+<script src="src/library.js"></script>
+<script src="src/export.js"></script>
+<script src="src/extract.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
