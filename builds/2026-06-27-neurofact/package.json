@@ -1,0 +1,11 @@
+{
+  "name": "neurofact",
+  "version": "1.0.0",
+  "description": "Real or AI-Generated Neuroscience — browser quiz game",
+  "scripts": {
+    "test": "npx playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

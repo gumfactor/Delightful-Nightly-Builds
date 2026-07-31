@@ -50,6 +50,8 @@ always generates fresh ideas.
 | 10 | 2026-06-17 | F | ambitious | SEC EDGAR Financial History Extractor | Uses SEC EDGAR public API (no auth) to pull 5 years of income statement and balance sheet data for any list of US tickers; outputs clean CSV and a comparison summary HTML; useful for investment research and financial modeling | — | — | — | pending |
 | 11 | 2026-06-18 | G | ambitious | Market Cap Higher or Lower | Browser game using baked-in Yahoo Finance data: given two company names with sector/industry hints, guess which has the higher market cap. Tracks accuracy and streak per session. Teaches market intuition through play. | — | — | — | pending |
 | 12 | 2026-06-18 | G | ambitious | Stock Chart Direction Quiz | Show a real historical stock chart (last 6 months) with sector and key metrics visible; guess whether the stock went up, down, or flat over the next quarter. Uses pre-generated yfinance data as static JSON. Trains pattern recognition and market intuition. | — | — | — | pending |
+| 13 | 2026-06-27 | G | ambitious | Coping Style Compass | AI-powered browser game presenting realistic stress scenarios; player selects a coping response; Claude evaluates each choice across emotion-focused, problem-focused, and avoidance dimensions; generates a personal coping style profile at the end across 15 scenarios. | — | — | — | pending |
+| 14 | 2026-06-27 | G | ambitious | Canada List Brand Challenge | Browser game presenting product clues and asking whether the brand is Canadian-owned, Canadian-made, both, or neither. Uses Canadian government open data and Anthropic API to generate plausible distractors. Connects directly to the Canada List project. | — | — | — | pending |
 
 ---
 
