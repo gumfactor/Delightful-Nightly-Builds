@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!DOCTYPE PubmedArticleSet PUBLIC "-//NLM//DTD PubMedArticle, 1st January 2024//EN" "https://dtd.nlm.nih.gov/ncbi/pubmed/out/pubmed_240101.dtd">
+<PubmedArticleSet>
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID Version="1">11111111</PMID>
+      <Article>
+        <Journal>
+          <Title>Journal of Affective Neuroscience</Title>
+          <ISOAbbreviation>J Affect Neurosci</ISOAbbreviation>
+          <JournalIssue>
+            <PubDate>
+              <Year>2026</Year>
+              <Month>Jun</Month>
+              <Day>15</Day>
+            </PubDate>
+          </JournalIssue>
+        </Journal>
+        <ArticleTitle>Amygdala reactivity predicts empathic accuracy in social tasks</ArticleTitle>
+        <Abstract>
+          <AbstractText Label="BACKGROUND">Empathy involves distributed neural systems.</AbstractText>
+          <AbstractText Label="RESULTS">fMRI results show amygdala activity correlates with empathic accuracy scores.</AbstractText>
+        </Abstract>
+        <AuthorList>
+          <Author>
+            <LastName>Chen</LastName>
+            <Initials>Y</Initials>
+          </Author>
+          <Author>
+            <LastName>Okafor</LastName>
+            <Initials>A</Initials>
+          </Author>
+        </AuthorList>
+      </Article>
+    </MedlineCitation>
+  </PubmedArticle>
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID Version="1">22222222</PMID>
+      <Article>
+        <Journal>
+          <Title>Forensic Neuroscience Review</Title>
+          <JournalIssue>
+            <PubDate>
+              <MedlineDate>2026 Spring</MedlineDate>
+            </PubDate>
+          </JournalIssue>
+        </Journal>
+        <ArticleTitle>A review of psychopathy &amp; antisocial traits in forensic populations</ArticleTitle>
+        <Abstract>
+          <AbstractText>This review covers behavioral and neuroimaging correlates of psychopathy.</AbstractText>
+        </Abstract>
+        <AuthorList>
+          <Author>
+            <LastName>Nowak</LastName>
+            <Initials>R</Initials>
+          </Author>
+          <Author>
+            <LastName>Silva</LastName>
+            <Initials>M</Initials>
+          </Author>
+          <Author>
+            <LastName>Park</LastName>
+            <Initials>J</Initials>
+          </Author>
+          <Author>
+            <LastName>Ibrahim</LastName>
+            <Initials>K</Initials>
+          </Author>
+        </AuthorList>
+      </Article>
+    </MedlineCitation>
+  </PubmedArticle>
+</PubmedArticleSet>
