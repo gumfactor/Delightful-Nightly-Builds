@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signal Detection Lab</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>Signal Detection Lab</h1>
+  <p class="subtitle">Interactive trainer for sensitivity, bias, and ROC analysis in detection tasks</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Signal Detection Lab sections">
+  <button class="tab-button" data-tab="explainer" role="tab" aria-selected="true" data-testid="tab-explainer">Explainer</button>
+  <button class="tab-button" data-tab="roc" role="tab" aria-selected="false" data-testid="tab-roc">ROC Explorer</button>
+  <button class="tab-button" data-tab="calculator" role="tab" aria-selected="false" data-testid="tab-calculator">Calculator</button>
+  <button class="tab-button" data-tab="quiz" role="tab" aria-selected="false" data-testid="tab-quiz">Scenario Quiz</button>
+</nav>
+
+<main>
+
+  <!-- Explainer tab -->
+  <section id="tab-explainer" class="tab-panel" data-testid="panel-explainer">
+    <div class="grid-2col">
+      <div class="card">
+        <h2>The Detection Matrix</h2>
+        <table class="matrix-table">
+          <thead>
+            <tr><th></th><th>Signal Present</th><th>Signal Absent</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>Respond "Yes"</th><td class="cell-hit">Hit</td><td class="cell-fa">False Alarm</td></tr>
+            <tr><th>Respond "No"</th><td class="cell-miss">Miss</td><td class="cell-cr">Correct Rejection</td></tr>
+          </tbody>
+        </table>
+        <p class="explainer-text">
+          Sensitivity (<strong>d′</strong>) measures how well the observer can tell signal from noise —
+          the separation between the two distributions below. Criterion (<strong>c</strong>) measures response
+          bias — where the observer draws the "yes" line, independent of sensitivity. Drag the vertical line
+          to change the criterion; use the slider to change d′.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Noise vs. Signal Distributions</h2>
+        <canvas id="explainer-canvas" width="520" height="280" data-testid="explainer-canvas"></canvas>
+        <div class="control-row">
+          <label for="dprime-slider">d′ (distribution separation): <span id="dprime-slider-value" data-testid="dprime-slider-value">1.50</span></label>
+          <input type="range" id="dprime-slider" data-testid="dprime-slider" min="0" max="4" step="0.05" value="1.5" />
+        </div>
+        <div class="stat-row">
+          <div class="stat"><span class="stat-label">d′</span><span id="explainer-dprime" data-testid="explainer-dprime">—</span></div>
+          <div class="stat"><span class="stat-label">Criterion c</span><span id="explainer-c" data-testid="explainer-c">—</span></div>
+          <div class="stat"><span class="stat-label">β</span><span id="explainer-beta" data-testid="explainer-beta">—</span></div>
+          <div class="stat"><span class="stat-label">Hit Rate</span><span id="explainer-hitrate" data-testid="explainer-hitrate">—</span></div>
+          <div class="stat"><span class="stat-label">FA Rate</span><span id="explainer-farate" data-testid="explainer-farate">—</span></div>
+          <div class="stat"><span class="stat-label">Bias</span><span id="explainer-bias-label" data-testid="explainer-bias-label">—</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROC tab -->
+  <section id="tab-roc" class="tab-panel hidden" data-testid="panel-roc">
+    <div class="card">
+      <h2>ROC Curve</h2>
+      <p class="explainer-text">
+        Sweeping the criterion across its full range at a fixed d′ traces the Receiver Operating
+        Characteristic (ROC) curve. The diagonal represents chance performance (d′ = 0); the area
+        under the curve (AUC) is a threshold-free summary of sensitivity.
+      </p>
+      <canvas id="roc-canvas" width="480" height="480" data-testid="roc-canvas"></canvas>
+      <div class="stat-row">
+        <div class="stat"><span class="stat-label">Current d′</span><span id="roc-dprime" data-testid="roc-dprime">—</span></div>
+        <div class="stat"><span class="stat-label">AUC</span><span id="roc-auc" data-testid="roc-auc">—</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calculator tab -->
+  <section id="tab-calculator" class="tab-panel hidden" data-testid="panel-calculator">
+    <div class="grid-2col">
+      <div class="card">
+        <h2>Enter Raw Counts</h2>
+        <form id="calculator-form" data-testid="calculator-form">
+          <label>Hits <input type="number" id="calc-hits" data-testid="calc-hits" min="0" value="42" required /></label>
+          <label>Misses <input type="number" id="calc-misses" data-testid="calc-misses" min="0" value="18" required /></label>
+          <label>False Alarms <input type="number" id="calc-fa" data-testid="calc-fa" min="0" value="12" required /></label>
+          <label>Correct Rejections <input type="number" id="calc-cr" data-testid="calc-cr" min="0" value="48" required /></label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="calc-correction" data-testid="calc-correction" checked />
+            Apply loglinear correction (recommended; handles 0%/100% rates safely)
+          </label>
+          <button type="submit" data-testid="calc-submit">Compute</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Results</h2>
+        <div class="stat-row stat-row-vertical" id="calculator-results" data-testid="calculator-results">
+          <div class="stat"><span class="stat-label">Hit Rate</span><span id="calc-out-hitrate" data-testid="calc-out-hitrate">—</span></div>
+          <div class="stat"><span class="stat-label">FA Rate</span><span id="calc-out-farate" data-testid="calc-out-farate">—</span></div>
+          <div class="stat"><span class="stat-label">d′</span><span id="calc-out-dprime" data-testid="calc-out-dprime">—</span></div>
+          <div class="stat"><span class="stat-label">Criterion c</span><span id="calc-out-c" data-testid="calc-out-c">—</span></div>
+          <div class="stat"><span class="stat-label">β</span><span id="calc-out-beta" data-testid="calc-out-beta">—</span></div>
+          <div class="stat"><span class="stat-label">A′ (nonparametric)</span><span id="calc-out-aprime" data-testid="calc-out-aprime">—</span></div>
+          <div class="stat"><span class="stat-label">B″ (nonparametric bias)</span><span id="calc-out-bdouble" data-testid="calc-out-bdouble">—</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quiz tab -->
+  <section id="tab-quiz" class="tab-panel hidden" data-testid="panel-quiz">
+    <div class="card">
+      <h2>Scenario Quiz</h2>
+      <div class="stat-row">
+        <div class="stat"><span class="stat-label">Overall Score</span><span id="quiz-score" data-testid="quiz-score">0 / 0</span></div>
+      </div>
+
+      <div id="quiz-scenario" data-testid="quiz-scenario">
+        <h3 id="quiz-title" data-testid="quiz-title"></h3>
+        <p class="quiz-domain" id="quiz-domain" data-testid="quiz-domain"></p>
+        <p id="quiz-description" data-testid="quiz-description"></p>
+        <table class="matrix-table">
+          <thead><tr><th></th><th>Signal Present</th><th>Signal Absent</th></tr></thead>
+          <tbody>
+            <tr><th>"Yes"</th><td id="quiz-hits" data-testid="quiz-hits"></td><td id="quiz-fa" data-testid="quiz-fa"></td></tr>
+            <tr><th>"No"</th><td id="quiz-misses" data-testid="quiz-misses"></td><td id="quiz-cr" data-testid="quiz-cr"></td></tr>
+          </tbody>
+        </table>
+
+        <form id="quiz-form" data-testid="quiz-form">
+          <fieldset>
+            <legend>Sensitivity (d′) bucket</legend>
+            <label><input type="radio" name="quiz-bucket" value="poor" /> Poor (&lt; 0.5)</label>
+            <label><input type="radio" name="quiz-bucket" value="weak" /> Weak (0.5–1.0)</label>
+            <label><input type="radio" name="quiz-bucket" value="moderate" /> Moderate (1.0–2.0)</label>
+            <label><input type="radio" name="quiz-bucket" value="good" /> Good (2.0–3.0)</label>
+            <label><input type="radio" name="quiz-bucket" value="excellent" /> Excellent (&gt; 3.0)</label>
+          </fieldset>
+          <fieldset>
+            <legend>Response bias</legend>
+            <label><input type="radio" name="quiz-bias" value="liberal" /> Liberal</label>
+            <label><input type="radio" name="quiz-bias" value="neutral" /> Neutral</label>
+            <label><input type="radio" name="quiz-bias" value="conservative" /> Conservative</label>
+          </fieldset>
+          <button type="submit" data-testid="quiz-submit">Check Answer</button>
+          <button type="button" id="quiz-next" data-testid="quiz-next">Next Scenario</button>
+        </form>
+
+        <div id="quiz-feedback" class="quiz-feedback hidden" data-testid="quiz-feedback"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Generate a Practice Scenario</h2>
+      <p class="explainer-text">
+        Type a short research context and optionally supply an Anthropic API key (used only for this
+        request, never stored) to generate a new scenario with Claude. Leave the key blank to use the
+        built-in deterministic generator — no network request is made in that case.
+      </p>
+      <form id="ai-scenario-form" data-testid="ai-scenario-form">
+        <label>Research context <input type="text" id="ai-context" data-testid="ai-context" placeholder="e.g. eyewitness identification under stress" /></label>
+        <label>Anthropic API key (optional, session-only) <input type="password" id="ai-key" data-testid="ai-key" autocomplete="off" /></label>
+        <button type="submit" data-testid="ai-generate">Generate Scenario</button>
+      </form>
+      <div id="ai-status" data-testid="ai-status"></div>
+    </div>
+  </section>
+
+</main>
+
+<script src="src/sdt-math.js"></script>
+<script src="src/scenarios.js"></script>
+<script src="src/ai-scenario.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
