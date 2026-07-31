@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stats Coach — Statistical Test Advisor</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222536;
+      --border: #2e3148;
+      --accent: #7c6ff7;
+      --accent-light: #a89fff;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --radius: 10px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      letter-spacing: -0.02em;
+    }
+
+    header span.tagline {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 20px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .card h2 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    select, textarea, input[type="text"] {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      padding: 9px 12px;
+      width: 100%;
+      transition: border-color 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .submit-btn {
+      margin-top: 8px;
+      padding: 11px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      width: 100%;
+    }
+
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:active { transform: scale(0.99); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #results { display: none; }
+
+    .test-name-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .test-name-banner h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-light);
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    .badge.parametric { background: rgba(124,111,247,0.2); color: var(--accent-light); }
+    .badge.non-parametric { background: rgba(251,191,36,0.15); color: var(--amber); }
+    .badge.categorical { background: rgba(74,222,128,0.15); color: var(--green); }
+
+    .cached-badge {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      margin-top: 20px;
+    }
+
+    .section-title:first-of-type { margin-top: 0; }
+
+    .explanation-text {
+      color: var(--text);
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+
+    .explanation-text p {
+      margin-bottom: 12px;
+    }
+
+    .assumptions-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .assumptions-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .assumptions-list li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 7px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab.active {
+      color: var(--accent-light);
+      border-bottom-color: var(--accent-light);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    pre {
+      background: #0a0c12;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.825rem;
+      line-height: 1.6;
+      color: #c9d1d9;
+    }
+
+    .interpretation-box {
+      background: rgba(124,111,247,0.08);
+      border: 1px solid rgba(124,111,247,0.25);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      padding: 20px 0;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--red);
+      font-size: 0.9rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="28" height="28" rx="7" fill="#7c6ff7" fill-opacity="0.2"/>
+    <path d="M7 20L11 14L14 17L18 10L21 14" stroke="#a89fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="21" cy="8" r="2" fill="#4ade80"/>
+  </svg>
+  <h1>Stats Coach</h1>
+  <span class="tagline">— Statistical Test Advisor</span>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Describe Your Research Design</h2>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="outcome_type">Outcome variable type</label>
+        <select id="outcome_type" data-testid="outcome_type">
+          <option value="continuous">Continuous (interval/ratio scale)</option>
+          <option value="ordinal">Ordinal (ranked/Likert scale)</option>
+          <option value="categorical">Categorical (nominal, binary)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="num_groups">Number of groups / conditions</label>
+        <select id="num_groups" data-testid="num_groups">
+          <option value="1">1 (single sample)</option>
+          <option value="2" selected>2</option>
+          <option value="3">3 or more</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Are the groups independent or paired?</label>
+        <div class="toggle-group" id="paired_toggle">
+          <div class="toggle-btn active" data-value="false" data-testid="paired-independent">Independent</div>
+          <div class="toggle-btn" data-value="true" data-testid="paired-paired">Paired / Repeated</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Normality assumption</label>
+        <div class="toggle-group" id="normality_toggle">
+          <div class="toggle-btn active" data-value="assumed" data-testid="normality-assumed">Assumed</div>
+          <div class="toggle-btn" data-value="violated" data-testid="normality-violated">Violated</div>
+          <div class="toggle-btn" data-value="unknown" data-testid="normality-unknown">Unknown</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>What are you testing?</label>
+        <div class="toggle-group" id="relationship_toggle">
+          <div class="toggle-btn active" data-value="false" data-testid="relationship-groups">Group differences</div>
+          <div class="toggle-btn" data-value="true" data-testid="relationship-relationship">Association / relationship</div>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label for="study_context">Study context (optional — helps personalise the AI explanation)</label>
+        <textarea id="study_context" data-testid="study_context"
+          placeholder="E.g. 'Comparing cortisol levels in three stress conditions, n=45 per group, pre-screened for normality'"></textarea>
+      </div>
+    </div>
+
+    <div id="error_msg" class="error-msg" data-testid="error_msg"></div>
+
+    <div style="margin-top: 20px;">
+      <button class="submit-btn" id="submit_btn" data-testid="submit_btn">
+        Get Test Recommendation
+      </button>
+    </div>
+  </div>
+
+  <div class="card" id="results" data-testid="results">
+    <div id="loading_indicator" class="loading" data-testid="loading_indicator">
+      <div class="spinner"></div>
+      <span>Generating AI explanation — usually under 10 seconds…</span>
+    </div>
+
+    <div id="results_content" style="display:none;" data-testid="results_content">
+      <div class="test-name-banner">
+        <h3 id="result_test_name" data-testid="result_test_name"></h3>
+        <span class="badge" id="result_family_badge" data-testid="result_family_badge"></span>
+        <span class="cached-badge" id="cached_indicator" data-testid="cached_indicator"></span>
+      </div>
+
+      <div class="section-title">Why this test?</div>
+      <div class="explanation-text" id="result_explanation" data-testid="result_explanation"></div>
+
+      <div class="section-title" style="margin-top:20px;">Key assumptions</div>
+      <ul class="assumptions-list" id="result_assumptions" data-testid="result_assumptions"></ul>
+
+      <div class="section-title" style="margin-top:20px;">Code examples</div>
+      <div class="tabs">
+        <div class="tab active" data-tab="r" data-testid="tab-r">R</div>
+        <div class="tab" data-tab="python" data-testid="tab-python">Python</div>
+      </div>
+      <div class="tab-panel active" id="panel-r" data-testid="panel-r">
+        <pre id="result_r_code" data-testid="result_r_code"></pre>
+      </div>
+      <div class="tab-panel" id="panel-python" data-testid="panel-python">
+        <pre id="result_python_code" data-testid="result_python_code"></pre>
+      </div>
+
+      <div class="section-title" style="margin-top:20px;">How to interpret and report</div>
+      <div class="interpretation-box" id="result_interpretation" data-testid="result_interpretation"></div>
+    </div>
+  </div>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
