@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Pulse — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #f0883e;
+    --red: #f85149;
+    --blue: #4a9eff;
+    --gap: 1.25rem;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: var(--gap);
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--gap);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--gap);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: var(--blue); }
+  .gen-at { color: var(--muted); font-size: 0.8rem; }
+  .filter-row {
+    display: flex; gap: 0.5rem; margin-bottom: var(--gap); flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 0.3rem 0.75rem; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--muted); cursor: pointer; font-size: 0.8rem;
+  }
+  .filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .chart-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: var(--gap); margin-bottom: var(--gap);
+  }
+  .chart-section h2 {
+    font-size: 0.85rem; margin-bottom: var(--gap); color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .chart-container { height: 220px; position: relative; }
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--gap);
+  }
+  .project-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+  }
+  .card-header { padding: var(--gap); padding-left: calc(var(--gap) + 4px); }
+  .card-title-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.4rem; flex-wrap: wrap;
+  }
+  .type-icon { font-size: 1.1rem; }
+  .project-name { font-size: 1rem; font-weight: 600; flex: 1; min-width: 0; }
+  .description { color: var(--muted); font-size: 0.82rem; margin-bottom: 0.4rem; }
+  .repos { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.4rem; }
+  .repo-tag {
+    font-size: 0.72rem; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 0.1rem 0.4rem; color: var(--muted); font-family: monospace;
+  }
+  .badge {
+    font-size: 0.72rem; border-radius: 12px;
+    padding: 0.15rem 0.5rem; white-space: nowrap;
+  }
+  .badge-green  { background: rgba(63,185,80,0.15);  color: var(--green);  }
+  .badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .badge-orange { background: rgba(240,136,62,0.15); color: var(--orange); }
+  .badge-red    { background: rgba(248,81,73,0.15);  color: var(--red);    }
+  .badge-grey   { background: var(--surface2);       color: var(--muted);  }
+  .card-stats {
+    padding: 0.4rem var(--gap); background: var(--surface2);
+    border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--muted);
+  }
+  .activity-list {
+    list-style: none; padding: 0.5rem var(--gap);
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.35rem;
+  }
+  .activity-list li {
+    display: flex; gap: 0.4rem; font-size: 0.78rem; align-items: flex-start;
+  }
+  .act-date  { color: var(--muted); white-space: nowrap; min-width: 5rem; }
+  .act-icon  { color: var(--muted); }
+  .act-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .no-activity {
+    color: var(--muted); font-size: 0.8rem; padding: 0.75rem var(--gap);
+    border-top: 1px solid var(--border); font-style: italic;
+  }
+  .empty-state {
+    color: var(--muted); text-align: center; padding: 3rem;
+    font-size: 0.9rem; grid-column: 1/-1;
+  }
+  .empty-state code {
+    background: var(--surface2); padding: 0.2rem 0.4rem; border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  @media (max-width: 600px) {
+    .projects-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ Project Pulse</h1>
+  <span class="gen-at">Generated 2026-06-29 11:39 UTC</span>
+</header>
+
+<div class="filter-row">
+  <button class="filter-btn active" onclick="filterType('all',this)">All</button>
+  <button class="filter-btn" onclick="filterType('lab',this)">🔬 Lab</button>
+  <button class="filter-btn" onclick="filterType('code',this)">💻 Code</button>
+  <button class="filter-btn" onclick="filterType('writing',this)">✍️ Writing</button>
+  <button class="filter-btn" onclick="filterType('business',this)">🏢 Business</button>
+  <button class="filter-btn" onclick="filterType('personal',this)">🧠 Personal</button>
+</div>
+
+<div class="chart-section">
+  <h2>Activity — Last 30 Days</h2>
+  <div class="chart-container">
+    <canvas id="timelineChart"></canvas>
+  </div>
+</div>
+
+<div class="projects-grid" id="projectsGrid">
+
+    <div class="project-card" data-slug="course-materials" data-type="lab">
+      <div class="card-header" style="border-left:4px solid #a371f7">
+        <div class="card-title-row">
+          <span class="type-icon">🔬</span>
+          <h2 class="project-name">Course Materials</h2>
+          <span class="badge badge-grey">No activity</span>
+        </div>
+        <p class="description">4900U AI Applications for Psychologists course</p>
+        <div class="repos"><span class="repo-tag">gumfactor/4900U_AI_Applications_for_Psychologists</span></div>
+      </div>
+      <div class="card-stats"><span class="stat-item">0 activities (30d)</span></div>
+      <p class="no-activity">No recent activity — run sync or log a note</p>
+    </div>
+    <div class="project-card" data-slug="ai-workflow-builder" data-type="code">
+      <div class="card-header" style="border-left:4px solid #f0883e">
+        <div class="card-title-row">
+          <span class="type-icon">💻</span>
+          <h2 class="project-name">AI Workflow Builder</h2>
+          <span class="badge badge-green">0d ago</span>
+        </div>
+        <p class="description">AI agent workflow systems and productivity tools</p>
+        <div class="repos"><span class="repo-tag">gumfactor/Delightful-Nightly-Builds</span></div>
+      </div>
+      <div class="card-stats"><span class="stat-item">1 activities (30d)</span></div>
+      <ul class="activity-list"><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Deployed Project Pulse nightly build</span></li></ul>
+    </div>
+    <div class="project-card" data-slug="kwyeter" data-type="code">
+      <div class="card-header" style="border-left:4px solid #d29922">
+        <div class="card-title-row">
+          <span class="type-icon">💻</span>
+          <h2 class="project-name">Kwyeter</h2>
+          <span class="badge badge-green">0d ago</span>
+        </div>
+        <p class="description">Environmental noise awareness platform</p>
+        
+      </div>
+      <div class="card-stats"><span class="stat-item">2 activities (30d)</span></div>
+      <ul class="activity-list"><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Completed noise sensor calibration documentation</span></li><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Started iOS app wireframes</span></li></ul>
+    </div>
+    <div class="project-card" data-slug="neuroscience-lab" data-type="lab">
+      <div class="card-header" style="border-left:4px solid #3fb950">
+        <div class="card-title-row">
+          <span class="type-icon">🔬</span>
+          <h2 class="project-name">Neuroscience Lab</h2>
+          <span class="badge badge-green">0d ago</span>
+        </div>
+        <p class="description">Forensic and affective neuroscience research</p>
+        
+      </div>
+      <div class="card-stats"><span class="stat-item">2 activities (30d)</span></div>
+      <ul class="activity-list"><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Analyzed fMRI data for Study 3</span></li><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Submitted ethics application for Study 4</span></li></ul>
+    </div>
+    <div class="project-card" data-slug="canada-list" data-type="business">
+      <div class="card-header" style="border-left:4px solid #4a9eff">
+        <div class="card-title-row">
+          <span class="type-icon">🏢</span>
+          <h2 class="project-name">Canada List</h2>
+          <span class="badge badge-green">0d ago</span>
+        </div>
+        <p class="description">Canadian business directory platform</p>
+        <div class="repos"><span class="repo-tag">gumfactor/Delightful-Nightly-Builds</span></div>
+      </div>
+      <div class="card-stats"><span class="stat-item">3 activities (30d)</span></div>
+      <ul class="activity-list"><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Reviewed 150 new business submissions</span></li><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Finalized business category taxonomy</span></li><li><span class="act-date">2026-06-29</span><span class="act-icon">✎</span><span class="act-title">Reviewing business ingestion pipeline performance</span></li></ul>
+    </div>
+</div>
+
+<script>
+(function() {
+  var data = {"labels": ["2026-05-31", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-20", "2026-06-21", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-27", "2026-06-28", "2026-06-29"], "datasets": [{"label": "Course Materials", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#a371f799", "borderColor": "#a371f7", "borderWidth": 1}, {"label": "AI Workflow Builder", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], "backgroundColor": "#f0883e99", "borderColor": "#f0883e", "borderWidth": 1}, {"label": "Kwyeter", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2], "backgroundColor": "#d2992299", "borderColor": "#d29922", "borderWidth": 1}, {"label": "Neuroscience Lab", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2], "backgroundColor": "#3fb95099", "borderColor": "#3fb950", "borderWidth": 1}, {"label": "Canada List", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3], "backgroundColor": "#4a9eff99", "borderColor": "#4a9eff", "borderWidth": 1}]};
+  var ctx = document.getElementById('timelineChart');
+  if (ctx && data.datasets && data.datasets.length > 0) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#8b949e', font: { size: 11 } } },
+          tooltip: { mode: 'index', intersect: false },
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: '#8b949e', maxTicksLimit: 8, font: { size: 10 } },
+            grid: { color: '#21262d' },
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: { color: '#8b949e', precision: 0, font: { size: 11 } },
+            grid: { color: '#21262d' },
+          },
+        },
+      },
+    });
+  }
+})();
+
+function filterType(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  document.querySelectorAll('.project-card').forEach(function(card) {
+    card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
