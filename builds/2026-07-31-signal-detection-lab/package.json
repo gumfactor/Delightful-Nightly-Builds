@@ -1,0 +1,12 @@
+{
+  "name": "signal-detection-lab",
+  "version": "1.0.0",
+  "description": "Interactive Signal Detection Theory (d', criterion, ROC/AUC) trainer for forensic and affective neuroscience research paradigms.",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
