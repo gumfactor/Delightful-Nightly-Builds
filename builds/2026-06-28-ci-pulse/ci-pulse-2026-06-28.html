@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ci-pulse — GitHub Actions Performance</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+    --border: #30363d; --text: #e6edf3; --text2: #8b949e;
+    --accent: #58a6ff; --green: #3fb950; --red: #f85149; --amber: #e3b341;
+    --radius: 8px; --gap: 16px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.6; padding: var(--gap); }
+  h1 { font-size: 1.5rem; color: var(--text); margin-bottom: 4px; }
+  h2 { font-size: 1rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  .subtitle { color: var(--text2); font-size: 0.85rem; margin-bottom: 24px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1; }
+  .stat-label { color: var(--text2); font-size: 0.8rem; margin-top: 4px; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--gap); margin-bottom: var(--gap); }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .chart-wrap { position: relative; height: 260px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  th { color: var(--text2); font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap; }
+  th:hover { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg3); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+  .badge-green { background: #1a3a2a; color: var(--green); }
+  .badge-amber { background: #3a2e1a; color: var(--amber); }
+  .badge-red { background: #3a1a1a; color: var(--red); }
+  .ai-bullets { list-style: none; padding: 0; }
+  .ai-bullets li { padding: 6px 0; border-bottom: 1px solid var(--border); color: var(--text); }
+  .ai-bullets li::before { content: "•"; color: var(--accent); margin-right: 8px; }
+  .ai-bullets li:last-child { border-bottom: none; }
+  .ai-note { color: var(--text2); font-size: 0.75rem; margin-top: 12px; }
+  .ai-empty p { color: var(--text2); }
+  .ai-empty code { color: var(--accent); background: var(--bg3); padding: 1px 4px; border-radius: 3px; }
+  .empty { color: var(--text2); text-align: center; padding: 40px 0; }
+  @media (max-width: 600px) { .cards-grid { grid-template-columns: 1fr; } .chart-wrap { height: 200px; } }
+</style>
+</head>
+<body>
+<h1>ci-pulse</h1>
+<p class="subtitle">GitHub Actions Performance Report &mdash; 2026-06-28 08:12 UTC</p>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value">187</div>
+    <div class="stat-label">Total runs (30d)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" style="color:var(--amber)">9.6%</div>
+    <div class="stat-label">Failure rate</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">271</div>
+    <div class="stat-label">CI minutes burned</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">4</div>
+    <div class="stat-label">Repos with CI</div>
+  </div>
+</div>
+
+
+
+<div class="cards-grid">
+  <div class="card">
+    <h2>Top Workflows by Duration</h2>
+    <div class="chart-wrap"><canvas id="durationChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>Failure Rate by Workflow</h2>
+    <div class="chart-wrap"><canvas id="failureChart"></canvas></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--gap);">
+  <h2>30-Day Trend</h2>
+  <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+</div>
+
+
+    <section class="card ai-card ai-empty">
+      <h2>AI Insights</h2>
+      <p>Set <code>ANTHROPIC_API_KEY</code> and re-run to get AI-powered bottleneck suggestions.</p>
+    </section>
+
+<div class="card" style="margin-top: var(--gap); overflow-x: auto;">
+  <h2>All Workflows</h2>
+  <table id="wfTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">Repo ↕</th>
+        <th onclick="sortTable(1)">Workflow ↕</th>
+        <th onclick="sortTable(2)">Avg Duration ↕</th>
+        <th onclick="sortTable(3)">p95 Duration ↕</th>
+        <th onclick="sortTable(4)">Failure Rate ↕</th>
+        <th onclick="sortTable(5)">Failures/Total ↕</th>
+      </tr>
+    </thead>
+    <tbody>
+<tr><td>gumfactor/KwyeterApp_MVP</td><td>Running Copilot Code Review</td><td data-sort='313.0'>5m 13s</td><td data-sort='353.0'>5m 53s</td><td><span class="badge badge-green">0%</span></td><td>0/2</td></tr>
+<tr><td>gumfactor/KwyeterApp_MVP</td><td>Supabase Backend Validation</td><td data-sort='297.7'>4m 57s</td><td data-sort='360.0'>6m 00s</td><td><span class="badge badge-amber">7%</span></td><td>2/30</td></tr>
+<tr><td>gumfactor/Agentic-Investing</td><td>Running Copilot Code Review</td><td data-sort='261.6'>4m 21s</td><td data-sort='451.0'>7m 31s</td><td><span class="badge badge-green">0%</span></td><td>0/5</td></tr>
+<tr><td>gumfactor/dotfiles</td><td>Running Copilot Code Review</td><td data-sort='204.0'>3m 24s</td><td data-sort='204.0'>3m 24s</td><td><span class="badge badge-green">0%</span></td><td>0/1</td></tr>
+<tr><td>gumfactor/Agentic-Investing</td><td>Running Copilot cloud agent</td><td data-sort='129.0'>2m 09s</td><td data-sort='129.0'>2m 09s</td><td><span class="badge badge-green">0%</span></td><td>0/1</td></tr>
+<tr><td>gumfactor/KwyeterApp_MVP</td><td>Mobile Code Quality</td><td data-sort='123.6'>2m 03s</td><td data-sort='225.0'>3m 45s</td><td><span class="badge badge-red">58%</span></td><td>15/26</td></tr>
+<tr><td>gumfactor/Agentic-Investing</td><td>Graph Update: pip in /. #1404351370</td><td data-sort='44.0'>44s</td><td data-sort='44.0'>44s</td><td><span class="badge badge-green">0%</span></td><td>0/1</td></tr>
+<tr><td>gumfactor/optimised_agentic_workflow</td><td>Proactive Hygiene</td><td data-sort='18.6'>18s</td><td data-sort='23.0'>23s</td><td><span class="badge badge-green">0%</span></td><td>0/29</td></tr>
+<tr><td>gumfactor/KwyeterApp_MVP</td><td>Worklog Sync Validation</td><td data-sort='15.1'>15s</td><td data-sort='26.0'>26s</td><td><span class="badge badge-green">3%</span></td><td>1/31</td></tr>
+<tr><td>gumfactor/KwyeterApp_MVP</td><td>Markdown Link Path Validation</td><td data-sort='13.8'>13s</td><td data-sort='23.0'>23s</td><td><span class="badge badge-green">0%</span></td><td>0/30</td></tr>
+<tr><td>gumfactor/KwyeterApp_MVP</td><td>Spec Compatibility Validation</td><td data-sort='13.1'>13s</td><td data-sort='18.0'>18s</td><td><span class="badge badge-green">0%</span></td><td>0/31</td></tr>
+
+    </tbody>
+  </table>
+</div>
+
+<script>
+const durationCtx = document.getElementById('durationChart').getContext('2d');
+new Chart(durationCtx, {
+  type: 'bar',
+  data: {
+    labels: ["gumfactor/KwyeterApp_MVP/Running Copilot Code Review", "gumfactor/KwyeterApp_MVP/Supabase Backend Validation", "gumfactor/Agentic-Investing/Running Copilot Code Review", "gumfactor/dotfiles/Running Copilot Code Review", "gumfactor/Agentic-Investing/Running Copilot cloud agent", "gumfactor/KwyeterApp_MVP/Mobile Code Quality", "gumfactor/Agentic-Investing/Graph Update: pip in /. #1404351370", "gumfactor/optimised_agentic_workflow/Proactive Hygiene", "gumfactor/KwyeterApp_MVP/Worklog Sync Validation", "gumfactor/KwyeterApp_MVP/Markdown Link Path Validation"],
+    datasets: [
+      { label: 'Avg (s)', data: [313.0, 297.7, 261.6, 204.0, 129.0, 123.6, 44.0, 18.6, 15.1, 13.8], backgroundColor: 'rgba(88,166,255,0.7)', borderColor: 'rgba(88,166,255,1)', borderWidth: 1 },
+      { label: 'p95 (s)', data: [353.0, 360.0, 451.0, 204.0, 129.0, 225.0, 44.0, 23.0, 26.0, 23.0], backgroundColor: 'rgba(227,179,65,0.5)', borderColor: 'rgba(227,179,65,1)', borderWidth: 1 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: { legend: { labels: { color: '#8b949e' } } },
+    scales: {
+      x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+      y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: '#21262d' } }
+    }
+  }
+});
+
+const failureCtx = document.getElementById('failureChart').getContext('2d');
+new Chart(failureCtx, {
+  type: 'bar',
+  data: {
+    labels: ["gumfactor/KwyeterApp_MVP/Mobile Code Quality", "gumfactor/KwyeterApp_MVP/Supabase Backend Validation", "gumfactor/KwyeterApp_MVP/Worklog Sync Validation", "gumfactor/optimised_agentic_workflow/Proactive Hygiene", "gumfactor/Agentic-Investing/Running Copilot Code Review", "gumfactor/Agentic-Investing/Running Copilot cloud agent", "gumfactor/Agentic-Investing/Graph Update: pip in /. #1404351370", "gumfactor/KwyeterApp_MVP/Markdown Link Path Validation", "gumfactor/KwyeterApp_MVP/Spec Compatibility Validation", "gumfactor/KwyeterApp_MVP/Running Copilot Code Review"],
+    datasets: [{ label: 'Failure %', data: [57.7, 6.7, 3.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], backgroundColor: 'rgba(248,81,73,0.7)', borderColor: 'rgba(248,81,73,1)', borderWidth: 1 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: { legend: { labels: { color: '#8b949e' } } },
+    scales: {
+      x: { min: 0, max: 100, ticks: { color: '#8b949e', callback: v => v + '%' }, grid: { color: '#21262d' } },
+      y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: '#21262d' } }
+    }
+  }
+});
+
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels: ["2026-W21", "2026-W22", "2026-W23", "2026-W24", "2026-W25"],
+    datasets: [
+      { label: 'Avg duration (s)', data: [17.5, 19.0, 94.4, 90.6, 16.6], borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.1)', tension: 0.3, yAxisID: 'y' },
+      { label: 'Failure %', data: [0.0, 0.0, 12.7, 2.7, 0.0], borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,0.1)', tension: 0.3, yAxisID: 'y1' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#8b949e' } } },
+    scales: {
+      x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+      y: { ticks: { color: '#58a6ff' }, grid: { color: '#21262d' }, title: { display: true, text: 'Duration (s)', color: '#58a6ff' } },
+      y1: { position: 'right', ticks: { color: '#f85149', callback: v => v + '%' }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Failure %', color: '#f85149' } }
+    }
+  }
+});
+
+let sortDir = {};
+function sortTable(col) {
+  const tbody = document.querySelector('#wfTable tbody');
+  const rows = Array.from(tbody.rows);
+  sortDir[col] = !sortDir[col];
+  rows.sort((a, b) => {
+    const av = a.cells[col].dataset.sort ?? a.cells[col].textContent.trim();
+    const bv = b.cells[col].dataset.sort ?? b.cells[col].textContent.trim();
+    const an = parseFloat(av), bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return sortDir[col] ? an - bn : bn - an;
+    return sortDir[col] ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+</script>
+</body>
+</html>
