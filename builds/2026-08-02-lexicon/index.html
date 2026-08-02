@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lexicon — Daily Vocabulary Puzzle</title>
+<link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+<div class="app-shell" id="app">
+  <header>
+    <div>
+      <h1>Lexicon</h1>
+      <p class="subtitle">A daily word puzzle built from neuroscience, statistics, AI, and market vocabulary.</p>
+    </div>
+    <div class="mode-switch">
+      <button type="button" class="pill-button active" data-testid="mode-daily">Daily</button>
+      <button type="button" class="pill-button" data-testid="mode-practice">Practice</button>
+      <select data-testid="practice-category">
+        <option value="neuro">Neuroscience / Psychology</option>
+        <option value="stats">Statistics / Methods</option>
+        <option value="ai">AI / Machine Learning</option>
+        <option value="finance">Investing / Finance</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div id="board" data-testid="board"></div>
+    <p id="hint" data-testid="hint" hidden></p>
+    <p id="message" data-testid="message"></p>
+    <div id="keyboard" data-testid="keyboard"></div>
+  </div>
+
+  <div class="panel">
+    <strong>AI bonus hint</strong>
+    <div class="settings-row">
+      <label>
+        Anthropic API key (session only, never saved)
+        <input type="password" data-testid="ai-key-input" placeholder="sk-ant-..." autocomplete="off" />
+      </label>
+      <button type="button" class="pill-button" data-testid="ai-hint-button">Get AI hint</button>
+    </div>
+    <p id="ai-hint-text" data-testid="ai-hint-text"></p>
+  </div>
+
+  <div class="panel">
+    <div class="settings-row">
+      <label>
+        <input type="checkbox" data-testid="colorblind-toggle" />
+        Colorblind mode (adds shape markers)
+      </label>
+    </div>
+  </div>
+
+  <div class="panel stats-grid" data-testid="stats-panel"></div>
+
+  <div id="result-modal" data-testid="result-modal" hidden>
+    <div class="result-card">
+      <p data-testid="result-text"></p>
+      <div id="share-text" data-testid="share-text"></div>
+      <button type="button" class="pill-button" data-testid="result-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="src/words.js"></script>
+<script src="src/main.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const closeButton = document.querySelector("[data-testid='result-close']");
+    const modal = document.querySelector("[data-testid='result-modal']");
+    if (closeButton && modal) {
+      closeButton.addEventListener("click", () => {
+        modal.hidden = true;
+      });
+    }
+  });
+</script>
+</body>
+</html>

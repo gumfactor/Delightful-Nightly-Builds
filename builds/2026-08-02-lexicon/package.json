@@ -1,0 +1,11 @@
+{
+  "name": "lexicon",
+  "version": "1.0.0",
+  "description": "Daily letter-guessing word puzzle built from neuroscience, statistics, AI, and investing vocabulary",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
