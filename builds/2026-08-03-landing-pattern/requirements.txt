@@ -1,0 +1,1 @@
+# stdlib only — no third-party dependencies (urllib for GitHub + Anthropic HTTP calls)
