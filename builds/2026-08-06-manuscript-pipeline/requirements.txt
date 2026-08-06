@@ -1,0 +1,5 @@
+# Manuscript Pipeline — runtime dependencies: stdlib only (sqlite3, urllib, argparse,
+# re, json, html, datetime, difflib). No third-party packages required to run.
+#
+# Dev/test dependency (not required at runtime):
+pytest>=8.0
