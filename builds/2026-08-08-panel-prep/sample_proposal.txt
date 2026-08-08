@@ -1,0 +1,68 @@
+# Specific Aims
+
+Empathic accuracy failures are a core feature of several forensic-relevant
+conditions, yet the neural mechanisms that distinguish a failure of
+perspective-taking from a failure of emotional resonance remain unknown.
+Our central hypothesis is that these two failure modes are dissociable at
+the level of anterior insula and temporoparietal junction connectivity.
+
+Aim 1: Determine whether resting-state connectivity between anterior insula
+and TPJ predicts empathic accuracy on a validated behavioral task.
+
+Aim 2: Test whether experimentally manipulating attention to internal
+bodily states selectively impairs affective, but not cognitive, empathy.
+
+Upon completion of these aims, this work will provide the first mechanistic
+account of empathy subtype dissociation, with direct relevance to forensic
+risk assessment protocols.
+
+# Significance
+
+A critical barrier to progress in this field is that empathy is treated as
+a unitary construct in most clinical assessment tools, despite two decades
+of behavioral evidence that cognitive and affective empathy dissociate.
+It is unclear whether this dissociation has a distinct neural signature,
+and recent advances in high-resolution 7T imaging make this question newly
+tractable, which is why this work is timely.
+
+# Innovation
+
+This proposal is innovative in two respects: it is the first to combine
+an interoceptive-attention manipulation with simultaneous connectivity
+mapping, and it departs from prior unitary-construct models of empathy by
+testing a dissociable, two-pathway account directly.
+
+# Approach
+
+A power analysis using G*Power (two-tailed, alpha=.05, power=.90) indicates
+a sample size of 120 participants is required to detect the hypothesized
+effect size of d=0.45.
+
+Timeline: Year 1 will focus on participant recruitment and piloting the
+interoceptive-attention manipulation; Year 2 will complete data collection;
+Year 3 will focus on analysis and dissemination.
+
+Potential pitfalls include low compliance with the attention manipulation;
+alternative approaches include a passive-viewing control condition if
+active manipulation proves infeasible.
+
+Preliminary data from our lab show a reliable insula-TPJ connectivity
+signal in a pilot sample of 18 participants, supporting feasibility.
+
+Data will be analyzed using mixed-effects regression models with
+participant as a random effect, and ANOVA for the manipulation-check
+analyses.
+
+# Rigor and Reproducibility
+
+Sex as a biological variable will be considered in all analyses, with sex
+included as a covariate and examined for interaction effects.
+
+All raters scoring behavioral responses will be blinded to condition, and
+condition order will be randomized across participants.
+
+All antibodies and reagents used in the physiological data collection
+pipeline will be authenticated against RRID identifiers before use.
+
+We will assess reproducibility of the primary connectivity finding in an
+independent held-out subsample collected in Year 3.
