@@ -1,0 +1,12 @@
+{
+  "name": "portfolio-lab",
+  "version": "1.0.0",
+  "description": "Interactive Modern Portfolio Theory trainer using real historical market data",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

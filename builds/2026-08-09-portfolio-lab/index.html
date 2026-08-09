@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Lab</title>
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+
+<header class="app-header">
+  <h1>Portfolio Lab</h1>
+  <p class="subtitle">Learn diversification, the efficient frontier, and the Sharpe ratio using real historical market data.</p>
+</header>
+
+<main id="onboarding" data-testid="onboarding" hidden>
+  <div class="onboard-card">
+    <h2>No market data yet</h2>
+    <p>Portfolio Lab never fabricates market numbers. Run the fetch script once to pull real historical prices, then reload this page.</p>
+    <ol>
+      <li>Install the one dependency (needs internet access):
+        <pre><code>pip install -r requirements.txt</code></pre>
+      </li>
+      <li>Fetch real data for the 12-asset teaching basket:
+        <pre><code>python fetch_data.py</code></pre>
+      </li>
+      <li>Reload this page — <code>data.js</code> will now contain real prices.</li>
+    </ol>
+    <p class="onboard-note">This step needs to run somewhere with real internet access to Yahoo Finance — not required for browsing this file directly once <code>data.js</code> is populated.</p>
+  </div>
+</main>
+
+<main id="app" data-testid="app" hidden>
+  <div id="data-meta" class="data-meta" data-testid="data-meta"></div>
+
+  <nav class="tabs" data-testid="tab-nav" role="tablist">
+    <button class="tab-btn" data-tab="explainer" data-testid="tab-explainer" role="tab" aria-selected="true">Explainer</button>
+    <button class="tab-btn" data-tab="frontier" data-testid="tab-frontier" role="tab" aria-selected="false">Efficient Frontier</button>
+    <button class="tab-btn" data-tab="sharpe" data-testid="tab-sharpe" role="tab" aria-selected="false">Sharpe &amp; Risk-Free</button>
+    <button class="tab-btn" data-tab="correlation" data-testid="tab-correlation" role="tab" aria-selected="false">Correlation Matrix</button>
+    <button class="tab-btn" data-tab="quiz" data-testid="tab-quiz" role="tab" aria-selected="false">Quiz</button>
+  </nav>
+
+  <section id="panel-explainer" class="tab-panel" data-testid="panel-explainer" role="tabpanel">
+    <p class="panel-intro">Pick two assets and drag the slider to blend them. The curve traces every possible mix from 100% Asset A to 100% Asset B, computed from their <em>real</em> historical covariance — not an idealized textbook shape.</p>
+    <div class="control-row">
+      <label>Asset A
+        <select id="asset-a" data-testid="asset-a"></select>
+      </label>
+      <label>Asset B
+        <select id="asset-b" data-testid="asset-b"></select>
+      </label>
+    </div>
+    <div class="control-row">
+      <label class="slider-label">
+        Weight in Asset A: <span id="mix-weight-value" data-testid="mix-weight-value">50%</span>
+        <input type="range" id="mix-weight" data-testid="mix-weight" min="0" max="100" step="1" value="50">
+      </label>
+    </div>
+    <canvas id="mixer-canvas" data-testid="mixer-canvas" width="640" height="360"></canvas>
+    <dl class="readouts" data-testid="mixer-readouts">
+      <div><dt>Correlation (A, B)</dt><dd id="mixer-corr" data-testid="mixer-corr"></dd></div>
+      <div><dt>Expected return</dt><dd id="mixer-return" data-testid="mixer-return"></dd></div>
+      <div><dt>Volatility</dt><dd id="mixer-vol" data-testid="mixer-vol"></dd></div>
+      <div><dt>Naive avg. volatility (no diversification credit)</dt><dd id="mixer-naive-vol" data-testid="mixer-naive-vol"></dd></div>
+    </dl>
+    <button id="explain-mixer" data-testid="explain-mixer" class="ai-btn">Explain this in plain English</button>
+    <p class="ai-output" id="explain-mixer-output" data-testid="explain-mixer-output"></p>
+  </section>
+
+  <section id="panel-frontier" class="tab-panel" data-testid="panel-frontier" role="tabpanel" hidden>
+    <p class="panel-intro">Each dot is one randomly-weighted long-only portfolio across all assets. The curve is the analytical efficient frontier — every portfolio that gets the best possible return for its risk. Notice how it bows out past the cloud.</p>
+    <button id="resample-cloud" data-testid="resample-cloud">Resample cloud</button>
+    <canvas id="frontier-canvas" data-testid="frontier-canvas" width="640" height="400"></canvas>
+    <dl class="readouts" data-testid="frontier-readouts">
+      <div><dt>Global minimum-variance portfolio return</dt><dd id="gmv-return" data-testid="gmv-return"></dd></div>
+      <div><dt>Global minimum-variance portfolio volatility</dt><dd id="gmv-vol" data-testid="gmv-vol"></dd></div>
+    </dl>
+    <button id="explain-frontier" data-testid="explain-frontier" class="ai-btn">Explain this in plain English</button>
+    <p class="ai-output" id="explain-frontier-output" data-testid="explain-frontier-output"></p>
+  </section>
+
+  <section id="panel-sharpe" class="tab-panel" data-testid="panel-sharpe" role="tabpanel" hidden>
+    <p class="panel-intro">The Sharpe ratio measures return earned per unit of risk above a risk-free rate. The tangency portfolio is the single point on the frontier with the best Sharpe ratio for the rate you pick.</p>
+    <label class="slider-label">
+      Risk-free rate: <span id="riskfree-value" data-testid="riskfree-value">2.0%</span>
+      <input type="range" id="riskfree-slider" data-testid="riskfree-slider" min="0" max="6" step="0.1" value="2">
+    </label>
+    <canvas id="sharpe-canvas" data-testid="sharpe-canvas" width="640" height="400"></canvas>
+    <dl class="readouts" data-testid="sharpe-readouts">
+      <div><dt>Tangency portfolio return</dt><dd id="tangency-return" data-testid="tangency-return"></dd></div>
+      <div><dt>Tangency portfolio volatility</dt><dd id="tangency-vol" data-testid="tangency-vol"></dd></div>
+      <div><dt>Tangency Sharpe ratio</dt><dd id="tangency-sharpe" data-testid="tangency-sharpe"></dd></div>
+      <div><dt>Global minimum-variance Sharpe ratio</dt><dd id="gmv-sharpe" data-testid="gmv-sharpe"></dd></div>
+    </dl>
+  </section>
+
+  <section id="panel-correlation" class="tab-panel" data-testid="panel-correlation" role="tabpanel" hidden>
+    <p class="panel-intro">Blue means two assets tend to move together; red means they tend to move apart. Click any cell to open that pair in the Explainer tab.</p>
+    <div id="corr-heatmap" data-testid="corr-heatmap" class="heatmap" role="table"></div>
+  </section>
+
+  <section id="panel-quiz" class="tab-panel" data-testid="panel-quiz" role="tabpanel" hidden>
+    <p class="panel-intro">Two randomly-weighted two-asset portfolios, real data, a fixed 2% risk-free rate. Which has the better risk-adjusted return?</p>
+    <div class="quiz-options">
+      <button class="quiz-option" id="quiz-option-0" data-testid="quiz-option-0"></button>
+      <button class="quiz-option" id="quiz-option-1" data-testid="quiz-option-1"></button>
+    </div>
+    <p class="quiz-feedback" id="quiz-feedback" data-testid="quiz-feedback"></p>
+    <button id="quiz-next" data-testid="quiz-next" hidden>Next round</button>
+    <dl class="readouts" data-testid="quiz-stats">
+      <div><dt>Attempts</dt><dd id="quiz-attempts" data-testid="quiz-attempts">0</dd></div>
+      <div><dt>Correct</dt><dd id="quiz-correct" data-testid="quiz-correct">0</dd></div>
+      <div><dt>Current streak</dt><dd id="quiz-streak" data-testid="quiz-streak">0</dd></div>
+      <div><dt>Best streak</dt><dd id="quiz-best-streak" data-testid="quiz-best-streak">0</dd></div>
+    </dl>
+  </section>
+
+  <section class="ai-settings" data-testid="ai-settings">
+    <label>
+      Anthropic API key (optional — used only for the "explain in plain English" buttons, kept in memory only, never saved or sent anywhere but Anthropic)
+      <input type="password" id="api-key-input" data-testid="api-key-input" autocomplete="off" placeholder="sk-ant-...">
+    </label>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <p>Portfolio Lab — built <span id="footer-note"></span></p>
+</footer>
+
+<script src="src/math.js"></script>
+<script src="data.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
