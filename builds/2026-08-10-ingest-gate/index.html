@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ingest Gate — CSV Quality Inspector</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>Ingest Gate</h1>
+  <p class="subtitle">CSV quality inspector for The Canada List's ingestion pipeline — catches bad rows before they reach the live directory. Everything runs locally in your browser; your CSV never leaves this page.</p>
+</header>
+
+<nav class="tabs" role="tablist" data-testid="tabs">
+  <button class="tab-btn active" data-testid="tab-validate" data-tab="validate" role="tab" aria-selected="true">Validate</button>
+  <button class="tab-btn" data-testid="tab-schema" data-tab="schema" role="tab" aria-selected="false">Schema</button>
+  <button class="tab-btn" data-testid="tab-history" data-tab="history" role="tab" aria-selected="false">History</button>
+</nav>
+
+<main>
+  <!-- ============ VALIDATE TAB ============ -->
+  <section class="panel" data-testid="panel-validate" id="panel-validate">
+    <div class="upload-row">
+      <div class="drop-zone" id="drop-zone" data-testid="drop-zone">
+        <p>Drag a CSV here, or click to choose a file</p>
+        <input type="file" id="file-input" data-testid="file-input" accept=".csv,text/csv" hidden />
+      </div>
+      <div class="encoding-control">
+        <label for="encoding-select">File encoding</label>
+        <select id="encoding-select" data-testid="encoding-select">
+          <option value="utf-8" selected>UTF-8 (default)</option>
+          <option value="windows-1252">Windows-1252 (Latin-1)</option>
+        </select>
+      </div>
+    </div>
+
+    <p id="encoding-warning" class="banner banner-warning" data-testid="encoding-warning" hidden></p>
+    <p id="file-status" class="file-status" data-testid="file-status"></p>
+
+    <div id="results" data-testid="results" hidden>
+      <div class="summary-cards" data-testid="summary-cards">
+        <div class="card">
+          <span class="card-value" id="stat-total" data-testid="stat-total">0</span>
+          <span class="card-label">Total rows</span>
+        </div>
+        <div class="card card-good">
+          <span class="card-value" id="stat-valid" data-testid="stat-valid">0</span>
+          <span class="card-label">Valid</span>
+        </div>
+        <div class="card card-error">
+          <span class="card-value" id="stat-errors" data-testid="stat-errors">0</span>
+          <span class="card-label">Rows with errors</span>
+        </div>
+        <div class="card card-warning">
+          <span class="card-value" id="stat-warnings" data-testid="stat-warnings">0</span>
+          <span class="card-label">Rows with warnings</span>
+        </div>
+      </div>
+
+      <div class="ai-briefing" data-testid="ai-briefing-section">
+        <h2>AI Data Quality Briefing <span class="hint">(optional — only aggregate counts are ever sent, never row data)</span></h2>
+        <div class="ai-controls">
+          <input type="password" id="ai-key-input" data-testid="ai-key-input" placeholder="Anthropic API key (optional, session-only, never saved)" autocomplete="off" />
+          <button id="ai-briefing-btn" data-testid="ai-briefing-btn">Get Briefing</button>
+        </div>
+        <p id="ai-briefing-output" class="ai-output" data-testid="ai-briefing-output"></p>
+      </div>
+
+      <div class="downloads" data-testid="downloads">
+        <button id="download-cleaned" data-testid="download-cleaned">Download Cleaned CSV (with QC_Flags)</button>
+        <button id="download-issues" data-testid="download-issues">Download Issues Report CSV</button>
+      </div>
+
+      <div class="issues-controls">
+        <input type="text" id="search-input" data-testid="search-input" placeholder="Search issues (column, code, message, value)…" />
+        <div class="filter-chips" data-testid="filter-chips">
+          <button class="chip active" data-testid="filter-all" data-severity="all">All</button>
+          <button class="chip" data-testid="filter-error" data-severity="error">Errors</button>
+          <button class="chip" data-testid="filter-warning" data-severity="warning">Warnings</button>
+        </div>
+      </div>
+
+      <table class="issues-table" data-testid="issues-table">
+        <thead>
+          <tr>
+            <th data-sort="displayRow" data-testid="sort-row">Row</th>
+            <th data-sort="column" data-testid="sort-column">Column</th>
+            <th data-sort="severity" data-testid="sort-severity">Severity</th>
+            <th data-sort="code" data-testid="sort-code">Issue</th>
+            <th data-sort="message" data-testid="sort-message">Detail</th>
+          </tr>
+        </thead>
+        <tbody id="issues-tbody" data-testid="issues-tbody"></tbody>
+      </table>
+      <p id="issues-empty" class="empty-state" data-testid="issues-empty" hidden>No issues match your filters.</p>
+
+      <div id="row-detail" class="row-detail" data-testid="row-detail" hidden>
+        <h3>Row detail</h3>
+        <div id="row-detail-content" data-testid="row-detail-content"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCHEMA TAB ============ -->
+  <section class="panel hidden-panel" data-testid="panel-schema" id="panel-schema">
+    <h2>Column Schema</h2>
+    <p class="hint">Define which columns are required and what type/values they must contain. Edit this to match your real pipeline's column names — the shipped default is a generic example. Saved automatically to this browser.</p>
+
+    <table class="schema-table" data-testid="schema-table">
+      <thead>
+        <tr>
+          <th>Column name</th>
+          <th>Required</th>
+          <th>Type</th>
+          <th>Allowed values (enum only)</th>
+          <th>Unique / dedupe key</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="schema-tbody" data-testid="schema-tbody"></tbody>
+    </table>
+
+    <div class="schema-actions">
+      <button id="schema-add" data-testid="schema-add">+ Add Column</button>
+      <button id="schema-from-header" data-testid="schema-from-header">Load Columns From Uploaded File's Header</button>
+      <button id="schema-reset" data-testid="schema-reset">Reset to Default Preset</button>
+      <button id="schema-export" data-testid="schema-export">Export Schema (JSON)</button>
+      <button id="schema-import-btn" data-testid="schema-import-btn">Import Schema (JSON)</button>
+      <input type="file" id="schema-import-input" data-testid="schema-import-input" accept=".json,application/json" hidden />
+    </div>
+    <p id="schema-status" class="file-status" data-testid="schema-status"></p>
+  </section>
+
+  <!-- ============ HISTORY TAB ============ -->
+  <section class="panel hidden-panel" data-testid="panel-history" id="panel-history">
+    <h2>Run History</h2>
+    <p class="hint">Aggregate counts only — no row content is ever stored here.</p>
+    <table class="history-table" data-testid="history-table">
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>File</th>
+          <th>Total</th>
+          <th>Valid</th>
+          <th>Errors</th>
+          <th>Warnings</th>
+        </tr>
+      </thead>
+      <tbody id="history-tbody" data-testid="history-tbody"></tbody>
+    </table>
+    <p id="history-empty" class="empty-state" data-testid="history-empty" hidden>No runs recorded yet.</p>
+    <button id="history-clear" data-testid="history-clear">Clear History</button>
+  </section>
+</main>
+
+<script src="src/csv-parser.js"></script>
+<script src="src/schema.js"></script>
+<script src="src/validator.js"></script>
+<script src="src/dedupe.js"></script>
+<script src="src/report.js"></script>
+<script src="src/ai-briefing.js"></script>
+<script src="src/history.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
