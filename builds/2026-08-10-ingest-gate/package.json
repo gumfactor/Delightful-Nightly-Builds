@@ -1,0 +1,11 @@
+{
+  "name": "ingest-gate",
+  "version": "1.0.0",
+  "description": "CSV quality inspector for The Canada List's ingestion pipeline — catches malformed rows, schema violations, encoding issues, and duplicates before ingestion",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
