@@ -30,6 +30,17 @@
     return byRow;
   }
 
+  // Pads a short row with empty fields or truncates a long one so every
+  // exported line has exactly `header.length` fields — a ragged input row
+  // (already flagged as `malformed_row`) must not also produce a ragged
+  // "cleaned" CSV, which would break any downstream tool expecting a
+  // consistent column count.
+  function normalizeRowWidth(row, width) {
+    if (row.length === width) return row;
+    if (row.length > width) return row.slice(0, width);
+    return [...row, ...new Array(width - row.length).fill('')];
+  }
+
   function buildCleanedCsv(parsed, rowIssues, dedupeIssues) {
     const { header, rows } = parsed;
     const byRow = groupIssuesByRow(rowIssues, dedupeIssues);
@@ -37,7 +48,7 @@
 
     rows.forEach((row, idx) => {
       const flags = (byRow.get(idx) || []).join(';');
-      lines.push(toCsvLine([...row, flags]));
+      lines.push(toCsvLine([...normalizeRowWidth(row, header.length), flags]));
     });
 
     return lines.join('\r\n') + '\r\n';

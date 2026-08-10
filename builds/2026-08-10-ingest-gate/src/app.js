@@ -54,6 +54,7 @@
   }
 
   async function handleFile(file) {
+    state.currentFile = file;
     state.fileName = file.name;
     $('file-status').textContent = 'Reading ' + file.name + '…';
 
@@ -139,6 +140,13 @@
       e.preventDefault();
       dropZone.classList.remove('drag-over');
       if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    // Re-decode and re-validate the already-uploaded file when the operator
+    // switches encodings — otherwise the recovery path the warning banner
+    // recommends ("switch to Windows-1252") silently does nothing.
+    $('encoding-select').addEventListener('change', () => {
+      if (state.currentFile) handleFile(state.currentFile);
     });
   }
 

@@ -11,6 +11,11 @@
 (function (global) {
   'use strict';
 
+  // Joins raw field values into a row key without any character that could
+  // itself appear in a parsed field, so ['ab', 'c'] and ['a', 'bc'] can
+  // never collide onto the same key.
+  const FIELD_SEPARATOR = String.fromCharCode(1);
+
   function normalizeText(value) {
     return value.trim().toLowerCase().replace(/\s+/g, ' ');
   }
@@ -29,12 +34,16 @@
 
   function findExactRowDuplicates(rows, raggedRowIndices) {
     const issues = [];
-    const seen = new Map(); // normalized row key -> first rowIndex
+    const seen = new Map(); // exact (unnormalized) row key -> first rowIndex
 
     rows.forEach((row, idx) => {
       if (raggedRowIndices.includes(idx)) return; // alignment untrustworthy
-      const key = row.map((f) => normalizeText(f)).join('');
-      if (key === '') return; // skip fully-blank rows
+      if (row.every((f) => f.trim() === '')) return; // skip fully-blank rows
+      // "Exact" duplicates are literal, byte-for-byte matches -- unlike the
+      // case/whitespace/URL-insensitive normalization used below for
+      // unique-column key duplicates, which only applies to columns
+      // explicitly marked `unique` in the schema.
+      const key = row.join(FIELD_SEPARATOR);
 
       if (seen.has(key)) {
         issues.push({

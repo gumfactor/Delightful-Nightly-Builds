@@ -158,7 +158,18 @@
     });
 
     schema.forEach((col) => {
-      if (!(col.name in byName)) return; // header already flagged as missing
+      if (!(col.name in byName)) {
+        // The column is entirely absent from the header (already flagged
+        // once, file-wide, by validateHeader) — every row is necessarily
+        // missing this value too. Without this, a file missing a required
+        // column could have every row come back "valid", letting the
+        // summary/history/AI briefing all claim the file is ready to
+        // ingest despite the blocking header error.
+        if (col.required) {
+          issues.push(makeIssue('missing_required_value', rowIndex, col.name));
+        }
+        return;
+      }
       const rawValue = byName[col.name];
       const value = rawValue === undefined ? '' : rawValue;
 

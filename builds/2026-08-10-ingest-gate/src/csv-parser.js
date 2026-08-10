@@ -84,15 +84,21 @@
       i += 1;
     }
 
+    // Reaching EOF while still inside a quoted field means the file is
+    // truncated mid-value (e.g. `name\n"unterminated`) — record that so the
+    // caller can flag the affected row rather than silently accepting the
+    // partial value as if the quote had closed cleanly.
+    const unterminatedQuote = inQuotes;
+
     // Flush a trailing field/row unless the file ended cleanly on a newline
     // (in which case there is nothing left to flush) or the file was empty.
     if (field !== '' || row.length > 0) {
       endRow();
     }
     if (!sawAnyContent) {
-      return [];
+      return { rows: [], unterminatedQuote: false };
     }
-    return rows;
+    return { rows, unterminatedQuote };
   }
 
   // Parses raw CSV text (already decoded to a JS string) into
@@ -105,9 +111,8 @@
       cleaned = cleaned.slice(1);
     }
 
-    const allRows = tokenize(cleaned).filter(
-      (r) => !(r.length === 1 && r[0] === '')
-    );
+    const tokenized = tokenize(cleaned);
+    const allRows = tokenized.rows.filter((r) => !(r.length === 1 && r[0] === ''));
 
     if (allRows.length === 0) {
       return { header: [], rows: [], raggedRowIndices: [] };
@@ -121,6 +126,16 @@
         raggedRowIndices.push(idx);
       }
     });
+
+    // An unterminated quote can only have affected the very last row
+    // emitted (everything after the opening quote — including any embedded
+    // newlines — was consumed as one field up to EOF).
+    if (tokenized.unterminatedQuote && dataRows.length > 0) {
+      const lastIdx = dataRows.length - 1;
+      if (!raggedRowIndices.includes(lastIdx)) {
+        raggedRowIndices.push(lastIdx);
+      }
+    }
 
     return { header, rows: dataRows, raggedRowIndices };
   }

@@ -100,6 +100,15 @@ test.describe('CsvParser', () => {
     expect(result.raggedRowIndices).toEqual([0]);
   });
 
+  test('flags a row with an unterminated quoted field as malformed', async ({ page }) => {
+    await gotoApp(page);
+    const result = await page.evaluate(() => window.CsvParser.parseCSV('name\n"unterminated'));
+    // Without this, the truncated field count still matches the header and
+    // the row would silently pass as clean instead of being flagged.
+    expect(result.rows).toEqual([['unterminated']]);
+    expect(result.raggedRowIndices).toEqual([0]);
+  });
+
   test('treats CRLF line endings the same as LF', async ({ page }) => {
     await gotoApp(page);
     const result = await page.evaluate(() => window.CsvParser.parseCSV('a,b\r\n1,2\r\n3,4'));
@@ -178,6 +187,28 @@ test.describe('Validator', () => {
       schema
     );
     expect(issues.some((i) => i.code === 'missing_required_column' && i.column === 'website')).toBe(true);
+  });
+
+  test('a required column missing from the header flags every row as an error, not just the header', async ({ page }) => {
+    await gotoApp(page);
+    // "website" is required by the schema but absent from this header — a
+    // file like this must not be able to report every row as valid.
+    const header = ['business_name', 'category'];
+    const rowIssues = await page.evaluate(
+      ({ h, s }) => window.Validator.validateRow(['Acme', 'Retail'], 0, h, s, []),
+      { h: header, s: schema }
+    );
+    expect(rowIssues.some((i) => i.code === 'missing_required_value' && i.column === 'website')).toBe(true);
+
+    const summary = await page.evaluate(
+      ({ h, s }) => {
+        const parsed = { header: h, rows: [['Acme', 'Retail'], ['Beta', 'Services']], raggedRowIndices: [] };
+        return window.Validator.validateFile(parsed, s).summary;
+      },
+      { h: header, s: schema }
+    );
+    expect(summary.errorRows).toBe(2);
+    expect(summary.validRows).toBe(0);
   });
 
   test('flags an empty required value', async ({ page }) => {
@@ -351,6 +382,37 @@ test.describe('Dedupe', () => {
     );
     expect(issues).toHaveLength(0);
   });
+
+  test('an exact-row duplicate check is case-sensitive, unlike unique-column dedupe', async ({ page }) => {
+    await gotoApp(page);
+    // "Exact" duplicates must be literal matches — case-insensitive matching
+    // belongs only to columns explicitly marked `unique`, checked above.
+    const issues = await page.evaluate(() =>
+      window.Dedupe.findExactRowDuplicates(
+        [
+          ['Alice', 'Memo'],
+          ['alice', 'memo'],
+        ],
+        []
+      )
+    );
+    expect(issues).toHaveLength(0);
+  });
+
+  test('an exact-row duplicate key cannot collide across a field boundary', async ({ page }) => {
+    await gotoApp(page);
+    // ['ab', 'c'] and ['a', 'bc'] must never be treated as the same row.
+    const issues = await page.evaluate(() =>
+      window.Dedupe.findExactRowDuplicates(
+        [
+          ['ab', 'c'],
+          ['a', 'bc'],
+        ],
+        []
+      )
+    );
+    expect(issues).toHaveLength(0);
+  });
 });
 
 // ---------------------------------------------------------------------
@@ -371,6 +433,32 @@ test.describe('Report', () => {
     expect(lines[0]).toBe('name,QC_Flags');
     expect(lines[1]).toBe('Acme,');
     expect(lines[2]).toBe(',missing_required_value');
+  });
+
+  test('buildCleanedCsv pads a short ragged row so every exported line has a consistent column count', async ({ page }) => {
+    await gotoApp(page);
+    const csv = await page.evaluate(() => {
+      const parsed = { header: ['a', 'b', 'c'], rows: [['1', '2']] }; // one field short
+      const rowIssues = [
+        { code: 'malformed_row', severity: 'error', rowIndex: 0, column: null, value: 2 },
+      ];
+      return window.Report.buildCleanedCsv(parsed, rowIssues, []);
+    });
+    const lines = csv.trim().split('\r\n');
+    expect(lines[1]).toBe('1,2,,malformed_row');
+  });
+
+  test('buildCleanedCsv truncates a long ragged row to the header width', async ({ page }) => {
+    await gotoApp(page);
+    const csv = await page.evaluate(() => {
+      const parsed = { header: ['a', 'b'], rows: [['1', '2', '3', '4']] }; // two fields extra
+      const rowIssues = [
+        { code: 'malformed_row', severity: 'error', rowIndex: 0, column: null, value: 4 },
+      ];
+      return window.Report.buildCleanedCsv(parsed, rowIssues, []);
+    });
+    const lines = csv.trim().split('\r\n');
+    expect(lines[1]).toBe('1,2,malformed_row');
   });
 
   test('buildIssuesCsv lists header, row, and dedupe issues with their severity', async ({ page }) => {
@@ -589,6 +677,34 @@ test.describe('App integration', () => {
       buffer: invalidBytes,
     });
     await expect(page.locator('[data-testid="encoding-warning"]')).toBeVisible();
+  });
+
+  test('switching the encoding dropdown after upload re-decodes and re-validates the same file', async ({ page }) => {
+    await gotoApp(page);
+    // Byte 0xE9 alone is invalid UTF-8 (decodes to a replacement character,
+    // which the validator flags as an error) but is a valid Windows-1252
+    // "é" — so switching encodings must change the validation outcome, not
+    // just the warning banner, or the recovery path the banner recommends
+    // would silently do nothing.
+    const bytes = Buffer.concat([
+      Buffer.from('business_name,website,category,province_territory,canadian_ownership_pct,notes\n'),
+      Buffer.from('Caf'),
+      Buffer.from([0xe9]),
+      Buffer.from(' Life,https://cafelife.ca,Retail,ON,,\n'),
+    ]);
+    await page.setInputFiles('[data-testid="file-input"]', {
+      name: 'accented.csv',
+      mimeType: 'text/csv',
+      buffer: bytes,
+    });
+    await expect(page.locator('[data-testid="results"]')).toBeVisible();
+    await expect(page.locator('[data-testid="encoding-warning"]')).toBeVisible();
+    await expect(page.locator('[data-testid="stat-errors"]')).toHaveText('1');
+
+    await page.selectOption('[data-testid="encoding-select"]', 'windows-1252');
+    await expect(page.locator('[data-testid="encoding-warning"]')).toBeHidden();
+    await expect(page.locator('[data-testid="stat-errors"]')).toHaveText('0');
+    await expect(page.locator('[data-testid="stat-valid"]')).toHaveText('1');
   });
 
   test('a clean file with no issues reports 100% valid rows and no warning banner', async ({ page }) => {
