@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quarter Call — Test Harness</title>
+<link rel="stylesheet" href="../../src/styles.css">
+</head>
+<body>
+<header>
+  <h1>Quarter Call</h1>
+  <p>Real historical stock charts. Call the next quarter: Up, Down, or Flat.</p>
+</header>
+
+<div id="no-data-banner" data-testid="no-data-banner" hidden>
+  <p><strong>No data yet.</strong> Run the fetch script once on your own machine.</p>
+  <code>pip install -r requirements.txt &amp;&amp; python3 fetch_data.py</code>
+  <p>Then reload this page.</p>
+</div>
+
+<main id="app" data-testid="app">
+  <nav data-testid="mode-tabs">
+    <button data-testid="tab-practice" aria-selected="true" type="button">Practice</button>
+    <button data-testid="tab-daily" aria-selected="false" type="button">Daily Challenge</button>
+  </nav>
+
+  <section data-testid="round-panel">
+    <div id="progress-indicator" data-testid="progress-indicator" hidden></div>
+    <div data-testid="round-meta">
+      <span id="ticker" data-testid="ticker"></span>
+      <span id="company" data-testid="company"></span>
+      <span id="sector-badge" data-testid="sector-badge" class="badge"></span>
+      <span id="industry-badge" data-testid="industry-badge" class="badge"></span>
+      <span id="decision-date" data-testid="decision-date"></span>
+    </div>
+
+    <canvas id="chart-canvas" data-testid="chart-canvas" width="640" height="220"></canvas>
+
+    <div data-testid="metrics">
+      <span id="metric-return" data-testid="metric-return"></span>
+      <span id="metric-vol" data-testid="metric-vol"></span>
+    </div>
+
+    <div data-testid="guess-buttons">
+      <button id="guess-up" data-testid="guess-up" type="button">Up</button>
+      <button id="guess-down" data-testid="guess-down" type="button">Down</button>
+      <button id="guess-flat" data-testid="guess-flat" type="button">Flat (±5%)</button>
+    </div>
+
+    <div data-testid="reveal-panel" hidden>
+      <div id="reveal-result" data-testid="reveal-result"></div>
+      <div id="reveal-pct" data-testid="reveal-pct"></div>
+      <canvas id="reveal-canvas" data-testid="reveal-canvas" width="640" height="220"></canvas>
+      <div id="ai-note" data-testid="ai-note"></div>
+      <button id="next-round-btn" data-testid="next-round-btn" type="button">Next round</button>
+    </div>
+
+    <div data-testid="api-key-row">
+      <label for="api-key-input">Anthropic API key (optional, session-only, never saved):</label>
+      <input id="api-key-input" data-testid="api-key-input" type="password" autocomplete="off" placeholder="sk-ant-...">
+    </div>
+
+    <div id="daily-complete-banner" data-testid="daily-complete-banner" hidden></div>
+    <div id="share-result" data-testid="share-result" hidden></div>
+  </section>
+
+  <aside data-testid="stats-panel">
+    <span id="stat-streak" data-testid="stat-streak"></span>
+    <span id="stat-best-streak" data-testid="stat-best-streak"></span>
+    <span id="stat-accuracy" data-testid="stat-accuracy"></span>
+    <div id="sector-stats" data-testid="sector-stats"></div>
+  </aside>
+</main>
+
+<footer>Test harness — loads fixture data instead of the real (shipped-null) dataset.</footer>
+
+<script src="rounds-fixture.js"></script>
+<script src="../../src/chart.js"></script>
+<script src="../../src/game.js"></script>
+<script src="../../src/stats.js"></script>
+<script src="../../src/ai.js"></script>
+<script src="../../src/app.js"></script>
+</body>
+</html>

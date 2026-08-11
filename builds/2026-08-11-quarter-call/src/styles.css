@@ -1,0 +1,297 @@
+:root {
+  --bg: #0f1420;
+  --bg-panel: #171e2e;
+  --bg-panel-alt: #1e2740;
+  --border: #2a3552;
+  --text: #e6ebf5;
+  --text-dim: #9aa5bd;
+  --accent: #4fd1c5;
+  --up: #48bb78;
+  --down: #f56565;
+  --flat: #ecc94b;
+  --radius: 10px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --max-width: 900px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Author rules on `main`/section selectors below set their own `display`,
+   which otherwise wins over the UA stylesheet's [hidden] { display: none }
+   because author origin always beats UA origin regardless of specificity. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+header {
+  padding: var(--space-4) var(--space-3) var(--space-2);
+  text-align: center;
+}
+
+header h1 {
+  margin: 0 0 var(--space-1);
+  font-size: 1.75rem;
+}
+
+header p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+#no-data-banner {
+  max-width: var(--max-width);
+  margin: var(--space-4) auto;
+  padding: var(--space-4);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+#no-data-banner code {
+  display: block;
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg);
+  border-radius: 6px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  color: var(--accent);
+}
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-3) var(--space-5);
+  display: grid;
+  gap: var(--space-3);
+}
+
+nav[data-testid="mode-tabs"] {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+nav[data-testid="mode-tabs"] button {
+  flex: 1;
+  max-width: 220px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-panel);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+nav[data-testid="mode-tabs"] button[aria-selected="true"] {
+  background: var(--accent);
+  color: #08201d;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+section[data-testid="round-panel"] {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+#progress-indicator {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: var(--space-2);
+}
+
+div[data-testid="round-meta"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+#ticker {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+#company {
+  color: var(--text-dim);
+}
+
+.badge {
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background: var(--bg-panel-alt);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+  background: var(--bg-panel-alt);
+  border-radius: var(--radius);
+}
+
+div[data-testid="metrics"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+#decision-date {
+  width: 100%;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+div[data-testid="guess-buttons"] {
+  display: flex;
+  gap: var(--space-2);
+}
+
+div[data-testid="guess-buttons"] button {
+  flex: 1;
+  padding: var(--space-3);
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--text);
+  background: var(--bg-panel-alt);
+}
+
+#guess-up {
+  border-color: var(--up);
+}
+#guess-down {
+  border-color: var(--down);
+}
+#guess-flat {
+  border-color: var(--flat);
+}
+
+div[data-testid="reveal-panel"] {
+  display: grid;
+  gap: var(--space-2);
+}
+
+#reveal-result[data-outcome="correct"] {
+  color: var(--up);
+  font-weight: 700;
+}
+#reveal-result[data-outcome="wrong"] {
+  color: var(--down);
+  font-weight: 700;
+}
+
+#ai-note {
+  padding: var(--space-2);
+  background: var(--bg-panel-alt);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+div[data-testid="api-key-row"] {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+#api-key-input {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-alt);
+  color: var(--text);
+}
+
+#next-round-btn {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #08201d;
+  font-weight: 600;
+  cursor: pointer;
+  justify-self: start;
+}
+
+aside[data-testid="stats-panel"] {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: 0.9rem;
+}
+
+div[data-testid="sector-stats"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--text-dim);
+}
+
+#daily-complete-banner {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  text-align: center;
+}
+
+#share-result {
+  white-space: pre-line;
+  text-align: center;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  padding: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.4rem;
+  }
+  div[data-testid="guess-buttons"] {
+    flex-direction: column;
+  }
+  canvas {
+    height: 180px;
+  }
+}

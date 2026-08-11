@@ -1,0 +1,12 @@
+{
+  "name": "quarter-call",
+  "version": "1.0.0",
+  "description": "Real-historical-data stock chart direction quiz game.",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}
