@@ -1,0 +1,3 @@
+# Snipvault is stdlib-only. The optional Claude Haiku calls in src/enrich.py
+# use urllib.request rather than the anthropic package, so no third-party
+# dependency is required to run this tool.
