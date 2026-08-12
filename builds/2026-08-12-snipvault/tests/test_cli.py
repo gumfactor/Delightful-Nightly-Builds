@@ -96,6 +96,24 @@ def test_render_command_writes_file(tmp_path, capsys):
     assert "<!DOCTYPE html>" in output_path.read_text()
 
 
+def test_render_command_orders_by_usage_then_recency(tmp_path, capsys):
+    db = tmp_path / "test.db"
+    run(["add", "--title", "Rarely used", "--code", "x = 1", "--lang", "python"], db)
+    capsys.readouterr()
+    run(["add", "--title", "Frequently used", "--code", "y = 2", "--lang", "python"], db)
+    capsys.readouterr()
+    # Bump "Frequently used"'s usage_count above "Rarely used"'s (id 2 was added second, id 1 first).
+    run(["get", "2"], db)
+    run(["get", "2"], db)
+    capsys.readouterr()
+
+    output_path = tmp_path / "out.html"
+    run(["render", "--output", str(output_path)], db)
+    html = output_path.read_text()
+
+    assert html.index("Frequently used") < html.index("Rarely used")
+
+
 def test_parser_requires_a_subcommand():
     parser = build_parser()
     with pytest.raises(SystemExit):

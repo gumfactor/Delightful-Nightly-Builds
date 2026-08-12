@@ -108,6 +108,9 @@ def cmd_remove(conn, args) -> None:
 
 def cmd_render(conn, args) -> None:
     results = list_snippets(conn)
+    # PRD specifies the dashboard is sorted by usage/recency, distinct from
+    # list_snippets()'s default updated_at-only ordering used by `list`.
+    results.sort(key=lambda s: (s.usage_count, s.updated_at), reverse=True)
     html = render_html(results)
     out_path = Path(args.output)
     out_path.write_text(html, encoding="utf-8")

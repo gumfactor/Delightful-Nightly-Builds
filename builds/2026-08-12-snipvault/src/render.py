@@ -172,9 +172,40 @@ def render_html(snippets: list) -> str:
     copyBtn.textContent = 'Copy';
     copyBtn.addEventListener('click', function(evt) {{
       evt.stopPropagation();
-      navigator.clipboard && navigator.clipboard.writeText(snippet.code);
-      copyBtn.textContent = 'Copied!';
-      setTimeout(function() {{ copyBtn.textContent = 'Copy'; }}, 1200);
+
+      function showResult(ok) {{
+        copyBtn.textContent = ok ? 'Copied!' : 'Copy failed';
+        setTimeout(function() {{ copyBtn.textContent = 'Copy'; }}, 1200);
+      }}
+
+      function fallbackCopy() {{
+        // navigator.clipboard requires a secure context and is typically
+        // unavailable from a file:// origin, which is how this dashboard
+        // is opened by default — fall back to a hidden-textarea copy.
+        try {{
+          var textarea = document.createElement('textarea');
+          textarea.value = snippet.code;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          var ok = document.execCommand('copy');
+          document.body.removeChild(textarea);
+          showResult(ok);
+        }} catch (err) {{
+          showResult(false);
+        }}
+      }}
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {{
+        navigator.clipboard.writeText(snippet.code).then(
+          function() {{ showResult(true); }},
+          fallbackCopy
+        );
+      }} else {{
+        fallbackCopy();
+      }}
     }});
     card.appendChild(copyBtn);
 

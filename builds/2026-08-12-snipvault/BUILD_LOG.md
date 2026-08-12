@@ -36,11 +36,11 @@
 
 ### [09:05 UTC] Tests Written
 
-- `tests/test_db.py`, `tests/test_enrich.py`, `tests/test_render.py`, `tests/test_cli.py` — 24 tests total covering DB CRUD/search ranking/filters, language/tag/description extraction, mocked AI success + fallback paths (network error, malformed JSON, no API key — each asserted via call-count/monkeypatch, not just output inspection), render escaping (including a live `</script><script>alert(1)</script>` injection payload confirmed inert), and CLI argument handling/error paths.
+- `tests/test_db.py`, `tests/test_enrich.py`, `tests/test_render.py`, `tests/test_cli.py` — 44 tests total covering DB CRUD/search ranking/filters, language/tag/description extraction, mocked AI success + fallback paths (network error, malformed JSON, no API key — each asserted via call-count/monkeypatch, not just output inspection), render escaping (including a live `</script><script>alert(1)</script>` injection payload confirmed inert), and CLI argument handling/error paths.
 
 ### [09:12 UTC] Tests Run
 
-Tests: 24 passed, 0 failed.
+Tests: 44 passed, 0 failed.
 
 ### [09:15 UTC] Verify — Step 7
 
@@ -54,3 +54,11 @@ Tests: 24 passed, 0 failed.
 - Manual.md: CLI usage, `render` walkthrough, and the exact Skill-install copy command.
 
 Build complete. Success criteria reviewed. All tests passing.
+
+### [09:35 UTC] PR Review Fixes (Copilot)
+
+Three review comments addressed on PR #69:
+- `cmd_render` (`src/cli.py`) was passing `list_snippets()`'s default `updated_at DESC` ordering straight to `render_html()`, but the PRD specifies the dashboard should be "sorted by usage/recency." Fixed by sorting the fetched results by `(usage_count, updated_at)` descending, matching the tie-break order already used by `search_snippets`.
+- The rendered dashboard's Copy button (`src/render.py`) unconditionally showed "Copied!" regardless of whether the write actually succeeded, and `navigator.clipboard` is unreliable from a `file://` origin (not a secure context in most browsers) — exactly the primary way this dashboard is opened. Rewrote it to await `navigator.clipboard.writeText()` when available and fall back to a hidden-textarea `document.execCommand('copy')` otherwise, showing "Copy failed" if both paths fail instead of a false positive.
+- This log's own test-count entries said "24 tests / 24 passed," left over from an earlier point in the build before `tests/test_cli.py` was added — corrected to 44, matching the actual suite and the Verify section below it.
+Full suite re-run after all three fixes: still 44 passed, 0 failed.
