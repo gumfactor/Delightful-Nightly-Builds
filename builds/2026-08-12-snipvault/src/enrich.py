@@ -123,7 +123,18 @@ def _call_claude(prompt: str, api_key: str, model: str = "claude-haiku-4-5-20251
         with urllib.request.urlopen(request, timeout=15) as response:
             body = json.loads(response.read().decode("utf-8"))
         return body["content"][0]["text"]
-    except (urllib.error.URLError, TimeoutError, KeyError, IndexError, ValueError, json.JSONDecodeError):
+    except (
+        urllib.error.URLError,
+        TimeoutError,
+        KeyError,
+        IndexError,
+        TypeError,
+        ValueError,
+        json.JSONDecodeError,
+    ):
+        # TypeError covers a structurally valid but unexpected response shape
+        # (e.g. body is None, or body["content"] is None) — any malformed
+        # response must fall back, never raise.
         return None
 
 

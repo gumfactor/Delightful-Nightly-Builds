@@ -28,6 +28,17 @@ def test_add_from_file(tmp_path, capsys):
     assert "[python]" in out
 
 
+def test_add_from_file_with_explicit_source_still_detects_language(tmp_path, capsys):
+    # --source is an origin label, distinct from the file path language is
+    # detected from — an explicit --source must not shadow --file detection.
+    db = tmp_path / "test.db"
+    source_file = tmp_path / "snippet.py"
+    source_file.write_text("def foo():\n    return 1\n")
+    run(["add", "--title", "Foo func", "--file", str(source_file), "--source", "my-project"], db)
+    out = capsys.readouterr().out
+    assert "[python]" in out
+
+
 def test_add_from_stdin(tmp_path, capsys, monkeypatch):
     db = tmp_path / "test.db"
     monkeypatch.setattr("sys.stdin.read", lambda: "echo hello\n")

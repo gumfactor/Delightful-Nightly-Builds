@@ -29,9 +29,19 @@ def render_html(snippets: list) -> str:
         for s in snippets
     ]
     data_json = json.dumps(payload, ensure_ascii=False)
-    # </script> inside the JSON payload would prematurely close the data tag
-    # in HTML parsing, so escape the forward slash — JSON.parse ignores it.
-    data_json_safe = data_json.replace("</", "<\\/")
+    # Escaping only the "</" prefix is insufficient: a payload containing an
+    # HTML comment immediately followed by a script tag can drive the HTML
+    # tokenizer into its script-data (double-)escaped state, where the real
+    # closing script tag merely exits that state instead of ending the
+    # element, silently swallowing everything after it (including the
+    # bootstrap <script> block below). Replacing every "<" with its JSON
+    # unicode escape removes all raw "<" characters from the data block, so
+    # no HTML-parser state transition can ever trigger inside it. "<" cannot
+    # occur in JSON's own structural syntax, only inside a string value, so
+    # this substitution is content-preserving and JSON.parse decodes the
+    # escape back to a literal "<".
+    LT_ESCAPE = "\\" + "u003c"
+    data_json_safe = data_json.replace("<", LT_ESCAPE)
 
     return f"""<!DOCTYPE html>
 <html lang="en" data-theme="dark">

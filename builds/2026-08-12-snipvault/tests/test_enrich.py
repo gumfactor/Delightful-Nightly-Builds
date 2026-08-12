@@ -85,6 +85,30 @@ def test_enrich_snippet_success_path_uses_ai_result(monkeypatch):
     assert tags == ["ai", "tag"]
 
 
+def test_enrich_snippet_falls_back_on_structurally_malformed_response(monkeypatch):
+    # A response that is valid JSON but not the expected shape (e.g.
+    # {"content": null}) must fall back rather than raise TypeError when
+    # indexing into it.
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self):
+            return json.dumps({"content": None}).encode("utf-8")
+
+    monkeypatch.setattr("src.enrich.urllib.request.urlopen", lambda *a, **k: FakeResponse())
+
+    description, tags = enrich_snippet("def f(): pass", "python", "My func")
+
+    assert description == default_description("def f(): pass", "python")
+    assert tags == extract_tags("def f(): pass", "python")
+
+
 def test_enrich_snippet_falls_back_on_network_error(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
 

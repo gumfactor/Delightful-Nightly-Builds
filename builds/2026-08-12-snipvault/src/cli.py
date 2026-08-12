@@ -39,7 +39,10 @@ def cmd_add(conn, args) -> None:
     code, source_from_file = _read_code(args)
     source = args.source or source_from_file
 
-    language = args.lang or detect_language(source or args.title)
+    # Detect from the actual file path read, not the stored `source` label —
+    # an explicit --source (e.g. a project name) has no filename extension
+    # and would otherwise silently override --file's extension for detection.
+    language = args.lang or detect_language(source_from_file or args.title)
 
     if args.tags:
         tags = [t.strip() for t in args.tags.split(",") if t.strip()]

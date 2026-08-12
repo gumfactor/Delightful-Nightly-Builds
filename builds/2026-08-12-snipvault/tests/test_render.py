@@ -43,7 +43,22 @@ def test_render_html_script_injection_payload_is_inert_text():
     # The raw payload must never appear as an executable sibling <script> tag —
     # it must only exist inside the escaped JSON data blob.
     assert "<script>alert(1)</script>" not in html
-    assert "<\\/script><script>alert(1)<\\/script>" in html
+    assert "\\u003c/script>\\u003cscript>alert(1)\\u003c/script>" in html
+
+
+def test_render_html_escapes_every_angle_bracket_in_payload():
+    # A payload containing an HTML comment immediately followed by a script
+    # tag can otherwise drive the HTML tokenizer into a state where the
+    # template's real closing </script> tag fails to end the data element.
+    # No raw "<" may survive inside the embedded JSON segment for this to be
+    # impossible, regardless of what precedes it.
+    payload = "<!--<script>alert(1)</script>-->"
+    html = render_html([_snippet(code=payload)])
+    start = html.index('id="snippet-data">') + len('id="snippet-data">')
+    end = html.index("</script>", start)
+    data_segment = html[start:end]
+    assert "<" not in data_segment
+    assert "\\u003c" in data_segment
 
 
 def test_render_html_embeds_data_as_json_payload():
