@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Earshot — Ambient Noise Exposure Dashboard</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>Earshot</h1>
+  <p class="tagline">Ambient noise exposure dashboard — measure, classify, and track real sound levels around you.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button type="button" class="tab-btn active" data-tab-button="live">Live Meter</button>
+  <button type="button" class="tab-btn" data-tab-button="history">History</button>
+  <button type="button" class="tab-btn" data-tab-button="calibration">Calibration</button>
+</nav>
+
+<main>
+  <!-- ============ LIVE METER ============ -->
+  <section class="tab-panel active" data-tab-panel="live">
+    <div id="uncalibrated-banner" class="banner banner-warn" hidden></div>
+    <div id="mic-error" class="banner banner-error" hidden data-testid="mic-error"></div>
+
+    <div class="meter-display">
+      <div id="db-reading" class="db-reading" data-testid="db-reading">-- dB</div>
+      <div id="zone-badge" class="zone-badge" data-testid="zone-badge"></div>
+    </div>
+
+    <canvas id="live-chart" data-testid="live-chart" width="640" height="220"></canvas>
+
+    <div class="meter-controls">
+      <button type="button" id="start-meter-btn" data-testid="start-meter-btn" class="btn btn-primary">Start Measuring</button>
+      <button type="button" id="stop-meter-btn" data-testid="stop-meter-btn" class="btn btn-danger" hidden>Stop Measuring</button>
+    </div>
+
+    <div id="session-summary" class="session-summary" hidden data-testid="session-summary">
+      <p>Average: <span id="summary-avg"></span> dB(A) &nbsp;|&nbsp; Peak: <span id="summary-peak"></span> dB(A) &nbsp;|&nbsp; Duration: <span id="summary-duration"></span>s</p>
+    </div>
+
+    <div id="save-session-panel" class="save-session-panel" hidden data-testid="save-session-panel">
+      <label for="venue-input">Venue / location</label>
+      <input type="text" id="venue-input" data-testid="venue-input" placeholder="e.g. Downtown coffee shop" />
+      <label for="note-input">Note (optional)</label>
+      <textarea id="note-input" data-testid="note-input" rows="2" placeholder="Any context worth remembering"></textarea>
+      <p id="venue-validation" class="validation-message" hidden></p>
+      <div class="button-row">
+        <button type="button" id="save-session-btn" data-testid="save-session-btn" class="btn btn-primary">Save Session</button>
+        <button type="button" id="discard-session-btn" data-testid="discard-session-btn" class="btn btn-secondary">Discard</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="tab-panel" data-tab-panel="history">
+    <div id="daily-dose-summary" class="banner banner-info" data-testid="daily-dose-summary"></div>
+
+    <input type="search" id="history-search" data-testid="history-search" placeholder="Search by venue…" />
+
+    <table id="history-table" data-testid="history-table">
+      <thead>
+        <tr>
+          <th data-sort-key="endedAt">Date</th>
+          <th data-sort-key="venue">Venue</th>
+          <th data-sort-key="avgDb">Avg dB(A)</th>
+          <th data-sort-key="peakDb">Peak dB(A)</th>
+          <th data-sort-key="durationSec">Duration</th>
+          <th data-sort-key="doseDeltaPct">Dose %</th>
+        </tr>
+      </thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
+    <p id="history-empty" class="empty-message" hidden>No sessions saved yet — start a measurement on the Live Meter tab.</p>
+
+    <h2>Trend</h2>
+    <canvas id="trend-chart" data-testid="trend-chart" width="640" height="160"></canvas>
+
+    <div id="session-detail" class="session-detail" hidden data-testid="session-detail">
+      <h2 id="detail-venue"></h2>
+      <p id="detail-note" class="detail-note"></p>
+      <p>Avg: <span id="detail-avg"></span> dB(A) &nbsp;|&nbsp; Peak: <span id="detail-peak"></span> dB(A) &nbsp;|&nbsp; Duration: <span id="detail-duration"></span> &nbsp;|&nbsp; Dose: <span id="detail-dose"></span></p>
+      <canvas id="detail-chart" data-testid="detail-chart" width="640" height="180"></canvas>
+
+      <div class="ai-briefing-panel">
+        <label for="ai-key-input">Anthropic API key (optional, session-only, never saved)</label>
+        <input type="password" id="ai-key-input" data-testid="ai-key-input" placeholder="sk-ant-…" autocomplete="off" />
+        <button type="button" id="ai-briefing-btn" data-testid="ai-briefing-btn" class="btn btn-secondary">Get AI Briefing</button>
+        <p id="ai-briefing-text" data-testid="ai-briefing-text"></p>
+      </div>
+
+      <button type="button" id="delete-session-btn" data-testid="delete-session-btn" class="btn btn-danger">Delete Session</button>
+    </div>
+  </section>
+
+  <!-- ============ CALIBRATION ============ -->
+  <section class="tab-panel" data-tab-panel="calibration">
+    <p class="explainer">
+      Microphone gain varies by device, so raw readings are only relative until calibrated.
+      To calibrate: use a known reference (another sound meter, or a documented reference like
+      "normal conversation ≈ 60 dB"), start sampling below, and enter that reference value while
+      the same sound is playing.
+    </p>
+    <div id="calibration-status" class="banner banner-info" data-testid="calibration-status"></div>
+
+    <div class="calib-controls">
+      <button type="button" id="calib-start-btn" data-testid="calib-start-btn" class="btn btn-primary">Start Calibration Sampling</button>
+      <button type="button" id="calib-stop-btn" data-testid="calib-stop-btn" class="btn btn-danger" hidden>Stop Sampling</button>
+    </div>
+    <p id="calib-raw-reading" data-testid="calib-raw-reading"></p>
+
+    <label for="calib-reference-input">Known reference level (dB)</label>
+    <input type="number" id="calib-reference-input" data-testid="calib-reference-input" step="0.1" />
+    <p id="calib-validation" class="validation-message" hidden data-testid="calib-validation"></p>
+    <div class="button-row">
+      <button type="button" id="calib-set-btn" data-testid="calib-set-btn" class="btn btn-primary">Set Offset</button>
+      <button type="button" id="calib-reset-btn" data-testid="calib-reset-btn" class="btn btn-secondary">Reset Calibration</button>
+    </div>
+  </section>
+</main>
+
+<script src="src/audio-math.js"></script>
+<script src="src/storage.js"></script>
+<script src="src/chart.js"></script>
+<script src="src/audio-engine.js"></script>
+<script src="src/ai-briefing.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "earshot",
+  "version": "1.0.0",
+  "description": "Ambient noise exposure dashboard — live microphone-based sound level meter, calibration, and venue-tagged exposure history",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
