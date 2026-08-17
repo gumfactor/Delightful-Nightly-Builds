@@ -1,0 +1,9 @@
+name,category,description,city,province,website,verdict,confidence,evidence
+Northern Bloom Skincare,Skincare,"Cold-pressed facial oils made in small batches from Canadian botanicals.",Halifax,Nova Scotia,northernbloom.ca,canadian,0.95,"Headquartered and manufactured in Halifax, Nova Scotia; no foreign parent company found."
+Birchwood Skin Co,Skincare,"Small-batch soap and skincare bars using Canadian tallow and botanicals.",Guelph,Ontario,birchwoodskin.ca,canadian,0.9,"Independently owned and operated in Guelph, Ontario since 2014."
+Maple Grove Botanicals,Skincare,"Plant-based moisturizers formulated and bottled in Canada.",Kelowna,British Columbia,maplegrovebotanicals.ca,canadian,0.85,"Wikidata lists country of headquarters as Canada."
+GlobalGlow Cosmetics,Skincare,"Mass-market skincare line sold in big-box retailers.",New York,,globalglow.com,foreign,0.9,"Parent company headquartered in the United States."
+Cedar & Stone Coffee Roasters,Coffee,"Small-batch coffee roasted in-house, sourced through direct-trade relationships.",Toronto,Ontario,cedarstonecoffee.ca,canadian,0.92,"Independently owned roastery based in Toronto, Ontario."
+Trailhead Coffee Supply,Coffee,"Coffee subscription service using Canadian-roasted beans.",Calgary,Alberta,trailheadcoffee.ca,canadian,0.8,"Registered and operated in Calgary, Alberta."
+Harbourfront Woodworks,Home Goods,"Handmade cutting boards and kitchen tools from reclaimed Canadian hardwood.",Halifax,Nova Scotia,harbourfrontwoodworks.ca,uncertain,0.4,"Ownership structure unclear; social presence suggests Canadian operation but no confirming record found."
+Prairie Wool Co,Home Goods,"Wool blankets woven from Canadian-raised sheep.",Regina,Saskatchewan,prairiewool.ca,canadian,0.88,"Family-owned mill operating in Regina, Saskatchewan since 1976."
