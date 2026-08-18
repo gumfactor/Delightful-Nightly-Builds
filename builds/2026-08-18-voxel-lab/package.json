@@ -1,0 +1,11 @@
+{
+  "name": "voxel-lab",
+  "version": "1.0.0",
+  "description": "Interactive trainer for the fMRI preprocessing pipeline and the multiple-comparisons problem",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
