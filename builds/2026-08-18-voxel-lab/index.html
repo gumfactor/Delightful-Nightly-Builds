@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voxel Lab — fMRI Pipeline &amp; Multiple Comparisons Trainer</title>
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>Voxel Lab</h1>
+  <p class="subtitle">An interactive trainer for the fMRI preprocessing pipeline and the multiple-comparisons problem — every visual is computed live from synthetic data, never real scans.</p>
+</header>
+
+<nav class="tabs" data-testid="tab-nav">
+  <button class="tab-btn active" data-tab="pipeline" data-testid="tab-pipeline">Pipeline</button>
+  <button class="tab-btn" data-tab="mc" data-testid="tab-mc">Multiple Comparisons Lab</button>
+  <button class="tab-btn" data-tab="quiz" data-testid="tab-quiz">Quiz</button>
+</nav>
+
+<main>
+  <section id="panel-pipeline" class="panel active" data-testid="panel-pipeline">
+    <div class="step-nav" data-testid="step-nav"></div>
+    <h2 data-testid="step-title"></h2>
+    <p data-testid="step-explanation"></p>
+    <div class="canvas-wrap">
+      <canvas data-testid="pipeline-canvas" width="640" height="320"></canvas>
+      <div class="phase-toggle">
+        <button class="phase-btn active" data-testid="phase-before">Before</button>
+        <button class="phase-btn" data-testid="phase-after">After</button>
+      </div>
+    </div>
+    <p class="pitfall" data-testid="step-pitfall"></p>
+  </section>
+
+  <section id="panel-mc" class="panel" data-testid="panel-mc">
+    <h2>Multiple Comparisons Lab</h2>
+    <p>Generates pure-noise voxels (no true signal anywhere) and shows how many survive as "significant" false positives under different correction methods — the same noise draw is tested under all four methods each trial, for a fair comparison.</p>
+    <div class="controls">
+      <label>Voxel count
+        <input type="number" data-testid="mc-voxel-count" value="5000" min="100" max="20000" step="100">
+      </label>
+      <label>Alpha
+        <input type="number" data-testid="mc-alpha" value="0.05" min="0.01" max="0.1" step="0.01">
+      </label>
+      <label>Trials
+        <input type="number" data-testid="mc-trials" value="50" min="1" max="200">
+      </label>
+      <button class="run-btn" data-testid="mc-run">Run Simulation</button>
+    </div>
+    <div class="mc-mean" data-testid="mc-mean"></div>
+    <canvas class="mc-bar-chart" data-testid="mc-bar-chart" width="640" height="220"></canvas>
+    <h3>Last trial: which voxels survived under each method</h3>
+    <div class="mc-slices" data-testid="mc-slices"></div>
+  </section>
+
+  <section id="panel-quiz" class="panel" data-testid="panel-quiz">
+    <h2>Quiz</h2>
+    <div class="quiz-progress" data-testid="quiz-progress"></div>
+    <div class="quiz-question" data-testid="quiz-question"></div>
+    <div class="quiz-choices" data-testid="quiz-choices"></div>
+    <div class="quiz-feedback" data-testid="quiz-feedback"></div>
+    <button class="run-btn" data-testid="quiz-next" disabled>Next</button>
+    <div class="quiz-final" data-testid="quiz-final" hidden></div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  <p>All data on this page is synthetic and generated in your browser. Nothing is sent anywhere.</p>
+</footer>
+
+<script src="src/stats.js"></script>
+<script src="src/mc-sim.js"></script>
+<script src="src/pipeline.js"></script>
+<script src="src/quiz.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
