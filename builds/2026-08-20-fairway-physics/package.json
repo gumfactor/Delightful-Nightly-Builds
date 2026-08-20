@@ -1,0 +1,11 @@
+{
+  "name": "fairway-physics",
+  "version": "1.0.0",
+  "description": "Physics-based golf shot-shaping puzzle game — pick a club, shape a shot, read the wind",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

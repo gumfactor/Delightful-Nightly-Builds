@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fairway Physics</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>⛳ Fairway Physics</h1>
+    <button id="statsBtn" data-testid="stats-btn" class="secondary-btn">Stats</button>
+  </header>
+
+  <div id="statsPanel" data-testid="stats-panel" class="panel hidden">
+    <h2>Your Stats</h2>
+    <p>Rounds completed: <span id="roundsCompleted" data-testid="rounds-completed">0</span></p>
+    <p>Best round score: <span id="bestRoundScore" data-testid="best-round-score">—</span></p>
+    <p>Practice holes completed: <span id="practiceAttempts" data-testid="practice-attempts">0</span></p>
+    <table id="holeAverageTable" data-testid="hole-average-table">
+      <thead><tr><th>Hole</th><th>Par</th><th>Avg Strokes</th></tr></thead>
+      <tbody id="holeAverageBody"></tbody>
+    </table>
+    <button id="closeStatsBtn" class="secondary-btn">Close</button>
+  </div>
+
+  <div id="modeScreen" data-testid="mode-screen" class="panel">
+    <h2>Choose a Mode</h2>
+    <button id="dailyModeBtn" data-testid="mode-daily-btn" class="primary-btn">Play Daily Round</button>
+    <div class="practice-picker">
+      <label for="practiceHoleSelect">Practice a hole:</label>
+      <select id="practiceHoleSelect" data-testid="practice-hole-select"></select>
+      <button id="startPracticeBtn" data-testid="practice-start-btn" class="primary-btn">Start Practice</button>
+    </div>
+    <p id="dailyCompletedMessage" data-testid="daily-completed-message" class="hidden">
+      You already finished today's Daily Round. Come back tomorrow, or play Practice mode.
+    </p>
+    <button id="viewDailyResultBtn" data-testid="view-daily-result-btn" class="secondary-btn hidden">View Today's Result</button>
+  </div>
+
+  <main id="gameScreen" data-testid="game-screen" class="hidden">
+    <div class="hole-info">
+      <h2 id="holeName" data-testid="hole-name"></h2>
+      <p>
+        Par <span id="holePar" data-testid="hole-par"></span> ·
+        <span id="holeYardage" data-testid="hole-yardage"></span> yds ·
+        Stroke <span id="strokeCount" data-testid="stroke-count">1</span>
+      </p>
+      <p>
+        Distance to pin: <span id="distanceToPin" data-testid="distance-to-pin"></span> yds ·
+        Lie: <span id="lieLabel" data-testid="lie-label">tee</span>
+      </p>
+      <p id="windDisplay" data-testid="wind-display"></p>
+      <button id="shuffleWindBtn" data-testid="shuffle-wind-btn" class="secondary-btn hidden">Shuffle Wind</button>
+      <p id="shotMessage" data-testid="shot-message"></p>
+    </div>
+
+    <canvas id="courseCanvas" data-testid="course-canvas" width="360" height="520"></canvas>
+
+    <div id="shotControls" data-testid="shot-controls" class="controls">
+      <label for="clubSelect">Club</label>
+      <select id="clubSelect" data-testid="club-select"></select>
+
+      <label for="powerSlider">Power (<span id="powerValue">80</span>%)</label>
+      <input type="range" id="powerSlider" data-testid="power-slider" min="0" max="100" value="80" />
+
+      <label for="aimSlider">Aim (<span id="aimValue">0</span>°)</label>
+      <input type="range" id="aimSlider" data-testid="aim-slider" min="-30" max="30" value="0" />
+
+      <label for="shapeSelect">Shot Shape</label>
+      <select id="shapeSelect" data-testid="shape-select">
+        <option value="straight">Straight</option>
+        <option value="draw">Draw</option>
+        <option value="fade">Fade</option>
+      </select>
+
+      <button id="shotBtn" data-testid="shot-btn" class="primary-btn">Take Shot</button>
+    </div>
+
+    <div id="puttControls" data-testid="putt-controls" class="controls hidden">
+      <label for="puttPowerSlider">Putt Power (<span id="puttPowerValue">50</span>%)</label>
+      <input type="range" id="puttPowerSlider" data-testid="putt-power-slider" min="0" max="100" value="50" />
+
+      <label for="puttAimSlider">Break Aim (<span id="puttAimValue">0</span>°)</label>
+      <input type="range" id="puttAimSlider" data-testid="putt-aim-slider" min="-15" max="15" value="0" />
+
+      <button id="puttBtn" data-testid="putt-btn" class="primary-btn">Putt</button>
+    </div>
+
+    <div id="caddiePanel" class="panel">
+      <h3>Ask the Caddie</h3>
+      <input type="password" id="apiKeyInput" data-testid="api-key-input" placeholder="Anthropic API key (optional, session only)" />
+      <button id="caddieBtn" data-testid="caddie-btn" class="secondary-btn">Ask the Caddie</button>
+      <p id="caddieTip" data-testid="caddie-tip"></p>
+    </div>
+  </main>
+
+  <div id="holeCompletePanel" data-testid="hole-complete-panel" class="panel hidden">
+    <h2 id="holeResultLabel" data-testid="hole-result-label"></h2>
+    <button id="continueBtn" data-testid="continue-btn" class="primary-btn">Continue</button>
+  </div>
+
+  <div id="scorecardPanel" data-testid="scorecard-panel" class="panel hidden">
+    <h2>Round Complete</h2>
+    <table id="scorecardTable" data-testid="scorecard-table">
+      <thead><tr><th>Hole</th><th>Par</th><th>Strokes</th><th>Score</th></tr></thead>
+      <tbody id="scorecardBody"></tbody>
+    </table>
+    <p>Total: <span id="roundTotal" data-testid="round-total"></span></p>
+    <textarea id="shareText" data-testid="share-text" readonly></textarea>
+    <button id="copyShareBtn" data-testid="copy-share-btn" class="secondary-btn">Copy Result</button>
+    <button id="backToMenuBtn" data-testid="back-to-menu-btn" class="primary-btn">Back to Menu</button>
+  </div>
+
+  <script src="src/engine.js"></script>
+  <script src="src/course-data.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
