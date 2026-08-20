@@ -1,0 +1,6 @@
+node_modules/
+test-results/
+playwright-report/
+manual_check.js
+pixel_check.js
+manual_qa_*.png
