@@ -1,0 +1,6 @@
+# Secret Sweep is stdlib-only. It shells out to the user's own local `git`
+# binary and, optionally, calls the Anthropic API directly via urllib —
+# no third-party Python packages are required.
+#
+# Development/testing only:
+pytest>=7.0
