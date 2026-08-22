@@ -1,0 +1,5 @@
+# Renewal Radar core is stdlib-only (sqlite3, ssl, socket, urllib, argparse, datetime).
+# No third-party runtime dependencies.
+#
+# Dev/test-only dependency, not required to run the tool:
+pytest>=7.4
