@@ -35,3 +35,5 @@
 [02:30 UTC] Step 9: `builds/index.md` updated — new catalog row, Stats block, Last 7 Builds section.
 
 Build complete. Success criteria reviewed. All tests passing.
+
+[08:30 UTC] Post-PR review: Codex (automated review bot) flagged a real bug in `build_report_payload` (PR #79, `src/report.py:36`) — the allocation-by-asset-class aggregation summed *signed* `market_value` per security type, so a long and a short position of the same type would net against each other before the client-side chart applied `Math.abs()`, understating gross exposure (e.g. a $10k long + $9k short STK pair would show as $1k instead of $19k). This also disagreed with `build_aggregate_summary`, which already summed absolute values correctly for the AI-briefing prompt. Verified the finding by reading the code, fixed by summing `abs(market_value)` in `build_report_payload` to match, and added `test_build_report_payload_allocation_uses_gross_not_net_exposure` as a dedicated regression test. Tests: 42 passed, 0 failed. Pushed as a follow-up commit.

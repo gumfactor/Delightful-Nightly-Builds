@@ -33,7 +33,9 @@ def build_report_payload(snapshots: list[dict[str, Any]], ai_note: str | None) -
     if latest is not None:
         allocation: dict[str, float] = {}
         for position in latest["positions"]:
-            allocation[position["sec_type"]] = allocation.get(position["sec_type"], 0.0) + position["market_value"]
+            allocation[position["sec_type"]] = allocation.get(position["sec_type"], 0.0) + abs(
+                position["market_value"]
+            )
 
         previous = snapshots[-2] if len(snapshots) > 1 else None
         day_change_pct = 0.0

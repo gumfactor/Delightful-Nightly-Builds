@@ -92,6 +92,35 @@ def test_build_report_payload_groups_allocation_by_sec_type():
     assert payload["latest"]["allocation"] == {"STK": 450.0}
 
 
+def test_build_report_payload_allocation_uses_gross_not_net_exposure():
+    # A long and a short position of the same security type must add up as
+    # gross exposure ($19k), not net to a much smaller figure ($1k) — a short
+    # position's negative market_value must never cancel out a long one.
+    snapshots = [
+        {
+            "snapshot_date": "2026-08-20",
+            "net_liquidation": 10000.0,
+            "total_cash": 5000.0,
+            "unrealized_pnl": 0.0,
+            "realized_pnl": 0.0,
+            "positions": [
+                {
+                    "symbol": "AAPL", "sec_type": "STK", "currency": "USD", "exchange": "NASDAQ",
+                    "quantity": 100.0, "avg_cost": 100.0, "market_price": 100.0,
+                    "market_value": 10000.0, "unrealized_pnl": 0.0,
+                },
+                {
+                    "symbol": "TSLA", "sec_type": "STK", "currency": "USD", "exchange": "NASDAQ",
+                    "quantity": -50.0, "avg_cost": 180.0, "market_price": 180.0,
+                    "market_value": -9000.0, "unrealized_pnl": 0.0,
+                },
+            ],
+        },
+    ]
+    payload = report.build_report_payload(snapshots, ai_note=None)
+    assert payload["latest"]["allocation"] == {"STK": 19000.0}
+
+
 def test_build_aggregate_summary_contains_no_raw_dollar_figures():
     summary = report.build_aggregate_summary(sample_snapshots())
     serialized = json.dumps(summary)
