@@ -1,0 +1,15 @@
+Approach
+
+We will recruit community volunteers through a standard flyer-and-referral protocol and randomize participants to a stress or control condition using a validated psychosocial stress induction procedure. Data will be collected across two lab visits, with all physiological and behavioral measures scored by raters blind to condition assignment.
+
+Broader Impacts
+
+This project's broader impact extends beyond the immediate empirical question: the training pipeline built for this proposal is designed for outreach to underrepresented students entering affective and forensic neuroscience, and every analysis script will be released for public dissemination and reuse by the broader research community. The approach is intentionally broadly applicable to any lab studying stress and social cognition, not just this one.
+
+Data Management Plan
+
+All de-identified behavioral and physiological data will be deposited in a public repository within twelve months of study completion, consistent with a standard data sharing agreement. Raw identifiable data will be retained locally for a five-year retention period before secure deletion, per institutional policy.
+
+Budget Justification
+
+Personnel costs account for the majority of the requested budget: a 0.3 FTE postdoctoral researcher, a 0.5 FTE graduate research assistant, and fringe benefits calculated at the institution's federally negotiated rate. Direct costs also include participant compensation of $40 per session, approved by Fictional Lakeshore University's IRB in 2027.

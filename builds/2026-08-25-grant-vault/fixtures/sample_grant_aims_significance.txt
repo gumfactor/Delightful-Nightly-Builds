@@ -1,0 +1,13 @@
+Specific Aims
+
+This proposal will test the central hypothesis that stress-induced changes in prefrontal-amygdala connectivity predict individual differences in empathic accuracy. Specific Aim 1 will characterize resting-state connectivity in a sample of adults under acute psychosocial stress. Specific Aim 2 will test whether connectivity changes mediate the relationship between stress reactivity and empathic accuracy during a validated behavioral task.
+
+The requested budget for this three-year effort is $742,500, with data collection beginning in 2027 and concluding in 2029 under the direction of Dr. Amara Voss at Fictional Lakeshore University.
+
+Significance
+
+Understanding how acute stress reshapes social cognition addresses a critical gap at the intersection of affective neuroscience and forensic psychology. This work has broad public health relevance because impaired empathic accuracy under stress is implicated in a wide range of interpersonal and occupational outcomes, and a generalizable framework for measuring this relationship would be broadly applicable across clinical, forensic, and organizational settings.
+
+Innovation
+
+This proposal departs from prior work by combining real-time psychophysiological stress induction with a novel, ecologically validated empathic-accuracy paradigm rather than static self-report measures. The innovation of this proposal lies in its translational potential: a framework built to generalize across forensic and clinical populations rather than a single narrow sample.
