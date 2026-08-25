@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grant Vault</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --bg-elevated: #1a1d24;
+    --border: #2a2e37;
+    --text: #e6e8eb;
+    --text-dim: #9aa1ac;
+    --accent: #5b9dff;
+    --high: #3ecf8e;
+    --medium: #f2b134;
+    --low: #f2596b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header { padding: 1.5rem 1rem; border-bottom: 1px solid var(--border); }
+  h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
+  .subtitle { color: var(--text-dim); font-size: 0.9rem; }
+  main { max-width: 960px; margin: 0 auto; padding: 1rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  input[type="search"] {
+    flex: 1 1 240px;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 1rem;
+  }
+  .tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+  .tab {
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .tab[aria-selected="true"] { background: var(--accent); color: #05070a; border-color: var(--accent); }
+  .chunk-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .chunk-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-dim); }
+  .badge { padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 600; }
+  .badge-high { background: rgba(62,207,142,0.15); color: var(--high); }
+  .badge-medium { background: rgba(242,177,52,0.15); color: var(--medium); }
+  .badge-low { background: rgba(242,89,107,0.15); color: var(--low); }
+  .chunk-text { white-space: pre-wrap; margin: 0 0 0.6rem; }
+  .chunk-summary { font-style: italic; color: var(--text-dim); margin: 0 0 0.6rem; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.6rem; }
+  .tag-chip { font-size: 0.75rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; }
+  .tag-chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  button.copy-btn {
+    font-size: 0.8rem; padding: 0.3rem 0.7rem; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    cursor: pointer;
+  }
+  .empty-state { color: var(--text-dim); text-align: center; padding: 2rem 0; }
+  @media (max-width: 480px) {
+    h1 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Grant Vault</h1>
+  <p class="subtitle">2 document(s) &middot; 15 chunk(s) &middot; generated 2026-08-25 08:31 UTC</p>
+</header>
+<main>
+  <div class="controls">
+    <input type="search" id="search-box" placeholder="Search your grant language..." aria-label="Search chunks">
+  </div>
+  <div class="tabs" id="section-tabs" role="tablist" aria-label="Filter by section"></div>
+  <div class="tabs" id="tag-chips" role="group" aria-label="Filter by tag"></div>
+  <div id="results"></div>
+</main>
+<script type="application/json" id="chunk-data">[{"id": 1, "document_id": 1, "chunk_index": 0, "section_type": "Specific Aims", "text": "Specific Aims", "reuse_score": 2, "reuse_tier": "Low", "tags": ["aims", "specific"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.731497+00:00", "document_path": "fixtures/sample_grant_aims_significance.txt"}, {"id": 2, "document_id": 1, "chunk_index": 1, "section_type": "Specific Aims", "text": "This proposal will test the central hypothesis that stress-induced changes in prefrontal-amygdala connectivity predict individual differences in empathic accuracy. Specific Aim 1 will characterize resting-state connectivity in a sample of adults under acute psychosocial stress. Specific Aim 2 will test whether connectivity changes mediate the relationship between stress reactivity and empathic accuracy during a validated behavioral task.", "reuse_score": 6, "reuse_tier": "Medium", "tags": ["connectivity", "stress", "changes", "test", "specific"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.732591+00:00", "document_path": "fixtures/sample_grant_aims_significance.txt"}, {"id": 3, "document_id": 1, "chunk_index": 2, "section_type": "Budget Justification", "text": "The requested budget for this three-year effort is $742,500, with data collection beginning in 2027 and concluding in 2029 under the direction of Dr. Amara Voss at Fictional Lakeshore University.", "reuse_score": 1, "reuse_tier": "Low", "tags": ["amara", "beginning", "budget", "collection", "concluding"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.733986+00:00", "document_path": "fixtures/sample_grant_aims_significance.txt"}, {"id": 4, "document_id": 1, "chunk_index": 3, "section_type": "Significance", "text": "Significance", "reuse_score": 3, "reuse_tier": "Low", "tags": ["significance"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.734863+00:00", "document_path": "fixtures/sample_grant_aims_significance.txt"}, {"id": 5, "document_id": 1, "chunk_index": 4, "section_type": "Significance", "text": "Understanding how acute stress reshapes social cognition addresses a critical gap at the intersection of affective neuroscience and forensic psychology. This work has broad public health relevance because impaired empathic accuracy under stress is implicated in a wide range of interpersonal and occupational outcomes, and a generalizable framework for measuring this relationship would be broadly applicable across clinical, forensic, and organizational settings.", "reuse_score": 8, "reuse_tier": "High", "tags": ["forensic", "stress", "addresses", "affective", "applicable"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.735723+00:00", "document_path": "fixtures/sample_grant_aims_significance.txt"}, {"id": 6, "document_id": 1, "chunk_index": 5, "section_type": "Innovation", "text": "Innovation", "reuse_score": 3, "reuse_tier": "Low", "tags": ["innovation"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.737400+00:00", "document_path": "fixtures/sample_grant_aims_significance.txt"}, {"id": 7, "document_id": 1, "chunk_index": 6, "section_type": "Innovation", "text": "This proposal departs from prior work by combining real-time psychophysiological stress induction with a novel, ecologically validated empathic-accuracy paradigm rather than static self-report measures. The innovation of this proposal lies in its translational potential: a framework built to generalize across forensic and clinical populations rather than a single narrow sample.", "reuse_score": 8, "reuse_tier": "High", "tags": ["rather", "built", "combining", "departs", "ecologically"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.738756+00:00", "document_path": "fixtures/sample_grant_aims_significance.txt"}, {"id": 8, "document_id": 2, "chunk_index": 0, "section_type": "Approach", "text": "Approach", "reuse_score": 3, "reuse_tier": "Low", "tags": ["approach"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.801762+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}, {"id": 9, "document_id": 2, "chunk_index": 1, "section_type": "Approach", "text": "We will recruit community volunteers through a standard flyer-and-referral protocol and randomize participants to a stress or control condition using a validated psychosocial stress induction procedure. Data will be collected across two lab visits, with all physiological and behavioral measures scored by raters blind to condition assignment.", "reuse_score": 8, "reuse_tier": "High", "tags": ["condition", "stress", "assignment", "blind", "collected"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.802588+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}, {"id": 10, "document_id": 2, "chunk_index": 2, "section_type": "Broader Impacts", "text": "Broader Impacts", "reuse_score": 2, "reuse_tier": "Low", "tags": ["impacts", "broader"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.803514+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}, {"id": 11, "document_id": 2, "chunk_index": 3, "section_type": "Broader Impacts", "text": "This project's broader impact extends beyond the immediate empirical question: the training pipeline built for this proposal is designed for outreach to underrepresented students entering affective and forensic neuroscience, and every analysis script will be released for public dissemination and reuse by the broader research community. The approach is intentionally broadly applicable to any lab studying stress and social cognition, not just this one.", "reuse_score": 8, "reuse_tier": "High", "tags": ["broader", "analysis", "beyond", "designed", "dissemination"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.804242+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}, {"id": 12, "document_id": 2, "chunk_index": 4, "section_type": "Data Management Plan", "text": "Data Management Plan", "reuse_score": 2, "reuse_tier": "Low", "tags": ["management", "plan", "data"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.804909+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}, {"id": 13, "document_id": 2, "chunk_index": 5, "section_type": "Data Management Plan", "text": "All de-identified behavioral and physiological data will be deposited in a public repository within twelve months of study completion, consistent with a standard data sharing agreement. Raw identifiable data will be retained locally for a five-year retention period before secure deletion, per institutional policy.", "reuse_score": 7, "reuse_tier": "High", "tags": ["data", "agreement", "before", "completion", "consistent"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.805525+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}, {"id": 14, "document_id": 2, "chunk_index": 6, "section_type": "Budget Justification", "text": "Budget Justification", "reuse_score": 2, "reuse_tier": "Low", "tags": ["justification", "budget"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.806172+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}, {"id": 15, "document_id": 2, "chunk_index": 7, "section_type": "Budget Justification", "text": "Personnel costs account for the majority of the requested budget: a 0.3 FTE postdoctoral researcher, a 0.5 FTE graduate research assistant, and fringe benefits calculated at the institution's federally negotiated rate. Direct costs also include participant compensation of $40 per session, approved by Fictional Lakeshore University's IRB in 2027.", "reuse_score": 3, "reuse_tier": "Low", "tags": ["costs", "account", "approved", "assistant", "benefits"], "ai_summary": null, "created_at": "2026-08-25T08:27:42.806884+00:00", "document_path": "fixtures/sample_grant_approach_budget.txt"}]</script>
+<script>
+(function () {
+  var raw = document.getElementById('chunk-data').textContent;
+  var chunks = JSON.parse(raw);
+  var sections = Array.from(new Set(chunks.map(function (c) { return c.section_type; }))).sort();
+  var activeSection = 'All';
+  var activeTag = null;
+
+  function allTags() {
+    var set = new Set();
+    chunks.forEach(function (c) { c.tags.forEach(function (t) { set.add(t); }); });
+    return Array.from(set).sort();
+  }
+
+  function tierClass(tier) {
+    if (tier === 'High') return 'badge-high';
+    if (tier === 'Medium') return 'badge-medium';
+    return 'badge-low';
+  }
+
+  function renderTabs() {
+    var container = document.getElementById('section-tabs');
+    container.textContent = '';
+    container.appendChild(makeTab('All', activeSection === 'All'));
+    sections.forEach(function (section) {
+      container.appendChild(makeTab(section, activeSection === section));
+    });
+  }
+
+  function makeTab(label, selected) {
+    var btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.type = 'button';
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+    btn.textContent = label;
+    btn.addEventListener('click', function () {
+      activeSection = label;
+      renderTabs();
+      renderResults();
+    });
+    return btn;
+  }
+
+  function renderTagChips() {
+    var container = document.getElementById('tag-chips');
+    container.textContent = '';
+    allTags().forEach(function (tag) {
+      var chip = document.createElement('button');
+      chip.className = 'tag-chip';
+      chip.type = 'button';
+      chip.setAttribute('aria-pressed', activeTag === tag ? 'true' : 'false');
+      chip.textContent = '#' + tag;
+      chip.addEventListener('click', function () {
+        activeTag = activeTag === tag ? null : tag;
+        renderTagChips();
+        renderResults();
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  function renderResults() {
+    var query = document.getElementById('search-box').value.trim().toLowerCase();
+    var results = document.getElementById('results');
+    results.textContent = '';
+
+    var filtered = chunks.filter(function (c) {
+      if (activeSection !== 'All' && c.section_type !== activeSection) return false;
+      if (activeTag && c.tags.indexOf(activeTag) === -1) return false;
+      if (query && c.text.toLowerCase().indexOf(query) === -1) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      var empty = document.createElement('p');
+      empty.className = 'empty-state';
+      empty.textContent = 'No chunks match your filters yet.';
+      results.appendChild(empty);
+      return;
+    }
+
+    filtered.forEach(function (chunk) {
+      results.appendChild(buildCard(chunk));
+    });
+  }
+
+  function buildCard(chunk) {
+    var card = document.createElement('article');
+    card.className = 'chunk-card';
+
+    var meta = document.createElement('div');
+    meta.className = 'chunk-meta';
+
+    var section = document.createElement('span');
+    section.textContent = chunk.section_type;
+    meta.appendChild(section);
+
+    var badge = document.createElement('span');
+    badge.className = 'badge ' + tierClass(chunk.reuse_tier);
+    badge.textContent = chunk.reuse_tier + ' (' + chunk.reuse_score + '/10)';
+    meta.appendChild(badge);
+
+    var source = document.createElement('span');
+    source.textContent = chunk.document_path;
+    meta.appendChild(source);
+
+    card.appendChild(meta);
+
+    if (chunk.ai_summary) {
+      var summary = document.createElement('p');
+      summary.className = 'chunk-summary';
+      summary.textContent = chunk.ai_summary;
+      card.appendChild(summary);
+    }
+
+    var text = document.createElement('p');
+    text.className = 'chunk-text';
+    text.textContent = chunk.text;
+    card.appendChild(text);
+
+    var tagList = document.createElement('div');
+    tagList.className = 'tag-list';
+    chunk.tags.forEach(function (tag) {
+      var span = document.createElement('span');
+      span.className = 'tag-chip';
+      span.textContent = '#' + tag;
+      tagList.appendChild(span);
+    });
+    card.appendChild(tagList);
+
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.type = 'button';
+    copyBtn.textContent = 'Copy';
+    copyBtn.addEventListener('click', function () {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(chunk.text);
+      }
+      copyBtn.textContent = 'Copied!';
+      setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+    card.appendChild(copyBtn);
+
+    return card;
+  }
+
+  document.getElementById('search-box').addEventListener('input', renderResults);
+
+  renderTabs();
+  renderTagChips();
+  renderResults();
+})();
+</script>
+</body>
+</html>
