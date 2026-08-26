@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thesis Breaker — AAPL</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --border: #2a2e39; --text: #e6e8ec;
+    --muted: #9aa1ac; --fired: #e5484d; --clear: #3dd68c; --unknown: #6b7280;
+    --ai: #8b5cf6; --deterministic: #38bdf8; --accent: #f0b429;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 24px; max-width: 960px; margin-inline: auto; }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; word-break: break-word; }
+  .overall { display: flex; align-items: center; gap: 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; }
+  .overall .score { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  section { margin-bottom: 32px; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  th { color: var(--muted); font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge-fired { background: rgba(229,72,77,0.15); color: var(--fired); }
+  .badge-clear { background: rgba(61,214,140,0.15); color: var(--clear); }
+  .badge-unknown { background: rgba(107,114,128,0.2); color: var(--unknown); }
+  .badge-ai { background: rgba(139,92,246,0.15); color: var(--ai); }
+  .badge-deterministic { background: rgba(56,189,248,0.15); color: var(--deterministic); }
+  .personas { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .persona-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .persona-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .persona-header h3 { margin: 0; font-size: 1.05rem; }
+  .persona-score { font-weight: 700; color: var(--accent); }
+  .persona-narrative { white-space: pre-wrap; font-family: inherit; font-size: 0.85rem; color: var(--text); margin-top: 10px; line-height: 1.5; }
+  canvas { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; max-width: 100%; }
+  @media (max-width: 600px) { body { padding: 12px; } }
+</style>
+</head>
+<body>
+  <h1>Thesis Breaker — AAPL</h1>
+  <p class="subtitle">Thesis: &ldquo;Bullish on strong revenue growth and margin expansion; reasonably valued relative to peers with a low debt balance sheet.&rdquo;</p>
+
+  <div class="overall">
+    <div class="score">100/100</div>
+    <div>Overall bear-case score (0 = no risk found, 100 = every weighted check triggered)</div>
+  </div>
+
+  <section>
+    <h2>Critic Personas</h2>
+    <div class="personas">
+      
+    <div class="persona-card">
+      <div class="persona-header">
+        <h3>Value Skeptic</h3>
+        <div class="persona-score">100/100</div>
+      </div>
+      <span class="badge badge-deterministic">deterministic</span>
+      <pre class="persona-narrative">Value Skeptic (severity 100/100):
+Triggered concerns:
+  - Trailing P/E of 38.5 exceeds the Technology stretch threshold of 35.0.
+  - Thesis makes a bullish claim in valuation, growth, margin, debt that the fetched data directly contradicts.
+  - Revenue YoY growth has decelerated every quarter: 12% -&gt; 9% -&gt; 7% -&gt; 3% (oldest to newest).</pre>
+    </div>
+    
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <h3>Macro Bear</h3>
+        <div class="persona-score">100/100</div>
+      </div>
+      <span class="badge badge-deterministic">deterministic</span>
+      <pre class="persona-narrative">Macro Bear (severity 100/100):
+Triggered concerns:
+  - Revenue YoY growth has decelerated every quarter: 12% -&gt; 9% -&gt; 7% -&gt; 3% (oldest to newest).
+  - Debt/equity of 45 (at or below the 200 risk threshold); operating margin declined for 2 consecutive quarters.
+  - Trailing P/E of 38.5 exceeds the Technology stretch threshold of 35.0.
+  - Thesis makes a bullish claim in valuation, growth, margin, debt that the fetched data directly contradicts.</pre>
+    </div>
+    
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <h3>Governance Hawk</h3>
+        <div class="persona-score">100/100</div>
+      </div>
+      <span class="badge badge-deterministic">deterministic</span>
+      <pre class="persona-narrative">Governance Hawk (severity 100/100):
+Triggered concerns:
+  - Thesis makes a bullish claim in valuation, growth, margin, debt that the fetched data directly contradicts.
+  - Debt/equity of 45 (at or below the 200 risk threshold); operating margin declined for 2 consecutive quarters.
+Could not evaluate:
+  - No insider transaction data available; cannot evaluate.</pre>
+    </div>
+    
+    </div>
+  </section>
+
+  <section>
+    <h2>Triggered-Checklist Matrix</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Status</th><th>Detail</th></tr></thead>
+      <tbody><tr><td>Valuation Stretch</td><td><span class="badge badge-fired">triggered</span></td><td>Trailing P/E of 38.5 exceeds the Technology stretch threshold of 35.0.</td></tr>
+<tr><td>Growth Deceleration</td><td><span class="badge badge-fired">triggered</span></td><td>Revenue YoY growth has decelerated every quarter: 12% -&gt; 9% -&gt; 7% -&gt; 3% (oldest to newest).</td></tr>
+<tr><td>Margin / Debt Risk</td><td><span class="badge badge-fired">triggered</span></td><td>Debt/equity of 45 (at or below the 200 risk threshold); operating margin declined for 2 consecutive quarters.</td></tr>
+<tr><td>Insider Selling Signal</td><td><span class="badge badge-unknown">n/a</span></td><td>No insider transaction data available; cannot evaluate.</td></tr>
+<tr><td>Narrative Fragility</td><td><span class="badge badge-fired">triggered</span></td><td>Thesis makes a bullish claim in valuation, growth, margin, debt that the fetched data directly contradicts.</td></tr></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Real Data Summary</h2>
+    <table>
+      <tbody><tr><td>Sector</td><td>Technology</td></tr>
+<tr><td>Trailing P/E</td><td>38.50</td></tr>
+<tr><td>Forward P/E</td><td>32.10</td></tr>
+<tr><td>Price/Sales</td><td>9.20</td></tr>
+<tr><td>Debt/Equity</td><td>45.00</td></tr>
+<tr><td>Revenue YoY growth (recent -&gt; older)</td><td>3%, 7%, 9%, 12%</td></tr>
+<tr><td>Operating margin (recent -&gt; older)</td><td>27%, 29%, 31%, 30%</td></tr></tbody>
+    </table>
+    
+  </section>
+
+  <section>
+    <h2>Revenue YoY Growth Trend</h2>
+    <canvas id="revenueChart" width="880" height="220"></canvas>
+  </section>
+
+  <section><h2>Bear-Case Score Over Time</h2><canvas id='historyChart' width='880' height='220'></canvas></section>
+
+<script>
+(function() {
+  function drawLineChart(canvasId, values, color) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas || !values.length) return;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height, pad = 30;
+    var min = Math.min.apply(null, values), max = Math.max.apply(null, values);
+    if (min === max) { min -= 1; max += 1; }
+    ctx.strokeStyle = '#2a2e39';
+    ctx.beginPath(); ctx.moveTo(pad, h - pad); ctx.lineTo(w - 10, h - pad); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad, 10); ctx.lineTo(pad, h - pad); ctx.stroke();
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+    values.forEach(function(v, i) {
+      var x = pad + (i / Math.max(values.length - 1, 1)) * (w - pad - 20);
+      var y = h - pad - ((v - min) / (max - min)) * (h - pad - 20);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.fillStyle = color;
+    values.forEach(function(v, i) {
+      var x = pad + (i / Math.max(values.length - 1, 1)) * (w - pad - 20);
+      var y = h - pad - ((v - min) / (max - min)) * (h - pad - 20);
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+    });
+  }
+  drawLineChart('revenueChart', [12.0, 9.0, 7.0, 3.0], '#38bdf8');
+  drawLineChart('historyChart', [100, 100, 100, 100, 71], '#f0b429');
+})();
+</script>
+</body>
+</html>
