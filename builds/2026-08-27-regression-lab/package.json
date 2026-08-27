@@ -1,0 +1,11 @@
+{
+  "name": "regression-lab",
+  "version": "1.0.0",
+  "description": "Interactive OLS regression and assumption-diagnostics trainer — drag points, watch the fit react, read residual/QQ/leverage plots",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

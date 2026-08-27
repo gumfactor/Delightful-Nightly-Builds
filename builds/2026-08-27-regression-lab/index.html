@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Regression Lab — OLS &amp; Diagnostics Trainer</title>
+<link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>Regression Lab</h1>
+  <p class="subtitle">Drag points, watch the fit react, and learn to read the diagnostics that tell you when OLS assumptions break.</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab-btn active" data-tab="fit" role="tab" aria-selected="true" data-testid="tab-fit">Scatterplot &amp; Fit</button>
+  <button class="tab-btn" data-tab="diagnostics" role="tab" aria-selected="false" data-testid="tab-diagnostics">Diagnostics</button>
+  <button class="tab-btn" data-tab="multicollinearity" role="tab" aria-selected="false" data-testid="tab-multicollinearity">Multicollinearity Lab</button>
+  <button class="tab-btn" data-tab="quiz" role="tab" aria-selected="false" data-testid="tab-quiz">Quiz</button>
+</nav>
+
+<main>
+
+  <!-- TAB: Scatterplot & Fit -->
+  <section class="tab-panel active" id="panel-fit" data-testid="panel-fit">
+    <div class="preset-bar" data-testid="preset-bar">
+      <span class="preset-label">Dataset:</span>
+      <button class="preset-btn" data-preset="well-behaved" data-testid="preset-well-behaved">Well-Behaved</button>
+      <button class="preset-btn" data-preset="heteroscedastic" data-testid="preset-heteroscedastic">Heteroscedastic</button>
+      <button class="preset-btn" data-preset="non-linear" data-testid="preset-non-linear">Non-Linear</button>
+      <button class="preset-btn" data-preset="outlier" data-testid="preset-outlier">Outlier / High Leverage</button>
+      <button class="preset-btn" data-preset="custom" data-testid="preset-custom">Custom (Free Draw)</button>
+      <button class="ghost-btn" id="clear-points-btn" data-testid="clear-points-btn">Clear Points</button>
+    </div>
+    <p class="preset-description" id="preset-description" data-testid="preset-description"></p>
+
+    <div class="fit-layout">
+      <div class="canvas-card">
+        <canvas id="scatter-canvas" width="640" height="440" data-testid="scatter-canvas"></canvas>
+        <p class="canvas-hint">Click empty space to add a point (Custom mode). Drag any point to move it. Double-click a point to remove it.</p>
+      </div>
+
+      <div class="stats-card" data-testid="fit-stats">
+        <h2>Live Fit</h2>
+        <p class="equation" id="equation-display" data-testid="equation-display">ŷ = —</p>
+        <table class="stats-table">
+          <tbody>
+            <tr><th>n</th><td id="stat-n" data-testid="stat-n">—</td></tr>
+            <tr><th>Intercept (b₀)</th><td id="stat-b0" data-testid="stat-b0">—</td></tr>
+            <tr><th>Slope (b₁)</th><td id="stat-b1" data-testid="stat-b1">—</td></tr>
+            <tr><th>R²</th><td id="stat-r2" data-testid="stat-r2">—</td></tr>
+            <tr><th>Adjusted R²</th><td id="stat-adjr2" data-testid="stat-adjr2">—</td></tr>
+            <tr><th>SE(b₁)</th><td id="stat-seb1" data-testid="stat-seb1">—</td></tr>
+            <tr><th>t-stat (b₁)</th><td id="stat-tb1" data-testid="stat-tb1">—</td></tr>
+            <tr><th>p-value (b₁)</th><td id="stat-pb1" data-testid="stat-pb1">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB: Diagnostics -->
+  <section class="tab-panel" id="panel-diagnostics" data-testid="panel-diagnostics">
+    <p class="panel-note">These diagnostics run on the dataset currently loaded in the Scatterplot &amp; Fit tab (<span id="diag-source-label" data-testid="diag-source-label">—</span>).</p>
+
+    <div class="diagnostics-grid">
+      <div class="canvas-card">
+        <h3>Residuals vs. Fitted</h3>
+        <canvas id="residual-canvas" width="360" height="280" data-testid="residual-canvas"></canvas>
+      </div>
+      <div class="canvas-card">
+        <h3>Normal Q-Q Plot</h3>
+        <canvas id="qq-canvas" width="360" height="280" data-testid="qq-canvas"></canvas>
+      </div>
+      <div class="canvas-card">
+        <h3>Leverage vs. Cook's Distance</h3>
+        <canvas id="leverage-canvas" width="360" height="280" data-testid="leverage-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="tests-card" data-testid="tests-card">
+      <h3>Assumption Tests</h3>
+      <table class="stats-table">
+        <tbody>
+          <tr><th>Breusch-Pagan (heteroscedasticity)</th><td id="test-bp" data-testid="test-bp">—</td></tr>
+          <tr><th>RESET-style test (linearity)</th><td id="test-reset" data-testid="test-reset">—</td></tr>
+          <tr><th>Most influential point</th><td id="test-influence" data-testid="test-influence">—</td></tr>
+          <tr><th>Residual skewness / excess kurtosis</th><td id="test-normality" data-testid="test-normality">—</td></tr>
+        </tbody>
+      </table>
+      <div class="verdict-banner" id="verdict-banner" data-testid="verdict-banner">—</div>
+    </div>
+
+    <div class="ai-card" data-testid="ai-card">
+      <h3>Explain This Diagnostic</h3>
+      <div class="ai-key-row">
+        <label for="api-key-input">Anthropic API key (optional, session-only, never stored)</label>
+        <input type="password" id="api-key-input" data-testid="api-key-input" autocomplete="off" placeholder="sk-ant-..." />
+      </div>
+      <button id="explain-btn" class="primary-btn" data-testid="explain-btn">Explain This Result</button>
+      <p class="ai-explanation" id="ai-explanation" data-testid="ai-explanation"></p>
+      <p class="ai-source" id="ai-source" data-testid="ai-source"></p>
+    </div>
+  </section>
+
+  <!-- TAB: Multicollinearity Lab -->
+  <section class="tab-panel" id="panel-multicollinearity" data-testid="panel-multicollinearity">
+    <p class="panel-note">Two predictors, X1 and X2, both feed the same outcome Y. Drag the slider to make them more correlated and watch what happens to the standard errors — <em>not</em> to R².</p>
+
+    <div class="mc-layout">
+      <div class="canvas-card">
+        <h3>X1 vs. X2</h3>
+        <canvas id="mc-scatter-canvas" width="360" height="320" data-testid="mc-scatter-canvas"></canvas>
+      </div>
+      <div class="stats-card" data-testid="mc-stats">
+        <label for="corr-slider">Target correlation between X1 and X2: <span id="corr-value" data-testid="corr-value">0.00</span></label>
+        <input type="range" id="corr-slider" min="0" max="99" value="0" data-testid="corr-slider" />
+        <table class="stats-table">
+          <tbody>
+            <tr><th>Actual correlation(X1, X2)</th><td id="mc-corr" data-testid="mc-corr">—</td></tr>
+            <tr><th>VIF</th><td id="mc-vif" data-testid="mc-vif">—</td></tr>
+            <tr><th>Joint model R²</th><td id="mc-r2" data-testid="mc-r2">—</td></tr>
+            <tr><th>SE(b₁)</th><td id="mc-se1" data-testid="mc-se1">—</td></tr>
+            <tr><th>SE(b₂)</th><td id="mc-se2" data-testid="mc-se2">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB: Quiz -->
+  <section class="tab-panel" id="panel-quiz" data-testid="panel-quiz">
+    <div id="quiz-intro" data-testid="quiz-intro">
+      <p>12 questions — 4 ask you to diagnose a real dataset's regression output, 8 test the underlying concepts. Every diagnose question's correct answer is computed live from the exact same math running in the other tabs.</p>
+      <button id="start-quiz-btn" class="primary-btn" data-testid="start-quiz-btn">Start Quiz</button>
+      <p class="quiz-best" id="quiz-best" data-testid="quiz-best"></p>
+    </div>
+
+    <div id="quiz-active" class="hidden" data-testid="quiz-active">
+      <p class="quiz-progress" id="quiz-progress" data-testid="quiz-progress"></p>
+      <div class="canvas-card hidden" id="quiz-chart-card" data-testid="quiz-chart-card">
+        <canvas id="quiz-canvas" width="480" height="300" data-testid="quiz-canvas"></canvas>
+      </div>
+      <p class="quiz-prompt" id="quiz-prompt" data-testid="quiz-prompt"></p>
+      <div class="quiz-options" id="quiz-options" data-testid="quiz-options"></div>
+      <p class="quiz-feedback" id="quiz-feedback" data-testid="quiz-feedback"></p>
+      <button id="quiz-next-btn" class="primary-btn hidden" data-testid="quiz-next-btn">Next Question</button>
+    </div>
+
+    <div id="quiz-results" class="hidden" data-testid="quiz-results">
+      <h2>Score: <span id="quiz-score" data-testid="quiz-score"></span></h2>
+      <p id="quiz-summary" data-testid="quiz-summary"></p>
+      <button id="quiz-retry-btn" class="primary-btn" data-testid="quiz-retry-btn">New Quiz</button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>All statistics computed from scratch in the browser — no server, no external data. Regression Lab, built for personal use.</p>
+</footer>
+
+<script src="src/math.js"></script>
+<script src="src/datasets.js"></script>
+<script src="src/quiz.js"></script>
+<script src="src/ai.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
