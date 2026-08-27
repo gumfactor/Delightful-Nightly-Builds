@@ -36,7 +36,20 @@
     const bp = M.breuschPaganTest(reg.fitted, reg.residuals);
     const reset = M.resetTest(x, y);
     const sortedCooksD = [...reg.cooksD].sort((a, b) => b - a);
-    const dominance = sortedCooksD[1] > 1e-9 ? sortedCooksD[0] / sortedCooksD[1] : Infinity;
+    // A dominance ratio is only meaningful once the top point's own
+    // influence is non-trivial — otherwise (e.g. a perfect fit, where
+    // every Cook's Distance is exactly 0) dividing by a near-zero
+    // runner-up would misreport "infinite" dominance for a point that
+    // isn't influential at all.
+    const MIN_MEANINGFUL_COOKS_D = 1e-6;
+    let dominance;
+    if (sortedCooksD[0] < MIN_MEANINGFUL_COOKS_D) {
+      dominance = 0;
+    } else if (sortedCooksD[1] < MIN_MEANINGFUL_COOKS_D) {
+      dominance = Infinity;
+    } else {
+      dominance = sortedCooksD[0] / sortedCooksD[1];
+    }
 
     let verdict;
     if (dominance > 5) verdict = 'outlier';

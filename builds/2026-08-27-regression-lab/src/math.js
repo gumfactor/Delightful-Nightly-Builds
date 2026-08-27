@@ -318,8 +318,20 @@ function resetTest(x, y) {
  * Simplified Breusch-Pagan heteroscedasticity test: regresses squared
  * residuals on the fitted values and tests whether that slope is
  * significantly different from zero.
+ *
+ * When the fitted values are (near-)constant — e.g. the primary fit has an
+ * exactly-zero slope — the auxiliary regression's design matrix is
+ * singular (the fitted-value column carries no information), so the test
+ * simply isn't applicable rather than being a computation to attempt.
  */
 function breuschPaganTest(fitted, residuals) {
+  const fittedMean = mean(fitted);
+  const fittedVariance = fitted.reduce((s, v) => s + (v - fittedMean) ** 2, 0);
+  if (fittedVariance < 1e-9) {
+    return {
+      slope: 0, se: NaN, tStat: NaN, pValue: NaN, significant: false, df: NaN, applicable: false,
+    };
+  }
   const sq = residuals.map((e) => e * e);
   const reg = simpleLinearRegression(fitted, sq);
   return {
@@ -329,6 +341,7 @@ function breuschPaganTest(fitted, residuals) {
     pValue: reg.pValues[1],
     significant: reg.pValues[1] < 0.05,
     df: reg.df,
+    applicable: true,
   };
 }
 

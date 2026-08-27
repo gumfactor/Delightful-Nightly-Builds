@@ -51,6 +51,20 @@ test.describe('Diagnostics tab', () => {
     expect(banner).toContain('Add at least');
   });
 
+  test('a horizontal dataset (constant y) renders diagnostics instead of a misleading "too few points" message', async ({ page }) => {
+    await page.goto(APP_URL);
+    await page.click('[data-testid=preset-custom]');
+    await page.evaluate(() => {
+      window.__testHooks.setPoints([1, 2, 3, 4, 5, 6].map((x) => ({ x, y: 7 })));
+    });
+    await page.click('[data-testid=tab-diagnostics]');
+    const banner = await page.textContent('[data-testid=verdict-banner]');
+    expect(banner).not.toContain('Add at least');
+    expect(banner).toContain('looks sound');
+    const bp = await page.textContent('[data-testid=test-bp]');
+    expect(bp).toContain('not applicable');
+  });
+
   test('explain button with no API key falls back to the deterministic template with zero network calls', async ({ page }) => {
     const requests = [];
     page.on('request', (req) => {

@@ -51,6 +51,19 @@ test.describe('math.js — regression engine correctness', () => {
     expect(() => M.multipleRegression(rows, [1, 2, 3, 4, 5])).toThrow();
   });
 
+  test('breuschPaganTest reports "not applicable" instead of throwing when fitted values are constant', () => {
+    // A horizontal fit (y constant, x varying) has zero slope, so every
+    // fitted value is identical -> the auxiliary regression's design
+    // matrix would otherwise be singular.
+    const x = [1, 2, 3, 4, 5, 6];
+    const y = [7, 7, 7, 7, 7, 7];
+    const reg = M.simpleLinearRegression(x, y);
+    expect(() => M.breuschPaganTest(reg.fitted, reg.residuals)).not.toThrow();
+    const bp = M.breuschPaganTest(reg.fitted, reg.residuals);
+    expect(bp.applicable).toBe(false);
+    expect(bp.significant).toBe(false);
+  });
+
   test("Cook's Distance is large for a point with both high leverage and a large residual", () => {
     const x = [1, 2, 3, 4, 5, 6, 7, 20];
     const y = [2, 4, 6, 8, 10, 12, 14, 2]; // last point way off the trend, far in x

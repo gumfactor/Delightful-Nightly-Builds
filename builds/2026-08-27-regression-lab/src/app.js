@@ -292,7 +292,9 @@
     drawQQPlot(document.getElementById('qq-canvas'), reg);
     drawLeveragePlot(document.getElementById('leverage-canvas'), reg, threshold);
 
-    bpEl.textContent = `slope=${bp.slope.toFixed(4)}, t=${bp.tStat.toFixed(3)}, p=${bp.pValue.toFixed(4)} — ${bp.significant ? 'SIGNIFICANT' : 'not significant'}`;
+    bpEl.textContent = bp.applicable === false
+      ? 'not applicable — the fitted values are constant (the fit has zero slope)'
+      : `slope=${bp.slope.toFixed(4)}, t=${bp.tStat.toFixed(3)}, p=${bp.pValue.toFixed(4)} — ${bp.significant ? 'SIGNIFICANT' : 'not significant'}`;
     resetEl.textContent = `b₂=${reset.b2.toFixed(4)}, t=${reset.tStat.toFixed(3)}, p=${reset.pValue.toFixed(4)} — ${reset.significant ? 'SIGNIFICANT' : 'not significant'}`;
     const maxIdx = reg.cooksD.indexOf(maxCooksD);
     influenceEl.textContent = `point ${maxIdx + 1}: Cook's D=${maxCooksD.toFixed(3)} (rule-of-thumb threshold ${threshold.toFixed(3)})`;

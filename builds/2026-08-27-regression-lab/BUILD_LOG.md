@@ -62,4 +62,14 @@ Tests: 52 passed, 0 failed.
 - `FutureFeatures.md`: 7 concrete suggestions.
 - `Manual.md`: usage guide covering all 4 tabs, configuration, troubleshooting, known limitations.
 
+### [01:20 UTC] Post-PR Review Fixes
+
+- A Codex bot review on PR #82 flagged two real P2 bugs:
+  1. `quiz.js`'s dominance ratio (`sortedCooksD[0] / sortedCooksD[1]`) treated a near-zero runner-up as automatically dominant, so a perfectly linear custom dataset (every Cook's Distance exactly 0) was misdiagnosed as an outlier scenario instead of well-behaved.
+  2. `math.js`'s `breuschPaganTest` threw on any dataset whose primary fit has an exactly-zero slope (e.g. constant y with varying x) — the auxiliary regression's fitted-value column is then constant, making its design matrix singular. The uncaught exception propagated up to `currentDiagnostics`'s catch-all and rendered the misleading "Add at least 4 points" message even though there were plenty of points.
+- Fixed both: `diagnoseDataset` now requires the top Cook's Distance itself to clear a `1e-6` meaningful-influence floor before treating it as dominant (0 dominance when the max itself is negligible); `breuschPaganTest` now checks fitted-value variance up front and returns an explicit `{ applicable: false, significant: false }` result instead of attempting a singular regression, and the Diagnostics tab UI shows "not applicable — the fitted values are constant" rather than `NaN`.
+- Verified both fixes against the exact scenarios described, confirmed all 4 existing presets still classify correctly (no regression), and added 4 new tests (2 Node-level in `math.spec.js`/`datasets-quiz.spec.js`, 1 browser-level in `diagnostics.spec.js`, plus the existing edge-case coverage) pinning both fixed behaviors.
+
+Tests: 56 passed, 0 failed.
+
 Build complete. Success criteria reviewed. All tests passing.

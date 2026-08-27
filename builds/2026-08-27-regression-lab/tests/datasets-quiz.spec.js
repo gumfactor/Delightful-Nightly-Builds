@@ -24,6 +24,23 @@ test.describe('preset datasets — each triggers its intended diagnostic', () =>
     expect(diag.dominance).toBeGreaterThan(5);
   });
 
+  test('a perfectly linear custom dataset is diagnosed as well-behaved, not an outlier', () => {
+    // Every Cook's Distance is exactly 0 for a perfect fit — the dominance
+    // ratio must not misread "0 / ~0" as an infinitely dominant point.
+    const perfectPoints = [1, 2, 3, 4, 5].map((x) => ({ x, y: 2 + 3 * x }));
+    const diag = Q.diagnoseDataset(perfectPoints);
+    expect(diag.verdict).toBe('well-behaved');
+    expect(diag.dominance).toBe(0);
+  });
+
+  test('a horizontal dataset (constant y, varying x) does not throw and is diagnosed as well-behaved', () => {
+    const horizontalPoints = [1, 2, 3, 4, 5, 6].map((x) => ({ x, y: 7 }));
+    expect(() => Q.diagnoseDataset(horizontalPoints)).not.toThrow();
+    const diag = Q.diagnoseDataset(horizontalPoints);
+    expect(diag.verdict).toBe('well-behaved');
+    expect(diag.bp.applicable).toBe(false);
+  });
+
   test('every preset except custom has at least 4 points (enough for full diagnostics)', () => {
     D.PRESET_ORDER.filter((k) => k !== 'custom').forEach((key) => {
       expect(D.PRESETS[key].points.length).toBeGreaterThanOrEqual(4);
