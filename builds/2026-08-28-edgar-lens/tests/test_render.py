@@ -103,3 +103,26 @@ def test_build_dashboard_html_handles_empty_companies_list():
 
 def test_escape_for_script_tag_neutralizes_closing_tag():
     assert "</script>" not in render._escape_for_script_tag('{"x": "</script>"}')
+
+
+def test_escape_for_script_tag_is_case_insensitive():
+    # The escape targets the literal "</" prefix (case-neutral characters),
+    # not the string "script", so any-case variants are already covered
+    # without needing a case-insensitive match on "script" itself.
+    for variant in ["</script>", "</SCRIPT>", "</ScRiPt>", "</Script><script>alert(1)</SCRIPT>"]:
+        escaped = render._escape_for_script_tag(f'{{"x": "{variant}"}}')
+        assert "</" not in escaped, f"{variant!r} was not neutralized: {escaped!r}"
+
+
+def test_mixed_case_script_payload_in_company_name_is_inert():
+    malicious = [{
+        "ticker": "EVIL",
+        "company_name": "</ScRiPt><script>window.__xss=true;</SCRIPT>",
+        "rows": [],
+        "anomalies": [],
+    }]
+    html = render.build_dashboard_html(malicious)
+    start = html.index('<script type="application/json" id="edgar-lens-data">')
+    end = html.index("</script>", start + 10)
+    embedded_segment = html[start:end]
+    assert "</script>" not in embedded_segment.lower()

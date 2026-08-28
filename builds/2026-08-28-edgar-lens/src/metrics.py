@@ -60,7 +60,10 @@ def compute_yearly_metrics(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         current["net_margin_delta"] = None
         current["debt_to_equity_delta"] = None
 
-        if prev is not None:
+        # Only compare to an immediately preceding fiscal year. A gap (e.g.
+        # FY2021 -> FY2023 because FY2022 had no usable tag data) is not a
+        # true year-over-year comparison and must not be labeled as one.
+        if prev is not None and row["fiscal_year"] == prev["fiscal_year"] + 1:
             current["revenue_yoy"] = yoy_change(row.get("revenue"), prev.get("revenue"))
             if current["net_margin"] is not None and prev.get("net_margin") is not None:
                 current["net_margin_delta"] = current["net_margin"] - prev["net_margin"]
@@ -81,6 +84,7 @@ def flag_anomalies(enriched_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     anomalies: list[dict[str, Any]] = []
     prev_net_income: float | None = None
+    prev_fiscal_year: int | None = None
 
     for row in enriched_rows:
         fy = row["fiscal_year"]
@@ -121,6 +125,8 @@ def flag_anomalies(enriched_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if (
             net_income is not None
             and prev_net_income is not None
+            and prev_fiscal_year is not None
+            and fy == prev_fiscal_year + 1
             and net_income < 0
             and prev_net_income >= 0
         ):
@@ -132,5 +138,6 @@ def flag_anomalies(enriched_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
         if net_income is not None:
             prev_net_income = net_income
+            prev_fiscal_year = fy
 
     return anomalies

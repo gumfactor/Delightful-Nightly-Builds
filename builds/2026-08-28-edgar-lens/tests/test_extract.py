@@ -115,3 +115,104 @@ def test_row_carries_accn_and_filed_date(rows):
     fy2021 = next(row for row in rows if row["fiscal_year"] == 2021)
     assert fy2021["accn"] is not None
     assert fy2021["filed_date"] == "2022-02-10"
+
+
+# --- regressions found by review: 10-K/A amendments, per-year tag merging,
+# and fiscal-year labels derived from actual period dates -------------------
+
+def test_ten_k_a_amendment_is_accepted_as_an_annual_fact():
+    usgaap = {
+        "NetIncomeLoss": {
+            "units": {"USD": [
+                {"start": "2022-01-01", "end": "2022-12-31", "val": 100, "accn": "orig",
+                 "fy": 2022, "fp": "FY", "form": "10-K", "filed": "2023-02-01"},
+            ]}
+        }
+    }
+    assert extract._extract_duration_facts_for_tag(usgaap, "NetIncomeLoss")[2022]["val"] == 100
+
+
+def test_ten_k_a_restatement_overrides_original_10k_value():
+    # A restatement filed later, as a 10-K/A, must win over the original
+    # 10-K value for the identical period -- previously 10-K/A was rejected
+    # outright by the annual-form check, so a re-sync never picked it up.
+    usgaap = {
+        "NetIncomeLoss": {
+            "units": {"USD": [
+                {"start": "2022-01-01", "end": "2022-12-31", "val": 100, "accn": "orig",
+                 "fy": 2022, "fp": "FY", "form": "10-K", "filed": "2023-02-01"},
+                {"start": "2022-01-01", "end": "2022-12-31", "val": 85, "accn": "restated",
+                 "fy": 2022, "fp": "FY", "form": "10-K/A", "filed": "2023-08-15"},
+            ]}
+        }
+    }
+    result = extract._extract_duration_facts_for_tag(usgaap, "NetIncomeLoss")
+    assert result[2022]["val"] == 85
+    assert result[2022]["accn"] == "restated"
+
+
+def test_cross_tag_merge_fills_gap_year_from_lower_priority_tag():
+    # "Revenues" (highest priority) only has FY2021 data -- e.g. the filer
+    # switched tags after adopting ASC 606. Previously, resolve_tag() would
+    # lock onto "Revenues" for the whole company and FY2022 would come back
+    # as None even though the alternate tag has it.
+    usgaap = {
+        "Revenues": {
+            "units": {"USD": [
+                {"start": "2021-01-01", "end": "2021-12-31", "val": 1000,
+                 "fy": 2021, "fp": "FY", "form": "10-K", "filed": "2022-02-01"},
+            ]}
+        },
+        "RevenueFromContractWithCustomerExcludingAssessedTax": {
+            "units": {"USD": [
+                {"start": "2021-01-01", "end": "2021-12-31", "val": 999,
+                 "fy": 2021, "fp": "FY", "form": "10-K", "filed": "2022-02-01"},
+                {"start": "2022-01-01", "end": "2022-12-31", "val": 1100,
+                 "fy": 2022, "fp": "FY", "form": "10-K", "filed": "2023-02-01"},
+            ]}
+        },
+    }
+    merged = extract._merge_candidate_tags(
+        usgaap, extract.DURATION_CONCEPT_TAGS["revenue"], extract._extract_duration_facts_for_tag
+    )
+    assert merged[2021]["val"] == 1000  # higher-priority tag wins where both report a year
+    assert merged[2022]["val"] == 1100  # lower-priority tag fills the year the first tag lacks
+
+
+def test_fiscal_year_label_derived_from_end_date_not_fy_field():
+    # SEC's fy/fp/form describe the filing that reported the value, not
+    # necessarily that specific value's own reporting period -- a fact
+    # covering calendar 2022 could still be stamped fy=2023 if it was
+    # disclosed as a comparative figure inside the FY2023 10-K. The
+    # extracted fiscal year must come from the period's own end date.
+    usgaap = {
+        "NetIncomeLoss": {
+            "units": {"USD": [
+                {"start": "2022-01-01", "end": "2022-12-31", "val": 42,
+                 "fy": 2023, "fp": "FY", "form": "10-K", "filed": "2024-02-01"},
+            ]}
+        }
+    }
+    result = extract._extract_duration_facts_for_tag(usgaap, "NetIncomeLoss")
+    assert 2022 in result and result[2022]["val"] == 42
+    assert 2023 not in result
+
+
+def test_comparative_prior_year_fact_not_collapsed_into_current_year():
+    # Both facts below share the same fy/filed (as a filing's own
+    # dei:DocumentFiscalYearFocus would), but cover genuinely different
+    # 12-month periods -- they must land in two separate fiscal years, not
+    # be merged into one via a naive fact["fy"] groupby.
+    usgaap = {
+        "NetIncomeLoss": {
+            "units": {"USD": [
+                {"start": "2023-01-01", "end": "2023-12-31", "val": 500,
+                 "fy": 2023, "fp": "FY", "form": "10-K", "filed": "2024-02-01"},
+                {"start": "2022-01-01", "end": "2022-12-31", "val": 420,
+                 "fy": 2023, "fp": "FY", "form": "10-K", "filed": "2024-02-01"},
+            ]}
+        }
+    }
+    result = extract._extract_duration_facts_for_tag(usgaap, "NetIncomeLoss")
+    assert result[2023]["val"] == 500
+    assert result[2022]["val"] == 420

@@ -164,3 +164,63 @@ def test_flag_anomalies_handles_all_none_row_without_crashing():
 
 def test_flag_anomalies_empty_input():
     assert metrics.flag_anomalies([]) == []
+
+
+# --- regression found by review: a fiscal-year gap must not be treated as
+# a year-over-year comparison ------------------------------------------------
+
+def test_no_yoy_fields_across_a_fiscal_year_gap():
+    # FY2022 is missing (e.g. no usable tag data that year) -- FY2023 must
+    # not be compared to FY2021 as if it were a single year of change.
+    rows = [
+        {"fiscal_year": 2021, "revenue": 1000, "net_income": 100, "operating_income": 100,
+         "liabilities": 100, "equity": 200},
+        {"fiscal_year": 2023, "revenue": 500, "net_income": -50, "operating_income": -50,
+         "liabilities": 300, "equity": 200},
+    ]
+    enriched = metrics.compute_yearly_metrics(rows)
+    fy2023 = next(r for r in enriched if r["fiscal_year"] == 2023)
+    assert fy2023["revenue_yoy"] is None
+    assert fy2023["net_margin_delta"] is None
+    assert fy2023["debt_to_equity_delta"] is None
+
+
+def test_no_revenue_decline_flag_across_a_fiscal_year_gap():
+    # A real 2-year cumulative decline must not surface as a false
+    # "year-over-year" revenue_decline flag just because the rows are
+    # adjacent in the list.
+    rows = [
+        {"fiscal_year": 2021, "revenue": 1000, "net_income": None, "operating_income": None,
+         "liabilities": None, "equity": None},
+        {"fiscal_year": 2023, "revenue": 500, "net_income": None, "operating_income": None,
+         "liabilities": None, "equity": None},
+    ]
+    anomalies = metrics.flag_anomalies(metrics.compute_yearly_metrics(rows))
+    assert anomalies == []
+
+
+def test_swing_to_loss_does_not_fire_across_a_fiscal_year_gap():
+    rows = [
+        {"fiscal_year": 2021, "revenue": None, "net_income": 100, "operating_income": None,
+         "liabilities": None, "equity": None},
+        {"fiscal_year": 2023, "revenue": None, "net_income": -50, "operating_income": None,
+         "liabilities": None, "equity": None},
+    ]
+    anomalies = metrics.flag_anomalies(metrics.compute_yearly_metrics(rows))
+    assert not any(a["type"] == "swing_to_loss" for a in anomalies)
+
+
+def test_consecutive_years_after_a_gap_still_compare_correctly():
+    # FY2022 is missing, but FY2023 -> FY2024 are consecutive and must
+    # still be compared to each other normally.
+    rows = [
+        {"fiscal_year": 2021, "revenue": 1000, "net_income": None, "operating_income": None,
+         "liabilities": None, "equity": None},
+        {"fiscal_year": 2023, "revenue": 500, "net_income": None, "operating_income": None,
+         "liabilities": None, "equity": None},
+        {"fiscal_year": 2024, "revenue": 400, "net_income": None, "operating_income": None,
+         "liabilities": None, "equity": None},
+    ]
+    enriched = metrics.compute_yearly_metrics(rows)
+    fy2024 = next(r for r in enriched if r["fiscal_year"] == 2024)
+    assert fy2024["revenue_yoy"] == pytest.approx((400 - 500) / 500)
