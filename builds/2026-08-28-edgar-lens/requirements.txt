@@ -1,0 +1,1 @@
+# EDGAR Lens has no third-party dependencies -- stdlib only (urllib, sqlite3, json, argparse).
