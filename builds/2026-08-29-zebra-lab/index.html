@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zebra Lab — Research Design Deduction</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <main>
+    <h1>Zebra Lab</h1>
+    <p class="tagline">A logic-grid deduction puzzle about experimental research design. Every puzzle is generated with a solver that proves it has exactly one solution.</p>
+
+    <section id="screen-home" data-testid="screen-home">
+      <div class="card">
+        <h2>Daily Challenge</h2>
+        <p>One puzzle a day, the same for everyone on a given UTC date.</p>
+        <button id="btn-daily" data-testid="btn-daily">Play Daily Challenge</button>
+      </div>
+
+      <div class="card">
+        <h2>Practice</h2>
+        <ul id="chapter-list" data-testid="chapter-list"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Stats</h2>
+        <div class="stats-row">
+          <div class="stat">
+            <span class="value" id="stats-total-solved" data-testid="stats-total-solved">0</span>
+            <span class="label">Puzzles Solved</span>
+          </div>
+          <div class="stat">
+            <span class="value" id="stats-current-streak" data-testid="stats-current-streak">0</span>
+            <span class="label">Current Streak</span>
+          </div>
+          <div class="stat">
+            <span class="value" id="stats-best-streak" data-testid="stats-best-streak">0</span>
+            <span class="label">Best Streak</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Optional AI Explainer</h2>
+        <p>Enter your own Anthropic API key to have Claude polish the post-solve explanation. Kept only in this tab's session storage, sent only to api.anthropic.com. Leave blank for a fully offline explanation.</p>
+        <label class="field-label" for="api-key-input">Anthropic API Key (optional)</label>
+        <input type="password" id="api-key-input" data-testid="api-key-input" autocomplete="off" placeholder="sk-ant-..." />
+      </div>
+    </section>
+
+    <section id="screen-puzzle" data-testid="screen-puzzle" hidden>
+      <h2 id="puzzle-chapter-label" data-testid="puzzle-chapter-label"></h2>
+
+      <div class="card">
+        <h3>Clues</h3>
+        <ul id="clue-list" data-testid="clue-list"></ul>
+      </div>
+
+      <div class="card">
+        <h3>Answer Grid</h3>
+        <p>Assign each attribute to the study number you believe it belongs to. Nothing is checked until you press Check Solution.</p>
+        <div class="table-scroll">
+          <table id="answer-grid" data-testid="answer-grid"></table>
+        </div>
+        <div class="action-row">
+          <button id="btn-check" data-testid="btn-check">Check Solution</button>
+          <button id="btn-hint" class="secondary" data-testid="btn-hint">Reveal a Study (<span id="hint-count">2</span> left)</button>
+          <button id="btn-back-to-menu" class="secondary" data-testid="btn-back-to-menu">Back to Menu</button>
+        </div>
+        <p>Checks used: <span id="checks-used" data-testid="checks-used">0</span></p>
+        <p id="check-feedback" data-testid="check-feedback"></p>
+      </div>
+    </section>
+
+    <section id="screen-result" data-testid="screen-result" hidden>
+      <div class="card">
+        <h2>Solved</h2>
+        <p id="result-summary" data-testid="result-summary"></p>
+
+        <div id="share-row" hidden>
+          <label class="field-label" for="share-text">Share your result (no puzzle content included)</label>
+          <textarea id="share-text" data-testid="share-text" rows="2" readonly></textarea>
+          <div class="action-row">
+            <button id="btn-copy-share" class="secondary" data-testid="btn-copy-share">Copy</button>
+          </div>
+        </div>
+
+        <div id="ai-panel" data-testid="ai-panel" hidden>
+          <h3>Why This Matters</h3>
+          <p id="ai-explanation-text" data-testid="ai-explanation-text"></p>
+        </div>
+
+        <div class="action-row">
+          <button id="btn-play-again" data-testid="btn-play-again">Play Again</button>
+          <button id="btn-result-menu" class="secondary" data-testid="btn-result-menu">Back to Menu</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="src/data.js"></script>
+  <script src="src/logic.js"></script>
+  <script src="src/ai.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

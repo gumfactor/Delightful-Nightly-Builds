@@ -1,0 +1,11 @@
+{
+  "name": "zebra-lab",
+  "version": "1.0.0",
+  "description": "Procedurally generated, solver-verified-unique logic-grid deduction game over a research-methods taxonomy",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}
