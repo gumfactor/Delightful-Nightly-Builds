@@ -1,0 +1,8 @@
+{
+  "order": ["core", "presentation", "cli"],
+  "modules": {
+    "core": ["src.scanner", "src.ast_parser", "src.graph", "src.layers"],
+    "presentation": ["src.report", "src.ai"],
+    "cli": ["src.cli", "main"]
+  }
+}

@@ -1,0 +1,5 @@
+# Layer Guard has zero third-party runtime dependencies — stdlib only
+# (ast, os, sys, json, argparse, urllib.request for the optional Anthropic call).
+#
+# Dev/test dependency:
+pytest>=7.4
