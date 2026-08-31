@@ -1,0 +1,31 @@
+{
+  "habits": [
+    {
+      "id": "running",
+      "name": "Running",
+      "cadence": "daily",
+      "source": "garmin",
+      "garmin_activity_types": ["Running", "Treadmill Running", "Trail Running"]
+    },
+    {
+      "id": "golf",
+      "name": "Golf",
+      "cadence": "weekly",
+      "source": "garmin",
+      "garmin_activity_types": ["Golf"]
+    },
+    {
+      "id": "strength",
+      "name": "Strength Training",
+      "cadence": "daily",
+      "source": "garmin",
+      "garmin_activity_types": ["Strength Training"]
+    },
+    {
+      "id": "writing",
+      "name": "Writing",
+      "cadence": "daily",
+      "source": "manual"
+    }
+  ]
+}
