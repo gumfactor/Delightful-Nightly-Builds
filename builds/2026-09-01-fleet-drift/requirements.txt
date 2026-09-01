@@ -1,0 +1,3 @@
+# Fleet Drift is stdlib-only at runtime (urllib, sqlite3, json, argparse).
+# pytest is only needed to run the test suite, not to run the tool itself.
+pytest==9.0.2
