@@ -1,0 +1,4 @@
+data/*.db
+*.html
+.pytest_cache/
+__pycache__/
