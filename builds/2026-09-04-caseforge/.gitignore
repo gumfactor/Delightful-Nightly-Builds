@@ -1,0 +1,5 @@
+caseforge.db
+*.pyc
+__pycache__/
+.pytest_cache/
+cases.html
