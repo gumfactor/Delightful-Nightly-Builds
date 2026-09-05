@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mediation &amp; Moderation Analysis Lab</title>
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>Mediation &amp; Moderation Analysis Lab</h1>
+  <p class="subtitle">Interactive trainer for indirect effects and interaction effects — every number computed live, never hardcoded.</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab-btn active" data-testid="tab-mediation" data-tab="mediation" role="tab" aria-selected="true">Mediation Lab</button>
+  <button class="tab-btn" data-testid="tab-moderation" data-tab="moderation" role="tab" aria-selected="false">Moderation Lab</button>
+  <button class="tab-btn" data-testid="tab-quiz" data-tab="quiz" role="tab" aria-selected="false">Quiz</button>
+</nav>
+
+<main>
+
+<section class="tab-panel" data-testid="panel-mediation" id="panel-mediation" role="tabpanel">
+  <div class="lab-grid">
+    <div class="controls-card">
+      <h2>Data-Generating Process</h2>
+      <label>True path a (X &rarr; M): <span data-testid="med-a-val">0.80</span>
+        <input type="range" data-testid="med-a" min="0" max="2" step="0.05" value="0.8">
+      </label>
+      <label>True path b (M &rarr; Y): <span data-testid="med-b-val">1.20</span>
+        <input type="range" data-testid="med-b" min="0" max="2" step="0.05" value="1.2">
+      </label>
+      <label>True direct effect c' (X &rarr; Y): <span data-testid="med-cprime-val">0.30</span>
+        <input type="range" data-testid="med-cprime" min="-1" max="1" step="0.05" value="0.3">
+      </label>
+      <label>Noise SD: <span data-testid="med-noise-val">1.50</span>
+        <input type="range" data-testid="med-noise" min="0.2" max="4" step="0.1" value="1.5">
+      </label>
+      <label>Sample size N: <span data-testid="med-n-val">40</span>
+        <input type="range" data-testid="med-n" min="15" max="200" step="5" value="40">
+      </label>
+      <label>Seed: <input type="text" data-testid="med-seed" value="lecture-1"></label>
+      <button data-testid="med-generate" class="primary-btn">Generate Sample</button>
+    </div>
+
+    <div class="diagram-card">
+      <h2>Path Diagram</h2>
+      <canvas data-testid="med-canvas" width="420" height="260" role="img" aria-label="Mediation path diagram showing X to M to Y with labeled path coefficients"></canvas>
+    </div>
+
+    <div class="results-card" data-testid="med-results" hidden>
+      <h2>Results</h2>
+      <table class="stats-table">
+        <tbody>
+          <tr><th>Path a (X&rarr;M)</th><td data-testid="med-a-est"></td></tr>
+          <tr><th>Path b (M&rarr;Y|X)</th><td data-testid="med-b-est"></td></tr>
+          <tr><th>Direct effect c' (X&rarr;Y|M)</th><td data-testid="med-cprime-est"></td></tr>
+          <tr><th>Total effect c (X&rarr;Y)</th><td data-testid="med-c-est"></td></tr>
+          <tr><th>Indirect effect (a&times;b)</th><td data-testid="med-indirect"></td></tr>
+          <tr><th>Bootstrap 95% CI</th><td data-testid="med-ci"></td></tr>
+          <tr><th>Identity check (c &minus; (c'+ab))</th><td data-testid="med-identity"></td></tr>
+          <tr><th>Sobel SE / z / p</th><td data-testid="med-sobel"></td></tr>
+        </tbody>
+      </table>
+      <p class="significance-badge" data-testid="med-sig-badge"></p>
+      <button data-testid="med-explain-btn" class="secondary-btn">Explain this in plain English</button>
+      <p class="ai-explanation" data-testid="med-explanation"></p>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel hidden" data-testid="panel-moderation" id="panel-moderation" role="tabpanel">
+  <div class="lab-grid">
+    <div class="controls-card">
+      <h2>Data-Generating Process</h2>
+      <label>True main effect b1 (X): <span data-testid="mod-b1-val">1.00</span>
+        <input type="range" data-testid="mod-b1" min="-2" max="2" step="0.05" value="1.0">
+      </label>
+      <label>True main effect b2 (Z): <span data-testid="mod-b2-val">0.50</span>
+        <input type="range" data-testid="mod-b2" min="-2" max="2" step="0.05" value="0.5">
+      </label>
+      <label>True interaction b3 (X&times;Z): <span data-testid="mod-b3-val">0.60</span>
+        <input type="range" data-testid="mod-b3" min="-1" max="1" step="0.02" value="0.6">
+      </label>
+      <label>Noise SD: <span data-testid="mod-noise-val">2.00</span>
+        <input type="range" data-testid="mod-noise" min="0.2" max="6" step="0.1" value="2.0">
+      </label>
+      <label>Sample size N: <span data-testid="mod-n-val">40</span>
+        <input type="range" data-testid="mod-n" min="15" max="200" step="5" value="40">
+      </label>
+      <label>Seed: <input type="text" data-testid="mod-seed" value="lecture-1"></label>
+      <button data-testid="mod-generate" class="primary-btn">Generate Sample</button>
+    </div>
+
+    <div class="diagram-card">
+      <h2>X vs Y by Moderator Level</h2>
+      <canvas data-testid="mod-canvas" width="420" height="260" role="img" aria-label="Scatterplot of X versus Y colored by moderator level, with simple slope lines at low, mean, and high moderator values"></canvas>
+      <h3>Region of Significance</h3>
+      <canvas data-testid="mod-jn-canvas" width="420" height="70" role="img" aria-label="Strip showing which moderator values produce a statistically significant simple slope"></canvas>
+    </div>
+
+    <div class="results-card" data-testid="mod-results" hidden>
+      <h2>Results</h2>
+      <table class="stats-table">
+        <tbody>
+          <tr><th>b0 (intercept)</th><td data-testid="mod-b0-est"></td></tr>
+          <tr><th>b1 (X main effect)</th><td data-testid="mod-b1-est"></td></tr>
+          <tr><th>b2 (Z main effect)</th><td data-testid="mod-b2-est"></td></tr>
+          <tr><th>b3 (interaction)</th><td data-testid="mod-b3-est"></td></tr>
+          <tr><th>R&sup2;</th><td data-testid="mod-r2"></td></tr>
+        </tbody>
+      </table>
+      <h3>Simple Slopes</h3>
+      <table class="stats-table" data-testid="mod-simple-slopes">
+        <thead><tr><th>Moderator level</th><th>Slope</th><th>SE</th><th>t</th><th>p</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p><strong>Johnson-Neyman region:</strong> <span data-testid="mod-jn-region"></span></p>
+      <p class="significance-badge" data-testid="mod-sig-badge"></p>
+      <button data-testid="mod-explain-btn" class="secondary-btn">Explain this in plain English</button>
+      <p class="ai-explanation" data-testid="mod-explanation"></p>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel hidden" data-testid="panel-quiz" id="panel-quiz" role="tabpanel">
+  <div class="quiz-card">
+    <div data-testid="quiz-intro">
+      <h2>Mediation &amp; Moderation Quiz</h2>
+      <p>16 questions: 8 conceptual, 8 freshly computed from a live scenario each time you take the quiz.</p>
+      <button data-testid="quiz-start" class="primary-btn">Start Quiz</button>
+    </div>
+    <div data-testid="quiz-question" hidden>
+      <p class="quiz-progress" data-testid="quiz-progress"></p>
+      <p class="quiz-prompt" data-testid="quiz-prompt"></p>
+      <div class="quiz-choices" data-testid="quiz-choices"></div>
+      <p class="quiz-feedback" data-testid="quiz-feedback" hidden></p>
+      <button data-testid="quiz-next" class="primary-btn" hidden>Next</button>
+    </div>
+    <div data-testid="quiz-result" hidden>
+      <h2>Quiz Complete</h2>
+      <p data-testid="quiz-score"></p>
+      <div data-testid="quiz-review"></div>
+      <button data-testid="quiz-restart" class="primary-btn">Retake Quiz</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="app-footer">
+  <label>Claude API key (session only, never stored): <input type="password" data-testid="api-key-input" autocomplete="off"></label>
+</footer>
+
+<script src="src/rng.js"></script>
+<script src="src/stats.js"></script>
+<script src="src/mediation-engine.js"></script>
+<script src="src/moderation-engine.js"></script>
+<script src="src/ai-explain.js"></script>
+<script src="src/quiz-data.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

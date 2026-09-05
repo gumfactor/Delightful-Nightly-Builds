@@ -1,0 +1,12 @@
+{
+  "name": "mediation-moderation-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive mediation and moderation analysis trainer",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}
