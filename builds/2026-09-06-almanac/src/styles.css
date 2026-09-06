@@ -1,0 +1,248 @@
+:root {
+  --bg: #f7f7f5;
+  --panel-bg: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #5a5a5a;
+  --border: #dcdcd8;
+  --accent: #2f6f4f;
+  --accent-contrast: #ffffff;
+  --error: #b3261e;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 28px;
+  --radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --panel-bg: #1e2126;
+    --text: #eef0f2;
+    --text-muted: #9aa1ab;
+    --border: #33373e;
+    --accent: #5fbf8b;
+    --accent-contrast: #0b1210;
+    --error: #ff8a80;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+.topbar {
+  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+}
+
+.topbar h1 {
+  margin: 0 0 4px;
+}
+
+.tagline {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--spacing-md);
+}
+
+.panel h2 {
+  margin-top: 0;
+}
+
+.panel-inner {
+  margin-top: var(--spacing-md);
+}
+
+.search-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.search-row input {
+  flex: 1;
+  min-width: 200px;
+}
+
+input,
+select,
+button {
+  font-size: 1rem;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--text);
+}
+
+button {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.result-list {
+  list-style: none;
+  margin: var(--spacing-sm) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result-list li {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.result-list li:hover {
+  border-color: var(--accent);
+}
+
+.selected-location {
+  margin-top: var(--spacing-sm);
+}
+
+.error-text {
+  color: var(--error);
+  margin: var(--spacing-sm) 0;
+}
+
+.status-text {
+  margin-top: var(--spacing-sm);
+  color: var(--text-muted);
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.summary-cards .card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--spacing-sm);
+}
+
+.summary-cards .card .value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.summary-cards .card .label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.chart-block {
+  margin-bottom: var(--spacing-lg);
+}
+
+.chart-block canvas {
+  max-width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow-x: auto;
+  display: block;
+}
+
+thead,
+tbody {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+
+th {
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-muted);
+}
+
+.export-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-md);
+}
+
+footer {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+  .search-row {
+    flex-direction: column;
+  }
+  .search-row input {
+    min-width: 0;
+  }
+}

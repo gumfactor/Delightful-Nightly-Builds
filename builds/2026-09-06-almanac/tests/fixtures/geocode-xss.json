@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "id": 9999999,
+      "name": "<img src=x onerror=window.__xssFired=true>Eviltown</script><script>window.__xssFired2=true;</script>",
+      "latitude": 10.0,
+      "longitude": 10.0,
+      "elevation": 5,
+      "feature_code": "PPLA",
+      "country_code": "ZZ",
+      "timezone": "UTC",
+      "country": "</script><script>window.__xssFired3=true;</script>Nowhereland",
+      "admin1": "Testregion"
+    }
+  ],
+  "generationtime_ms": 0.3
+}

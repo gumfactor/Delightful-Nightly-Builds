@@ -1,0 +1,12 @@
+{
+  "name": "almanac",
+  "version": "1.0.0",
+  "description": "Historical climate & extreme-weather data explorer built on Open-Meteo's free historical archive API",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
