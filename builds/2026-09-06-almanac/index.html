@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Almanac — Historical Climate Explorer</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>Almanac</h1>
+  <p class="tagline">Explore real historical weather data for any location — not a forecast, the actual record.</p>
+</header>
+
+<main>
+  <section class="panel" id="searchPanel">
+    <h2>1. Choose a location</h2>
+    <div class="search-row">
+      <input type="text" id="locationSearchInput" placeholder="City or place name (e.g. Toronto, Muskoka)" data-testid="location-input" />
+      <button id="locationSearchBtn" data-testid="search-btn">Search</button>
+    </div>
+    <div id="searchError" class="error-text" hidden></div>
+    <ul id="searchResults" class="result-list" data-testid="search-results" hidden></ul>
+
+    <div id="recentWrap" hidden>
+      <h3>Recent locations</h3>
+      <ul id="recentLocations" class="result-list" data-testid="recent-locations"></ul>
+    </div>
+
+    <div id="selectedLocationWrap" class="selected-location" hidden>
+      Selected: <strong id="selectedLocationText" data-testid="selected-location"></strong>
+    </div>
+  </section>
+
+  <section class="panel" id="controlsPanel">
+    <h2>2. Choose a range and activity</h2>
+    <div class="controls-grid">
+      <label>Start year
+        <input type="number" id="startYear" data-testid="start-year" min="1940" max="2026" />
+      </label>
+      <label>End year
+        <input type="number" id="endYear" data-testid="end-year" min="1940" max="2026" />
+      </label>
+      <label>Season start month
+        <select id="startMonth" data-testid="start-month"></select>
+      </label>
+      <label>Season end month
+        <select id="endMonth" data-testid="end-month"></select>
+      </label>
+      <label>Activity preset
+        <select id="activityPreset" data-testid="activity-preset">
+          <option value="running">Running</option>
+          <option value="golf">Golf</option>
+          <option value="boating">Boating</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="customThresholds" class="controls-grid" hidden>
+      <label>Min comfortable temp (°C)
+        <input type="number" id="customTempMin" data-testid="custom-temp-min" value="5" />
+      </label>
+      <label>Max comfortable temp (°C)
+        <input type="number" id="customTempMax" data-testid="custom-temp-max" value="25" />
+      </label>
+      <label>Max wind (km/h)
+        <input type="number" id="customWind" data-testid="custom-wind" value="25" />
+      </label>
+      <label>Max precipitation (mm)
+        <input type="number" id="customPrecip" data-testid="custom-precip" value="1" />
+      </label>
+    </div>
+
+    <button id="fetchBtn" data-testid="fetch-btn" disabled>Fetch historical data</button>
+    <div id="statusMessage" class="status-text" data-testid="status-message" hidden></div>
+  </section>
+
+  <section class="panel" id="resultsSection" data-testid="results-section" hidden>
+    <h2>3. Explore the record</h2>
+
+    <div id="summaryCards" class="summary-cards" data-testid="summary-cards"></div>
+
+    <div class="chart-block">
+      <h3>Monthly climatology (P10–P90 band, max temperature)</h3>
+      <canvas id="climatologyChart" height="260"></canvas>
+    </div>
+
+    <div class="chart-block">
+      <h3>Year-over-year comparison</h3>
+      <label>Variable
+        <select id="yearChartVariable" data-testid="year-chart-variable">
+          <option value="avgTempMax">Avg high temp</option>
+          <option value="avgTempMin">Avg low temp</option>
+          <option value="totalPrecip">Total precipitation</option>
+          <option value="suitablePct">% suitable days</option>
+        </select>
+      </label>
+      <canvas id="yearChart" height="260"></canvas>
+    </div>
+
+    <div class="panel-inner">
+      <h3>Extreme events</h3>
+      <div id="extremeEventsPanel" data-testid="extreme-events"></div>
+    </div>
+
+    <div class="panel-inner">
+      <h3>Year-by-year summary</h3>
+      <table id="yearTable" data-testid="year-table">
+        <thead>
+          <tr>
+            <th data-sort="year">Year</th>
+            <th data-sort="avgTempMax">Avg High (°C)</th>
+            <th data-sort="avgTempMin">Avg Low (°C)</th>
+            <th data-sort="totalPrecip">Total Precip (mm)</th>
+            <th data-sort="heatWaveCount">Heat Waves</th>
+            <th data-sort="coldSnapCount">Cold Snaps</th>
+            <th data-sort="heavyRainDayCount">Heavy Rain Days</th>
+            <th data-sort="highWindDayCount">High Wind Days</th>
+            <th data-sort="suitablePct">% Suitable</th>
+          </tr>
+        </thead>
+        <tbody id="yearTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="export-row">
+      <button id="exportDailyCsvBtn" data-testid="export-daily-csv">Export raw daily data (CSV)</button>
+      <button id="exportSummaryCsvBtn" data-testid="export-summary-csv">Export year summary (CSV)</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> Historical Weather Archive (free, no API key). Nothing you type here leaves your browser except location and date-range requests to Open-Meteo's public API.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="src/analytics.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "latitude": 43.7,
+  "longitude": -79.42,
+  "timezone": "America/Toronto",
+  "daily_units": {
+    "time": "iso8601",
+    "temperature_2m_max": "°C",
+    "temperature_2m_min": "°C",
+    "precipitation_sum": "mm",
+    "wind_speed_10m_max": "km/h"
+  },
+  "daily": {
+    "time": [],
+    "temperature_2m_max": [],
+    "temperature_2m_min": [],
+    "precipitation_sum": [],
+    "wind_speed_10m_max": []
+  }
+}
