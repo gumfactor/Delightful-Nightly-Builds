@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" data-testid="root-html">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>True Course</title>
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <div id="app">
+    <header class="tc-header">
+      <h1>⚓ True Course</h1>
+      <p class="tc-tagline">Real navigation math. No hardcoded answers.</p>
+    </header>
+    <main id="screen" data-testid="screen" aria-live="polite"></main>
+    <footer class="tc-footer">
+      <p>Set &amp; drift, tide windows, right of way, and buoyage — every puzzle answer is computed live.</p>
+    </footer>
+  </div>
+
+  <script src="src/engine.js"></script>
+  <script src="src/generator.js"></script>
+  <script src="src/render.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

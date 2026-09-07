@@ -1,0 +1,11 @@
+{
+  "name": "true-course",
+  "version": "1.0.0",
+  "description": "Nautical navigation puzzle game — set & drift, tide windows, right of way, and buoyage, every answer computed live",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
