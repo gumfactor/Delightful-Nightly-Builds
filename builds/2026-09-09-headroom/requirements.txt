@@ -1,0 +1,3 @@
+# No third-party dependencies — stdlib only.
+# The optional Anthropic API call in src/ai_briefing.py uses urllib.request
+# directly rather than the `anthropic` SDK, so no package install is needed.
