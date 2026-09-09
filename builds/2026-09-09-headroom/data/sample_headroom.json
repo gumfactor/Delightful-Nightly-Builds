@@ -1,0 +1,24 @@
+{
+  "profile": {"birth_year": 1990, "resident_since_year": null},
+  "tfsa_contributions": [
+    {"date": "2020-06-01", "amount": 6000.0},
+    {"date": "2022-01-15", "amount": 6000.0}
+  ],
+  "tfsa_withdrawals": [
+    {"date": "2023-11-01", "amount": 3000.0}
+  ],
+  "rrsp_contributions": [
+    {"date": "2021-02-15", "amount": 10000.0, "tax_year": 2020},
+    {"date": "2023-04-01", "amount": 15000.0, "tax_year": 2023}
+  ],
+  "rrsp_income": [
+    {"year": 2019, "earned_income": 80000.0, "pension_adjustment": 0.0},
+    {"year": 2020, "earned_income": 82000.0, "pension_adjustment": 0.0},
+    {"year": 2021, "earned_income": 85000.0, "pension_adjustment": 0.0},
+    {"year": 2022, "earned_income": 90000.0, "pension_adjustment": 0.0},
+    {"year": 2023, "earned_income": 95000.0, "pension_adjustment": 0.0},
+    {"year": 2024, "earned_income": 100000.0, "pension_adjustment": 0.0},
+    {"year": 2025, "earned_income": 105000.0, "pension_adjustment": 0.0}
+  ],
+  "rrsp_opening_balance": null
+}
