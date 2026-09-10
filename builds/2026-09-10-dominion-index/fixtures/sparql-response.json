@@ -1,0 +1,21 @@
+{
+  "head": { "vars": ["industryLabel", "provinceLabel", "count"] },
+  "results": {
+    "bindings": [
+      { "industryLabel": { "type": "literal", "value": "Retail", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Ontario", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "40" } },
+      { "industryLabel": { "type": "literal", "value": "Retail", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Quebec", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "20" } },
+      { "industryLabel": { "type": "literal", "value": "Retail", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Unknown", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "5" } },
+      { "industryLabel": { "type": "literal", "value": "Technology", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Ontario", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "30" } },
+      { "industryLabel": { "type": "literal", "value": "Technology", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "British Columbia", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "15" } },
+      { "industryLabel": { "type": "literal", "value": "Technology", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Unknown", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "10" } },
+      { "industryLabel": { "type": "literal", "value": "Mining", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Alberta", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "25" } },
+      { "industryLabel": { "type": "literal", "value": "Mining", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Ontario", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "5" } },
+      { "industryLabel": { "type": "literal", "value": "Unclassified" }, "provinceLabel": { "type": "literal", "value": "Ontario", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "12" } },
+      { "industryLabel": { "type": "literal", "value": "Unclassified" }, "provinceLabel": { "type": "literal", "value": "Quebec", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "3" } },
+      { "industryLabel": { "type": "literal", "value": "Food industry", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Quebec", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "18" } },
+      { "industryLabel": { "type": "literal", "value": "Food industry", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Ontario", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "8" } },
+      { "industryLabel": { "type": "literal", "value": "Banking", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Ontario", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "22" } },
+      { "industryLabel": { "type": "literal", "value": "Banking", "xml:lang": "en" }, "provinceLabel": { "type": "literal", "value": "Nova Scotia", "xml:lang": "en" }, "count": { "datatype": "http://www.w3.org/2001/XMLSchema#integer", "type": "literal", "value": "6" } }
+    ]
+  }
+}
