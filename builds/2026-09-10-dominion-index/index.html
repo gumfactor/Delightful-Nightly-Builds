@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dominion Index</title>
+<link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-titles">
+      <h1>Dominion Index</h1>
+      <p class="subtitle">Canadian-owned companies on Wikidata, by industry and province</p>
+    </div>
+    <div class="header-actions">
+      <button id="theme-toggle" type="button" aria-label="Toggle light/dark theme">🌙</button>
+      <button id="refresh-btn" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <div id="status-message" class="status" role="status" hidden></div>
+
+  <main id="dashboard" hidden>
+    <div class="meta-row">
+      <span id="last-updated"></span>
+      <span id="total-count"></span>
+      <a id="csv-export" download="dominion-index-export.csv">Export CSV</a>
+    </div>
+
+    <section class="panels">
+      <div class="panel">
+        <h2>By Industry</h2>
+        <div class="chart-wrap"><canvas id="industry-chart" role="img" aria-label="Bar chart of company counts by industry"></canvas></div>
+        <ul id="industry-totals" class="totals-list"></ul>
+      </div>
+      <div class="panel">
+        <h2>By Province</h2>
+        <div class="chart-wrap"><canvas id="province-chart" role="img" aria-label="Bar chart of company counts by province"></canvas></div>
+        <ul id="province-totals" class="totals-list"></ul>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <div class="table-controls">
+        <input id="table-filter" type="text" placeholder="Filter by industry or province…" aria-label="Filter table" />
+      </div>
+      <div class="table-wrap">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th data-sort-key="industry">Industry</th>
+              <th data-sort-key="province">Province</th>
+              <th data-sort-key="count">Count</th>
+              <th>Since last visit</th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Data source: <a href="https://query.wikidata.org/sparql" target="_blank" rel="noopener">Wikidata Query Service</a> (live, public, no authentication). "Canadian-owned" is a heuristic based on headquarters location and recorded parent organizations — see Manual.md for known limitations.</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+  <script src="src/sparql.js"></script>
+  <script src="src/aggregate.js"></script>
+  <script src="src/snapshot.js"></script>
+  <script src="src/render.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

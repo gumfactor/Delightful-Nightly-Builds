@@ -1,0 +1,12 @@
+{
+  "name": "dominion-index",
+  "version": "1.0.0",
+  "description": "Browser dashboard visualizing Canadian-owned companies on Wikidata by industry and province",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "chart.js": "^4.4.4"
+  }
+}
