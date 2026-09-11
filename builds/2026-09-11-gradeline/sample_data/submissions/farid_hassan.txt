@@ -1,0 +1,13 @@
+Introduction
+
+I argue that early-life stress exposure recalibrates the threshold at which the adult stress response activates, rather than simply making the system more reactive across the board. This is my central claim throughout the paper.
+
+Discussion
+
+A foundational study (Meaney, 2016) using variation in maternal care found that offspring receiving lower levels of early care showed a lower activation threshold for the stress response in adulthood, not a uniformly larger response. Follow-up research (Gunnar, 2018) in human populations found a parallel pattern: children from high-adversity environments showed faster-onset cortisol responses to mild stressors, again consistent with a threshold shift rather than pure amplification.
+
+A further study (Bick, 2020) found that this threshold shift was partially reversible with a sufficiently early and stable caregiving intervention, suggesting a genuine developmental window rather than a fixed early-life imprint.
+
+Conclusion
+
+The evidence supports a threshold-recalibration model of early-life stress programming, with a real but time-limited window for intervention — a distinction with direct implications for when preventive programs should be targeted.

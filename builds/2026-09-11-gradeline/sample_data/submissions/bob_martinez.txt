@@ -1,0 +1,13 @@
+Introduction
+
+My claim in this reflection is that social support acts as a direct buffer against the physiological costs of acute stress, not merely as a psychological comfort. I argue that the buffering effect is measurable at the level of cardiovascular reactivity, not just self-reported mood.
+
+Discussion
+
+One widely cited study (Cohen, 2018) found that participants who had a supportive person present during a standardized stress task showed significantly lower blood pressure reactivity than participants who completed the same task alone. A related body of research (Uchino, 2017) extends this finding by showing that the quality of the relationship, not just its presence, predicts the size of the buffering effect. Weak or ambivalent relationships produced much smaller reductions in reactivity than close, low-conflict ones.
+
+Another study (Taylor, 2020) adds an important caveat: the buffering effect was weaker in participants with insecure attachment styles, suggesting the mechanism may run partly through perceived rather than actual support availability.
+
+Conclusion
+
+The evidence as a whole argues that social support is a measurable physiological buffer against acute stress, with attachment style acting as an important moderator that future research should treat as a variable in its own right, not just noise.

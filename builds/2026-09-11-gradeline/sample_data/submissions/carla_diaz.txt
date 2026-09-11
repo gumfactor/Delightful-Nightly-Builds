@@ -1,0 +1,13 @@
+Introduction
+
+This paper's thesis is that chronic stress reshapes the body's cortisol response in ways that persist long after the original stressor has ended. I argue that this persistence, more than the stressor itself, drives many of the long-term health effects tied to chronic stress.
+
+Discussion
+
+A landmark study (Smith, 2019) tracked cortisol reactivity in a cohort exposed to sustained workplace stress and found that reactivity patterns remained abnormal a full year after the stressor ended. Further research (Jones & Lee, 2020) supports this claim, showing that the hypothalamic-pituitary-adrenal axis can become sensitized rather than simply fatigued. This evidence suggests that early intervention, before sensitization sets in, may matter more than intervention timed to the stressor's peak.
+
+A separate finding (Nguyen, 2021) complicates the picture: not every participant showed sensitization, and those who practiced regular coping strategies were much less likely to show the abnormal pattern. This finding points toward coping style, not just stressor duration, as a moderating variable worth studying directly.
+
+Conclusion
+
+Taken together, the study evidence argues for a model of chronic stress that centers on HPA-axis sensitization rather than simple wear-and-tear, with coping behavior as a key moderator deserving further research.
