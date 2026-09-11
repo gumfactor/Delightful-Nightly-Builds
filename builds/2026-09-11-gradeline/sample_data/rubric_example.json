@@ -1,0 +1,36 @@
+{
+  "name": "Sample — Stress & Coping Reflection Paper",
+  "min_words": 120,
+  "max_words": 600,
+  "min_citations": 2,
+  "required_sections": ["Introduction", "Discussion", "Conclusion"],
+  "criteria": [
+    {
+      "id": "thesis",
+      "name": "Clear Thesis",
+      "description": "States a clear, arguable thesis in the introduction.",
+      "max_points": 10,
+      "keywords": ["thesis", "argue", "claim", "argument"],
+      "min_keyword_hits": 1,
+      "manual_only": false
+    },
+    {
+      "id": "evidence",
+      "name": "Use of Evidence",
+      "description": "Supports claims with cited evidence from course material.",
+      "max_points": 15,
+      "keywords": ["study", "research", "evidence", "finding", "findings"],
+      "min_keyword_hits": 2,
+      "manual_only": false
+    },
+    {
+      "id": "argument_quality",
+      "name": "Argument Quality",
+      "description": "Depth, coherence, and originality of the overall argument. Requires the instructor's own judgment.",
+      "max_points": 20,
+      "keywords": [],
+      "min_keyword_hits": 0,
+      "manual_only": true
+    }
+  ]
+}

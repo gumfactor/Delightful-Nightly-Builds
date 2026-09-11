@@ -1,0 +1,13 @@
+Introduction
+
+My thesis is that sleep disruption functions as both a cause and a consequence of chronic stress, forming a feedback loop rather than a one-directional relationship. I argue that treatments targeting only one side of this loop are likely to underperform.
+
+Discussion
+
+A recent study (Walker, 2021) found that a single night of poor sleep measurably increased next-day cortisol reactivity to a standardized stress task, establishing sleep as a causal input to stress physiology, not just an output. Complementary research (Harvey, 2019) demonstrates the reverse pathway: elevated evening cortisol predicted fragmented sleep architecture that same night, measured via actigraphy. Together, this evidence supports a genuine feedback loop rather than a simple cause-effect chain.
+
+A third finding (Kim, 2022) is notable for showing that cognitive behavioral therapy for insomnia broke the loop at the sleep side, producing downstream reductions in daytime cortisol reactivity even without any stress-focused intervention component.
+
+Conclusion
+
+This evidence argues that sleep and stress form a bidirectional loop, and that interventions aimed at either side can plausibly interrupt the other, a claim that argues for integrating sleep-focused treatment into stress-management research going forward.
