@@ -1,0 +1,3 @@
+# Throughline core is stdlib-only (urllib, sqlite3, argparse).
+# Test-only dependency:
+pytest>=7.0
