@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <title>ArXiv Query: search_query=all:%22affective neuroscience%22</title>
+  <id>http://arxiv.org/api/query</id>
+  <updated>2026-09-01T00:00:00Z</updated>
+  <opensearch:totalResults xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">2</opensearch:totalResults>
+  <entry>
+    <id>http://arxiv.org/abs/2608.12345v1</id>
+    <updated>2026-08-20T12:00:00Z</updated>
+    <published>2026-08-20T12:00:00Z</published>
+    <title>Cortisol Reactivity and Amygdala Connectivity in Chronic Stress</title>
+    <summary>
+      In a sample of N = 84 participants, cortisol reactivity correlated with
+      amygdala-prefrontal connectivity (r = .32, p &lt; .001; d = 0.45), suggesting
+      a stable neuroendocrine marker of chronic stress vulnerability.
+    </summary>
+    <author><name>A. Researcher</name></author>
+    <author><name>B. Collaborator</name></author>
+    <category term="q-bio.NC" />
+    <link href="http://arxiv.org/abs/2608.12345v1" rel="alternate" type="text/html" />
+    <link title="pdf" href="http://arxiv.org/pdf/2608.12345v1" rel="related" type="application/pdf" />
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2607.54321v2</id>
+    <updated>2026-07-05T09:30:00Z</updated>
+    <published>2026-07-05T09:30:00Z</published>
+    <title>A Meta-Analysis of Empathy Training Interventions</title>
+    <summary>
+      We synthesize findings across 12 randomized trials (total N = 1204) of
+      empathy training programs, finding a small but reliable pooled effect
+      (d = 0.28, p = 0.004) on self-reported affective empathy.
+    </summary>
+    <author><name>C. Investigator</name></author>
+    <category term="q-bio.NC" />
+    <category term="cs.CY" />
+    <link href="http://arxiv.org/abs/2607.54321v2" rel="alternate" type="text/html" />
+  </entry>
+</feed>
