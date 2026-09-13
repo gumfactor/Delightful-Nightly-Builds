@@ -1,0 +1,3 @@
+# Preprint Pulse — stdlib only. No third-party dependencies to install.
+# (Chart.js 4.4.4 is loaded by the generated HTML report directly from a
+# pinned CDN URL at view time; it is not a Python or test-time dependency.)
