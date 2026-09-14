@@ -1,0 +1,11 @@
+{
+  "name": "erp-lab",
+  "version": "1.0.0",
+  "description": "Interactive browser trainer for ERP/EEG signal processing and the P300 Concealed Information Test",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

@@ -1,0 +1,11 @@
+# Future Features — ERP Lab
+
+1. **Multi-subject / group-level CIT analysis.** Currently single-subject, single-session. A group tab could simulate a cohort of guilty and innocent subjects and show the distribution of detection rates and true/false-positive rates across the group — directly demonstrating classifier sensitivity/specificity trade-offs at the population level.
+2. **Real EEG file import (EDF/BDF or CSV).** Let a user drop in a real (or de-identified/simulated) recording exported from lab equipment and run the same averaging/artifact-rejection/FFT pipeline on real data instead of synthetic epochs.
+3. **Independent Component Analysis (ICA) demo tab.** The Artifact Rejection tab only covers threshold-based trial rejection; a from-scratch (or simplified) ICA decomposition demo would teach the more sophisticated blink-removal technique actually used in modern EEG pipelines.
+4. **Topographic scalp-map visualization.** All current visualizations are single-channel time/frequency plots. A synthetic multi-electrode montage with an interpolated scalp heatmap would teach spatial ERP topography (e.g. why P300 is typically maximal at parietal electrodes).
+5. **Exportable session report.** A "Generate PDF/Markdown summary" button that captures the current CIT Lab parameters, observed statistics, and waveform plots into a shareable report — useful for including in teaching materials or RA training documentation.
+6. **Adjustable ERP component shape library.** Currently only a single Gaussian bump models the ERP; adding named canonical components (N170, N400, LPP) with their typical latency/polarity would let the tool double as a broader ERP components reference, not just P300/CIT.
+7. **Bootstrap confidence interval on the observed difference**, alongside the existing permutation-test p-value, to teach the distinction between an interval estimate and a hypothesis test on the same data.
+8. **Adaptive/sequential CIT simulation.** Model a multi-block CIT protocol (as used in real GKT/CIT research) where the same probe/irrelevant set is repeated across several blocks, and show how within-subject repetition changes statistical power compared to a single block.
+9. **Keyboard navigation for the quiz** (number keys 1-4 to select an answer, Enter to advance) for faster review sessions.

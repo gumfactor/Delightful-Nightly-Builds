@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ERP Lab &mdash; Event-Related Potentials &amp; the Concealed Information Test</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<header class="app-header">
+  <h1>ERP Lab</h1>
+  <p class="subtitle">Event-related potentials, EEG signal processing, and the P300 Concealed Information Test &mdash; every number on this page is computed live.</p>
+</header>
+
+<nav class="tab-nav" role="tablist" aria-label="ERP Lab sections">
+  <button class="tab-btn active" data-testid="tab-basics" data-tab="basics" role="tab" aria-selected="true">ERP Basics</button>
+  <button class="tab-btn" data-testid="tab-artifact" data-tab="artifact" role="tab" aria-selected="false">Artifact Rejection</button>
+  <button class="tab-btn" data-testid="tab-freq" data-tab="freq" role="tab" aria-selected="false">Frequency Domain</button>
+  <button class="tab-btn" data-testid="tab-cit" data-tab="cit" role="tab" aria-selected="false">CIT Lab</button>
+  <button class="tab-btn" data-testid="tab-quiz" data-tab="quiz" role="tab" aria-selected="false">Quiz</button>
+</nav>
+
+<main>
+
+  <!-- ============ ERP BASICS ============ -->
+  <section id="panel-basics" class="tab-panel" data-testid="panel-basics">
+    <h2>Trial Averaging &amp; Signal-to-Noise</h2>
+    <p class="blurb">Every single EEG trial is mostly noise. Averaging many trials cancels the random noise while the stimulus-locked ERP component (a P300-like bump) stays constant &mdash; that's the entire logic behind ERP research.</p>
+    <div class="controls">
+      <label>Number of trials averaged (N)
+        <input type="range" id="basics-ntrials" data-testid="basics-ntrials" min="1" max="200" value="30" />
+        <span class="value-readout" id="basics-ntrials-value">30</span>
+      </label>
+      <label>Single-trial noise SD (&micro;V)
+        <input type="range" id="basics-noisesd" data-testid="basics-noisesd" min="1" max="15" value="8" step="0.5" />
+        <span class="value-readout" id="basics-noisesd-value">8</span>
+      </label>
+    </div>
+    <canvas id="basics-canvas" data-testid="basics-canvas" width="700" height="320"></canvas>
+    <div class="stat-row">
+      <div class="stat-card"><span class="stat-label">Measured baseline noise SD</span><span class="stat-value" id="basics-measured-sd" data-testid="basics-measured-sd">&mdash;</span></div>
+      <div class="stat-card"><span class="stat-label">Theoretical noise SD (&sigma;/&radic;N)</span><span class="stat-value" id="basics-theory-sd" data-testid="basics-theory-sd">&mdash;</span></div>
+      <div class="stat-card"><span class="stat-label">SNR gain vs. single trial</span><span class="stat-value" id="basics-snr-gain" data-testid="basics-snr-gain">&mdash;</span></div>
+    </div>
+  </section>
+
+  <!-- ============ ARTIFACT REJECTION ============ -->
+  <section id="panel-artifact" class="tab-panel" data-testid="panel-artifact" hidden>
+    <h2>Eye-Blink Artifact Rejection</h2>
+    <p class="blurb">A fraction of trials are contaminated with a large, slow eye-blink deflection. Peak-to-peak amplitude thresholding flags and removes them before averaging.</p>
+    <div class="controls">
+      <label>Trials (N)
+        <input type="range" id="artifact-ntrials" data-testid="artifact-ntrials" min="20" max="200" value="100" />
+        <span class="value-readout" id="artifact-ntrials-value">100</span>
+      </label>
+      <label>Blink contamination rate
+        <input type="range" id="artifact-blinkrate" data-testid="artifact-blinkrate" min="0" max="0.5" value="0.25" step="0.05" />
+        <span class="value-readout" id="artifact-blinkrate-value">25%</span>
+      </label>
+      <label>Blink amplitude (&micro;V)
+        <input type="range" id="artifact-blinkamp" data-testid="artifact-blinkamp" min="10" max="80" value="45" />
+        <span class="value-readout" id="artifact-blinkamp-value">45</span>
+      </label>
+      <label>Rejection threshold (&micro;V peak-to-peak)
+        <input type="range" id="artifact-threshold" data-testid="artifact-threshold" min="10" max="90" value="35" />
+        <span class="value-readout" id="artifact-threshold-value">35</span>
+      </label>
+    </div>
+    <canvas id="artifact-canvas" data-testid="artifact-canvas" width="700" height="320"></canvas>
+    <div class="stat-row">
+      <div class="stat-card"><span class="stat-label">Trials rejected</span><span class="stat-value" id="artifact-rejected" data-testid="artifact-rejected">&mdash;</span></div>
+      <div class="stat-card"><span class="stat-label">Trials kept</span><span class="stat-value" id="artifact-kept" data-testid="artifact-kept">&mdash;</span></div>
+    </div>
+  </section>
+
+  <!-- ============ FREQUENCY DOMAIN ============ -->
+  <section id="panel-freq" class="tab-panel" data-testid="panel-freq" hidden>
+    <h2>Frequency Domain: FFT &amp; Filtering</h2>
+    <p class="blurb">A synthetic EEG-like signal mixing an alpha-band (~10&nbsp;Hz) oscillation, 60&nbsp;Hz line noise, and broadband noise &mdash; decomposed with a from-scratch FFT, then cleaned with a moving-average low-pass filter.</p>
+    <div class="controls">
+      <label>Alpha (10&nbsp;Hz) amplitude
+        <input type="range" id="freq-alpha-amp" data-testid="freq-alpha-amp" min="0" max="10" value="4" step="0.5" />
+        <span class="value-readout" id="freq-alpha-amp-value">4</span>
+      </label>
+      <label>60&nbsp;Hz line-noise amplitude
+        <input type="range" id="freq-linenoise-amp" data-testid="freq-linenoise-amp" min="0" max="10" value="3" step="0.5" />
+        <span class="value-readout" id="freq-linenoise-amp-value">3</span>
+      </label>
+      <label>Broadband noise SD
+        <input type="range" id="freq-broadband-sd" data-testid="freq-broadband-sd" min="0" max="5" value="1" step="0.25" />
+        <span class="value-readout" id="freq-broadband-sd-value">1</span>
+      </label>
+      <label>Low-pass filter window (samples)
+        <input type="range" id="freq-filter-window" data-testid="freq-filter-window" min="1" max="31" value="1" step="2" />
+        <span class="value-readout" id="freq-filter-window-value">1 (off)</span>
+      </label>
+    </div>
+    <canvas id="freq-time-canvas" data-testid="freq-time-canvas" width="700" height="200"></canvas>
+    <canvas id="freq-spectrum-canvas" data-testid="freq-spectrum-canvas" width="700" height="220"></canvas>
+  </section>
+
+  <!-- ============ CIT LAB ============ -->
+  <section id="panel-cit" class="tab-panel" data-testid="panel-cit" hidden>
+    <h2>P300 Concealed Information Test</h2>
+    <p class="blurb">The Concealed Information Test (Guilty Knowledge Test) presents crime-relevant <strong>probe</strong> items among plausible <strong>irrelevant</strong> items. A person who recognizes a probe as significant tends to show a larger P300. This is a teaching simulation of the statistical methodology &mdash; not a claim that any real-world lie-detection test is infallible.</p>
+    <div class="controls">
+      <label>Concealed-knowledge effect size (&micro;V)
+        <input type="range" id="cit-effect" data-testid="cit-effect" min="0" max="10" value="5" step="0.5" />
+        <span class="value-readout" id="cit-effect-value">5</span>
+      </label>
+      <label>Probe trials
+        <input type="range" id="cit-nprobe" data-testid="cit-nprobe" min="10" max="40" value="20" />
+        <span class="value-readout" id="cit-nprobe-value">20</span>
+      </label>
+      <label>Irrelevant trials
+        <input type="range" id="cit-nirrelevant" data-testid="cit-nirrelevant" min="40" max="150" value="80" />
+        <span class="value-readout" id="cit-nirrelevant-value">80</span>
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="cit-innocent-toggle" data-testid="cit-innocent-toggle" />
+        Simulate an innocent suspect (no true concealed-knowledge effect)
+      </label>
+    </div>
+    <button id="cit-run-test" data-testid="cit-run-test" class="primary-btn">Run Permutation Test</button>
+    <canvas id="cit-avg-canvas" data-testid="cit-avg-canvas" width="700" height="280"></canvas>
+    <canvas id="cit-null-canvas" data-testid="cit-null-canvas" width="700" height="200"></canvas>
+    <div class="stat-row">
+      <div class="stat-card"><span class="stat-label">Observed amplitude difference</span><span class="stat-value" id="cit-observed-diff" data-testid="cit-observed-diff">&mdash;</span></div>
+      <div class="stat-card"><span class="stat-label">Permutation p-value</span><span class="stat-value" id="cit-pvalue" data-testid="cit-pvalue">&mdash;</span></div>
+      <div class="stat-card"><span class="stat-label">Verdict (&alpha; = 0.05)</span><span class="stat-value" id="cit-verdict" data-testid="cit-verdict">&mdash;</span></div>
+    </div>
+    <p class="limitations-note">
+      <strong>Limitation:</strong> at &alpha; = 0.05, a truly innocent subject (no real concealed knowledge) will still produce a "detected" result in roughly 1 of every 20 tests purely by chance &mdash; this is the test's inherent false-positive rate, not a flaw in the simulation. Toggle "Simulate an innocent suspect" above and re-run to see this in practice.
+    </p>
+    <div class="ai-explain">
+      <label>Anthropic API key (optional, session-only &mdash; never stored)
+        <input type="password" id="cit-api-key" data-testid="cit-api-key" autocomplete="off" placeholder="sk-ant-..." />
+      </label>
+      <button id="cit-explain-btn" data-testid="cit-explain-btn" class="secondary-btn">Explain These Results</button>
+      <div id="cit-explain-output" data-testid="cit-explain-output" class="explain-output"></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="panel-quiz" class="tab-panel" data-testid="panel-quiz" hidden>
+    <h2>Quiz</h2>
+    <div id="quiz-intro" data-testid="quiz-intro">
+      <p>16 questions &mdash; 8 on ERP/EEG and CIT concepts, 8 freshly computed from the live math engine on every attempt.</p>
+      <p>Best score this session: <span id="quiz-best-score" data-testid="quiz-best-score">&mdash;</span> / 16</p>
+      <button id="quiz-start" data-testid="quiz-start" class="primary-btn">Start Quiz</button>
+    </div>
+    <div id="quiz-active" data-testid="quiz-active" hidden>
+      <div class="quiz-progress" id="quiz-progress" data-testid="quiz-progress">Question 1 / 16</div>
+      <div class="quiz-question" id="quiz-question" data-testid="quiz-question"></div>
+      <div class="quiz-choices" id="quiz-choices" data-testid="quiz-choices"></div>
+      <div class="quiz-feedback" id="quiz-feedback" data-testid="quiz-feedback" hidden></div>
+      <button id="quiz-next" data-testid="quiz-next" class="primary-btn" hidden>Next Question</button>
+    </div>
+    <div id="quiz-results" data-testid="quiz-results" hidden>
+      <h3>Score: <span id="quiz-final-score" data-testid="quiz-final-score"></span> / 16</h3>
+      <button id="quiz-restart" data-testid="quiz-restart" class="primary-btn">Try Again</button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>All EEG data on this page is synthetic and generated in your browser. Built for teaching ERP methodology and the statistics behind the P300 Concealed Information Test.</p>
+</footer>
+
+<script src="src/mathlib.js"></script>
+<script src="src/epochs.js"></script>
+<script src="src/quiz.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
