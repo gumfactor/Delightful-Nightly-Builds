@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotation Radar</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117; --panel: #171a24; --border: #2a2f3d; --text: #e6e8ee;
+    --muted: #9aa1b2; --leading: #35c47a; --improving: #4c8bf5;
+    --weakening: #e0b83c; --lagging: #e0554c; --accent: #7c9cff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 1.25rem; max-width: 1100px; margin-inline: auto;
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+  .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.25rem; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem; margin-bottom: 1.25rem;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); }
+  th { cursor: pointer; color: var(--muted); user-select: none; }
+  th:hover { color: var(--text); }
+  .quad { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+  .quad-leading { background: color-mix(in srgb, var(--leading) 25%, transparent); color: var(--leading); }
+  .quad-improving { background: color-mix(in srgb, var(--improving) 25%, transparent); color: var(--improving); }
+  .quad-weakening { background: color-mix(in srgb, var(--weakening) 25%, transparent); color: var(--weakening); }
+  .quad-lagging { background: color-mix(in srgb, var(--lagging) 25%, transparent); color: var(--lagging); }
+  .badge.changed { font-size: 0.75rem; color: var(--accent); margin-left: 0.35rem; }
+  #chart-wrap { position: relative; height: 420px; }
+  a.export { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
+  @media (max-width: 480px) { body { padding: 0.75rem; } th, td { padding: 0.4rem; } }
+</style>
+</head>
+<body>
+<h1>Rotation Radar</h1>
+<div class="meta">Benchmark: SPY &middot; Generated 2026-09-15 08:22:46 UTC</div>
+
+<div class="panel">
+  <div id="chart-wrap"><canvas id="rrg-chart" role="img" aria-label="Relative Rotation Graph"></canvas></div>
+</div>
+
+<div class="panel">
+  <h2 style="font-size:1.05rem;margin-top:0;">Commentary</h2>
+  <p id="commentary-text" style="color: var(--muted); line-height: 1.5;"></p>
+</div>
+
+<div class="panel">
+  <h2 style="font-size:1.05rem;margin-top:0;">Sectors</h2>
+  <table id="sector-table">
+    <thead><tr>
+      <th data-key="ticker">Ticker</th><th data-key="rs_ratio">RS-Ratio</th>
+      <th data-key="rs_momentum">RS-Momentum</th><th data-key="quadrant">Quadrant</th>
+      <th data-key="change">Ratio &Delta; (1d)</th>
+    </tr></thead>
+    <tbody>
+<tr><td>XLB</td><td>100.35</td><td>100.62</td><td><span class="quad quad-leading">Leading</span></td><td>-0.01</td></tr><tr><td>XLC</td><td>99.05</td><td>99.69</td><td><span class="quad quad-lagging">Lagging</span></td><td>+0.01</td></tr><tr><td>XLE</td><td>102.17</td><td>99.34</td><td><span class="quad quad-weakening">Weakening</span></td><td>-0.01</td></tr><tr><td>XLF</td><td>100.57</td><td>98.80</td><td><span class="quad quad-weakening">Weakening</span></td><td>-0.01</td></tr><tr><td>XLI</td><td>99.84</td><td>100.23</td><td><span class="quad quad-improving">Improving</span></td><td>-0.01</td></tr><tr><td>XLK</td><td>100.55</td><td>100.45</td><td><span class="quad quad-leading">Leading</span></td><td>+0.02</td></tr><tr><td>XLP</td><td>99.49</td><td>98.89</td><td><span class="quad quad-lagging">Lagging</span></td><td>-0.00</td></tr><tr><td>XLRE</td><td>98.31</td><td>100.04</td><td><span class="quad quad-improving">Improving</span></td><td>-0.01</td></tr><tr><td>XLU</td><td>99.42</td><td>98.94</td><td><span class="quad quad-lagging">Lagging</span></td><td>-0.00</td></tr><tr><td>XLV</td><td>99.90</td><td>100.98</td><td><span class="quad quad-improving">Improving</span></td><td>+0.01</td></tr><tr><td>XLY</td><td>100.36</td><td>102.02</td><td><span class="quad quad-leading">Leading</span></td><td>+0.02</td></tr>
+    </tbody>
+  </table>
+  <p><a class="export" id="csv-link" href="#" download="rotation_radar_history.csv">Export full history as CSV</a></p>
+</div>
+
+<script id="rr-data" type="application/json">{"benchmark": "SPY", "generated_at": "2026-09-15 08:22:46 UTC", "tail_length": 10, "datasets": [{"ticker": "XLB", "points": [{"x": 100.30846303768847, "y": 101.057232012879, "date": "2025-01-15"}, {"x": 100.31793683335252, "y": 101.08159846670713, "date": "2025-01-16"}, {"x": 100.33807407215645, "y": 101.35360365743519, "date": "2025-01-17"}, {"x": 100.35331529540957, "y": 101.58421246313564, "date": "2025-01-18"}, {"x": 100.36072916392104, "y": 101.62636931130785, "date": "2025-01-19"}, {"x": 100.36327224852002, "y": 101.54193389935068, "date": "2025-01-20"}, {"x": 100.3602752136251, "y": 101.38047740110252, "date": "2025-01-21"}, {"x": 100.35866868900985, "y": 101.11287225285628, "date": "2025-01-22"}, {"x": 100.35574841236658, "y": 100.89057025851925, "date": "2025-01-23"}, {"x": 100.34869843667344, "y": 100.62486521935053, "date": "2025-01-24"}]}, {"ticker": "XLC", "points": [{"x": 99.06127407714537, "y": 99.02143608039866, "date": "2025-01-15"}, {"x": 99.05521553548427, "y": 99.12135502260578, "date": "2025-01-16"}, {"x": 99.05078978774979, "y": 99.36978665599823, "date": "2025-01-17"}, {"x": 99.0391247615924, "y": 99.31290149711413, "date": "2025-01-18"}, {"x": 99.0347659509673, "y": 99.3229436191905, "date": "2025-01-19"}, {"x": 99.03690105647408, "y": 99.48107551336652, "date": "2025-01-20"}, {"x": 99.03885722094945, "y": 99.4408913832142, "date": "2025-01-21"}, {"x": 99.03819039379607, "y": 99.39234744385399, "date": "2025-01-22"}, {"x": 99.04102874790912, "y": 99.53635620642302, "date": "2025-01-23"}, {"x": 99.046269433701, "y": 99.6893180299684, "date": "2025-01-24"}]}, {"ticker": "XLE", "points": [{"x": 102.22096786975682, "y": 99.20615164269759, "date": "2025-01-15"}, {"x": 102.220273801328, "y": 99.21319677550335, "date": "2025-01-16"}, {"x": 102.22298867017278, "y": 99.34428540538977, "date": "2025-01-17"}, {"x": 102.21915950164374, "y": 99.29462401916236, "date": "2025-01-18"}, {"x": 102.21311570267996, "y": 99.20746487002772, "date": "2025-01-19"}, {"x": 102.21107770100154, "y": 99.35267526768035, "date": "2025-01-20"}, {"x": 102.2065661785346, "y": 99.37640960965463, "date": "2025-01-21"}, {"x": 102.19722203104936, "y": 99.38160826482851, "date": "2025-01-22"}, {"x": 102.18649165168854, "y": 99.39086540144172, "date": "2025-01-23"}, {"x": 102.17396661007852, "y": 99.34228592823804, "date": "2025-01-24"}]}, {"ticker": "XLF", "points": [{"x": 100.6516186677902, "y": 101.81734501017898, "date": "2025-01-15"}, {"x": 100.64969092860345, "y": 101.51469983193842, "date": "2025-01-16"}, {"x": 100.64254655897722, "y": 101.12391965012716, "date": "2025-01-17"}, {"x": 100.62894571992322, "y": 100.69631609505252, "date": "2025-01-18"}, {"x": 100.62196895865405, "y": 100.41421552139182, "date": "2025-01-19"}, {"x": 100.61798578312698, "y": 100.24991600760156, "date": "2025-01-20"}, {"x": 100.61289179085557, "y": 100.06060764158272, "date": "2025-01-21"}, {"x": 100.59804651984179, "y": 99.55273222789351, "date": "2025-01-22"}, {"x": 100.58004073730531, "y": 99.07803497379446, "date": "2025-01-23"}, {"x": 100.56793065964135, "y": 98.80291565683814, "date": "2025-01-24"}]}, {"ticker": "XLI", "points": [{"x": 99.82818006670034, "y": 99.69740270747951, "date": "2025-01-15"}, {"x": 99.8251764076249, "y": 99.56943162319185, "date": "2025-01-16"}, {"x": 99.83092366897277, "y": 99.6443963518316, "date": "2025-01-17"}, {"x": 99.83562868221141, "y": 99.76531952101608, "date": "2025-01-18"}, {"x": 99.8423621067762, "y": 100.01748805193586, "date": "2025-01-19"}, {"x": 99.83915027620938, "y": 100.07788407712397, "date": "2025-01-20"}, {"x": 99.84414994966954, "y": 100.39866058140846, "date": "2025-01-21"}, {"x": 99.84848230730454, "y": 100.57093927724004, "date": "2025-01-22"}, {"x": 99.84965884087056, "y": 100.51565434244638, "date": "2025-01-23"}, {"x": 99.84123017520375, "y": 100.22722916140475, "date": "2025-01-24"}]}, {"ticker": "XLK", "points": [{"x": 100.51575779233384, "y": 98.91904274247969, "date": "2025-01-15"}, {"x": 100.50583330758148, "y": 98.92255877908563, "date": "2025-01-16"}, {"x": 100.48951737160613, "y": 98.77129433087823, "date": "2025-01-17"}, {"x": 100.49281810736763, "y": 98.88983197368094, "date": "2025-01-18"}, {"x": 100.48757436232191, "y": 98.90257616338151, "date": "2025-01-19"}, {"x": 100.48079449562724, "y": 98.73360579619724, "date": "2025-01-20"}, {"x": 100.48541274643605, "y": 98.84847816087593, "date": "2025-01-21"}, {"x": 100.5013684925256, "y": 99.37308576754825, "date": "2025-01-22"}, {"x": 100.52504935878443, "y": 99.96481401736867, "date": "2025-01-23"}, {"x": 100.54971513163682, "y": 100.44897789509959, "date": "2025-01-24"}]}, {"ticker": "XLP", "points": [{"x": 99.57562215196347, "y": 100.60903166930291, "date": "2025-01-15"}, {"x": 99.59260664912865, "y": 101.09881216101536, "date": "2025-01-16"}, {"x": 99.5986304943605, "y": 101.27881330823351, "date": "2025-01-17"}, {"x": 99.59292680676108, "y": 101.318235734117, "date": "2025-01-18"}, {"x": 99.57422137956846, "y": 100.95219933753877, "date": "2025-01-19"}, {"x": 99.5556247812946, "y": 100.45308427954564, "date": "2025-01-20"}, {"x": 99.52824768330261, "y": 99.78053316887181, "date": "2025-01-21"}, {"x": 99.50503116281965, "y": 99.23828052387039, "date": "2025-01-22"}, {"x": 99.49566232139276, "y": 98.9453698044646, "date": "2025-01-23"}, {"x": 99.49144413539827, "y": 98.88660436857951, "date": "2025-01-24"}]}, {"ticker": "XLRE", "points": [{"x": 98.3138835346445, "y": 100.1175290077574, "date": "2025-01-15"}, {"x": 98.3141623896564, "y": 99.95761323661482, "date": "2025-01-16"}, {"x": 98.3194304903116, "y": 99.88706389524252, "date": "2025-01-17"}, {"x": 98.32379971430709, "y": 99.82465085217747, "date": "2025-01-18"}, {"x": 98.32554202943328, "y": 99.79351402853803, "date": "2025-01-19"}, {"x": 98.32906198472374, "y": 99.97297830465264, "date": "2025-01-20"}, {"x": 98.33100226535161, "y": 100.15516940882522, "date": "2025-01-21"}, {"x": 98.32911801124801, "y": 100.23777524077629, "date": "2025-01-22"}, {"x": 98.32081823204818, "y": 100.18783006895879, "date": "2025-01-23"}, {"x": 98.31002592646371, "y": 100.03965152346187, "date": "2025-01-24"}]}, {"ticker": "XLU", "points": [{"x": 99.47917940548892, "y": 99.2878836040661, "date": "2025-01-15"}, {"x": 99.47042185037847, "y": 99.0547414191096, "date": "2025-01-16"}, {"x": 99.46167727209891, "y": 98.87793820453538, "date": "2025-01-17"}, {"x": 99.45729280762951, "y": 98.76280734041693, "date": "2025-01-18"}, {"x": 99.44684310024243, "y": 98.53206271413329, "date": "2025-01-19"}, {"x": 99.43785751966995, "y": 98.37129309877706, "date": "2025-01-20"}, {"x": 99.43547058192655, "y": 98.37036186211121, "date": "2025-01-21"}, {"x": 99.42842029810762, "y": 98.4701855080314, "date": "2025-01-22"}, {"x": 99.42056482802555, "y": 98.63314633699848, "date": "2025-01-23"}, {"x": 99.41712545852246, "y": 98.94116314262193, "date": "2025-01-24"}]}, {"ticker": "XLV", "points": [{"x": 99.82828902035656, "y": 99.18367569030109, "date": "2025-01-15"}, {"x": 99.82622752425155, "y": 99.34215096400345, "date": "2025-01-16"}, {"x": 99.815692877754, "y": 99.31617953268801, "date": "2025-01-17"}, {"x": 99.81607146931543, "y": 99.47018920494459, "date": "2025-01-18"}, {"x": 99.82792070375785, "y": 99.89789908943438, "date": "2025-01-19"}, {"x": 99.84172731243858, "y": 100.2329469155699, "date": "2025-01-20"}, {"x": 99.85187020929658, "y": 100.4690357896441, "date": "2025-01-21"}, {"x": 99.86984241839977, "y": 100.81124299041558, "date": "2025-01-22"}, {"x": 99.88520912083068, "y": 100.97831602507733, "date": "2025-01-23"}, {"x": 99.89636521124255, "y": 100.9784570952223, "date": "2025-01-24"}]}, {"ticker": "XLY", "points": [{"x": 100.21676437613152, "y": 101.08326983245907, "date": "2025-01-15"}, {"x": 100.2224547726103, "y": 101.12384172022462, "date": "2025-01-16"}, {"x": 100.22972873583986, "y": 101.0327190076404, "date": "2025-01-17"}, {"x": 100.24091713383889, "y": 101.08091129918233, "date": "2025-01-18"}, {"x": 100.26495654167753, "y": 101.33326729312026, "date": "2025-01-19"}, {"x": 100.28654684091391, "y": 101.53260684013443, "date": "2025-01-20"}, {"x": 100.30525616005232, "y": 101.71937499270922, "date": "2025-01-21"}, {"x": 100.32560967589774, "y": 101.85893050268572, "date": "2025-01-22"}, {"x": 100.33972774877827, "y": 101.8790425645073, "date": "2025-01-23"}, {"x": 100.35722882143814, "y": 102.01853197921494, "date": "2025-01-24"}]}]}</script>
+<script>
+(function () {
+  var raw = document.getElementById('rr-data').textContent;
+  var data = JSON.parse(raw);
+  var commentary = "Tonight's rotation shows XLB, XLK, XLY holding the Leading quadrant against SPY, with the broader complex mixed across Weakening and Improving as momentum rotates ahead of price.";
+  document.getElementById('commentary-text').textContent = commentary;
+
+  var colors = {'XLK':'#7c9cff','XLF':'#35c47a','XLE':'#e0554c','XLV':'#4c8bf5','XLI':'#e0b83c',
+    'XLY':'#c47cff','XLP':'#4cc9f0','XLU':'#f28cb1','XLB':'#94d82d','XLRE':'#ff922b','XLC':'#63e6be'};
+
+  var datasets = data.datasets.map(function (d) {
+    var color = colors[d.ticker] || '#9aa1b2';
+    return {
+      label: d.ticker,
+      data: d.points,
+      showLine: true,
+      borderColor: color,
+      backgroundColor: color,
+      pointRadius: d.points.map(function (_, i) { return i === d.points.length - 1 ? 6 : 2; }),
+      pointStyle: d.points.map(function (_, i) { return i === d.points.length - 1 ? 'rectRot' : 'circle'; }),
+    };
+  });
+
+  var quadrantBg = {
+    id: 'quadrantBg',
+    beforeDraw: function (chart) {
+      var ctx = chart.ctx, area = chart.chartArea;
+      if (!area) return;
+      var xScale = chart.scales.x, yScale = chart.scales.y;
+      var midX = xScale.getPixelForValue(100), midY = yScale.getPixelForValue(100);
+      ctx.save();
+      ctx.fillStyle = 'rgba(76,139,245,0.06)';
+      ctx.fillRect(area.left, area.top, midX - area.left, midY - area.top);
+      ctx.fillStyle = 'rgba(53,196,122,0.06)';
+      ctx.fillRect(midX, area.top, area.right - midX, midY - area.top);
+      ctx.fillStyle = 'rgba(224,85,76,0.06)';
+      ctx.fillRect(area.left, midY, midX - area.left, area.bottom - midY);
+      ctx.fillStyle = 'rgba(224,184,60,0.06)';
+      ctx.fillRect(midX, midY, area.right - midX, area.bottom - midY);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.beginPath(); ctx.moveTo(midX, area.top); ctx.lineTo(midX, area.bottom); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(area.left, midY); ctx.lineTo(area.right, midY); ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  if (window.Chart) {
+    new Chart(document.getElementById('rrg-chart'), {
+      type: 'scatter',
+      data: { datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { title: { display: true, text: 'RS-Ratio', color: '#9aa1b2' }, grid: { color: '#2a2f3d' }, ticks: { color: '#9aa1b2' } },
+          y: { title: { display: true, text: 'RS-Momentum', color: '#9aa1b2' }, grid: { color: '#2a2f3d' }, ticks: { color: '#9aa1b2' } }
+        },
+        plugins: { legend: { labels: { color: '#e6e8ee' } } }
+      },
+      plugins: [quadrantBg]
+    });
+  } else {
+    document.getElementById('chart-wrap').innerHTML =
+      '<p style="color:var(--muted)">Chart.js failed to load (offline?) — see the Sectors table below for the same data.</p>';
+  }
+
+  var sortState = { key: null, dir: 1 };
+  document.querySelectorAll('#sector-table th').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var key = th.getAttribute('data-key');
+      var tbody = document.querySelector('#sector-table tbody');
+      var rows = Array.from(tbody.querySelectorAll('tr'));
+      var keyIndex = { ticker: 0, rs_ratio: 1, rs_momentum: 2, quadrant: 3, change: 4 }[key];
+      sortState.dir = sortState.key === key ? -sortState.dir : 1;
+      sortState.key = key;
+      rows.sort(function (a, b) {
+        var av = a.children[keyIndex].textContent.trim();
+        var bv = b.children[keyIndex].textContent.trim();
+        var an = parseFloat(av), bn = parseFloat(bv);
+        var cmp = (!isNaN(an) && !isNaN(bn)) ? (an - bn) : av.localeCompare(bv);
+        return cmp * sortState.dir;
+      });
+      rows.forEach(function (r) { tbody.appendChild(r); });
+    });
+  });
+
+  var csvRows = [['ticker', 'date', 'rs_ratio', 'rs_momentum', 'quadrant']];
+  data.datasets.forEach(function (d) {
+    d.points.forEach(function (p) {
+      csvRows.push([d.ticker, p.date, p.x, p.y, '']);
+    });
+  });
+  var csvText = csvRows.map(function (r) { return r.join(','); }).join('\n');
+  var blob = new Blob([csvText], { type: 'text/csv' });
+  document.getElementById('csv-link').href = URL.createObjectURL(blob);
+})();
+</script>
+</body>
+</html>
