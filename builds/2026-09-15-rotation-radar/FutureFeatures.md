@@ -1,0 +1,9 @@
+# Future Features — Rotation Radar
+
+1. **Multi-benchmark comparison** — run against both SPY and an equal-weight sector benchmark (RSP-style) side by side, since cap-weighted SPY over-weights the largest sectors and can distort which sectors look "average."
+2. **Historical rotation replay** — once enough runs have accumulated in `rotation_radar.db`, add a `--replay` mode that steps through saved snapshots day by day so a full quarter's rotation can be watched as an animation rather than only seeing the live tail.
+3. **International/factor rotation** — extend beyond the 11 U.S. sector ETFs to a second configurable universe (e.g., country ETFs, or factor ETFs like MTUM/VLUE/QUAL) using the same engine, since the math is already fully parameterized by ticker list.
+4. **Alerting** — a `--alert-on-change` flag that exits non-zero (or writes a small JSON alert file) only when a sector actually crosses a quadrant boundary since the last run, so this could be wired into a scheduled Claude Code Routine that only surfaces a notification on real rotation events instead of every run.
+5. **Confidence/stability band** — the current z-score collapses to a near-binary signal when only a few sectors deviate strongly (see BUILD_LOG.md's fixture derivation); a future version could report a rolling standard error on RS-Ratio so the dashboard can visually distinguish "strongly leading" from "barely above the cross-sectional mean."
+6. **Per-sector drill-down page** — clicking a sector's table row could open its own mini time series of RS-Ratio/RS-Momentum over the full stored history, not just the last `tail_length` points shown on the main quadrant plot.
+7. **Configurable quadrant color themes / light mode** — the dashboard is dark-mode-only tonight; a light-mode toggle (persisted via `localStorage`) would help if the user reviews this on a phone in bright daylight, consistent with PROFILE.md's "mobile-readable is important."
