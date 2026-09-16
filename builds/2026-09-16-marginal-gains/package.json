@@ -1,0 +1,11 @@
+{
+  "name": "marginal-gains",
+  "version": "1.0.0",
+  "description": "Browser puzzle game — allocate a limited hour budget across diminishing-returns projects and beat the optimal allocation",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
