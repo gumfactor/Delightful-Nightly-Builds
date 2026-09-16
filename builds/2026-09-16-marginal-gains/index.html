@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marginal Gains</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<div id="app" class="app">
+
+  <header class="app-header">
+    <h1>Marginal Gains</h1>
+    <p class="tagline">Allocate a limited week. Beat the optimal.</p>
+    <nav class="main-nav" id="main-nav">
+      <button type="button" data-nav="home" class="nav-btn active">Home</button>
+      <button type="button" data-nav="dashboard" class="nav-btn">Dashboard</button>
+    </nav>
+  </header>
+
+  <main id="view-root">
+
+    <section id="view-home" class="view">
+      <p class="intro">
+        You have a limited number of hours this week and several real projects competing for them.
+        Every project has diminishing returns — the first few hours matter a lot, later hours less.
+        Allocate wisely, then see exactly how close you came to the mathematically optimal split.
+      </p>
+      <div class="home-actions">
+        <button type="button" id="btn-tutorial" class="btn btn-secondary" data-testid="btn-tutorial">Tutorial</button>
+        <button type="button" id="btn-daily" class="btn btn-primary" data-testid="btn-daily">Daily Challenge</button>
+        <button type="button" id="btn-practice" class="btn btn-secondary" data-testid="btn-practice">Practice</button>
+      </div>
+      <p id="daily-status" class="daily-status" data-testid="daily-status"></p>
+    </section>
+
+    <section id="view-tutorial" class="view hidden">
+      <h2>Tutorial — Diminishing Returns</h2>
+      <p class="tutorial-copy">
+        This is <strong id="tut-name"></strong>. Drag the slider to see how much value each additional hour adds.
+        Notice the first hours add the most — later hours add less and less, until the project is effectively "done."
+      </p>
+      <canvas id="tutorial-canvas" width="600" height="260" data-testid="tutorial-canvas"></canvas>
+      <div class="tutorial-controls">
+        <input type="range" id="tutorial-slider" min="0" max="10" value="0" data-testid="tutorial-slider" />
+        <div class="tutorial-readout">
+          <span>Hours: <strong id="tut-hours" data-testid="tut-hours">0</strong></span>
+          <span>Value: <strong id="tut-value" data-testid="tut-value">0</strong></span>
+          <span>Next hour adds: <strong id="tut-marginal" data-testid="tut-marginal">0</strong></span>
+        </div>
+      </div>
+      <p class="tutorial-insight">
+        Because every project's curve bends this way, the optimal strategy is almost never to max out one project first —
+        it's to spread hours to wherever the <em>next</em> hour is worth the most, across everything at once.
+      </p>
+      <button type="button" id="btn-tutorial-done" class="btn btn-primary" data-testid="btn-tutorial-done">Got it — let's play</button>
+    </section>
+
+    <section id="view-difficulty" class="view hidden">
+      <h2>Practice — Choose Difficulty</h2>
+      <div class="difficulty-options">
+        <button type="button" class="btn btn-secondary diff-btn" data-diff="4" data-testid="diff-4">Light — 4 projects / 24h</button>
+        <button type="button" class="btn btn-secondary diff-btn" data-diff="6" data-testid="diff-6">Standard — 6 projects / 40h</button>
+        <button type="button" class="btn btn-secondary diff-btn" data-diff="8" data-testid="diff-8">Heavy — 8 projects / 56h</button>
+      </div>
+    </section>
+
+    <section id="view-play" class="view hidden">
+      <h2 id="play-title">Allocate Your Week</h2>
+      <div class="budget-bar-wrap">
+        <div class="budget-bar" data-testid="budget-bar">
+          <div id="budget-bar-fill" class="budget-bar-fill"></div>
+        </div>
+        <p class="budget-readout">
+          <span id="budget-used" data-testid="budget-used">0</span> / <span id="budget-total" data-testid="budget-total">0</span> hours allocated
+          (<span id="budget-remaining" data-testid="budget-remaining">0</span> remaining)
+        </p>
+      </div>
+      <div id="project-list" class="project-list" data-testid="project-list"></div>
+      <button type="button" id="btn-lock-in" class="btn btn-primary" data-testid="btn-lock-in" disabled>Lock In Allocation</button>
+    </section>
+
+    <section id="view-results" class="view hidden">
+      <h2>Results</h2>
+      <div class="score-summary" data-testid="score-summary">
+        <div class="grade-badge" id="grade-badge" data-testid="grade-badge">-</div>
+        <div>
+          <p class="score-line"><span id="score-percent" data-testid="score-percent">0</span>% of optimal</p>
+          <p class="score-sub"><span id="score-player-total" data-testid="score-player-total">0</span> points earned of a possible <span id="score-optimal-total" data-testid="score-optimal-total">0</span></p>
+        </div>
+      </div>
+      <table class="results-table" id="results-table" data-testid="results-table">
+        <thead>
+          <tr><th>Project</th><th>Your Hours</th><th>Optimal Hours</th><th>Your Value</th><th>Optimal Value</th></tr>
+        </thead>
+        <tbody id="results-tbody"></tbody>
+      </table>
+      <div class="advisor-box">
+        <h3>AI Advisor <span class="optional-tag">(optional)</span></h3>
+        <div id="advisor-note" class="advisor-note" data-testid="advisor-note"></div>
+        <div class="advisor-controls">
+          <input type="password" id="ai-key-input" placeholder="Anthropic API key (session-only, never saved)" data-testid="ai-key-input" />
+          <button type="button" id="btn-get-coaching" class="btn btn-secondary" data-testid="btn-get-coaching">Get AI Coaching</button>
+        </div>
+      </div>
+      <p id="share-text" class="share-text hidden" data-testid="share-text"></p>
+      <div class="results-actions">
+        <button type="button" id="btn-play-again" class="btn btn-primary" data-testid="btn-play-again">Play Again</button>
+        <button type="button" id="btn-back-home" class="btn btn-secondary" data-testid="btn-back-home">Back to Home</button>
+      </div>
+    </section>
+
+    <section id="view-dashboard" class="view hidden">
+      <h2>Mastery Dashboard</h2>
+      <div class="dashboard-stats" id="dashboard-stats" data-testid="dashboard-stats"></div>
+      <h3>By Category</h3>
+      <div class="category-stats" id="category-stats" data-testid="category-stats"></div>
+      <button type="button" id="btn-dashboard-home" class="btn btn-secondary" data-testid="btn-dashboard-home">Back to Home</button>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Marginal Gains — a self-contained browser puzzle. No data leaves your machine unless you supply an API key for AI coaching.</p>
+  </footer>
+</div>
+
+<script src="src/engine.js"></script>
+<script src="src/ai.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>
