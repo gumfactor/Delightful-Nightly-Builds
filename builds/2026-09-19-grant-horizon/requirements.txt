@@ -1,0 +1,3 @@
+# Core tool: Python 3 standard library only (urllib, sqlite3, json, csv, argparse).
+# Dev/test dependency only:
+pytest>=7.0
