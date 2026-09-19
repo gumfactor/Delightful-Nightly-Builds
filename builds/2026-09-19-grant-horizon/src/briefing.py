@@ -6,6 +6,12 @@ redaction -- so they cannot leak into a request under any code path here.
 `generate_briefing` never raises: any missing API key, network failure, or
 malformed response falls back to a deterministic template built from the
 same aggregate numbers.
+
+The topic string itself IS sent to Anthropic (it has to be -- the briefing
+is "summarize the landscape for this topic"). Since the topic is user-
+configurable (config.json or --topics), this is documented explicitly in
+Manual.md so a user who customizes it knows not to put anything
+confidential in that value if they use --ai.
 """
 from __future__ import annotations
 

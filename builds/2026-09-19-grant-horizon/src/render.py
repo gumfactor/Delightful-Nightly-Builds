@@ -117,9 +117,29 @@ def render_dashboard(data: dict) -> str:
     return html
 
 
+_FORMULA_LEADING_CHARS = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe(value: str) -> str:
+    """Neutralize spreadsheet formula injection.
+
+    Excel, Google Sheets, and LibreOffice Calc all evaluate a cell as a
+    formula if it starts with `=`, `+`, `-`, `@`, or a leading tab/CR, even
+    when the source file is plain CSV. NIH-supplied text (project titles,
+    institution names) is free text from a public database, not guaranteed
+    formula-safe, so every string cell is checked before being written.
+    Prefixing with a single quote is the standard neutralizer: spreadsheet
+    software displays the cell as literal text instead of evaluating it.
+    """
+    if value and value[0] in _FORMULA_LEADING_CHARS:
+        return "'" + value
+    return value
+
+
 def render_projects_csv(projects: list) -> str:
     """CSV export of every tracked project (uses csv.writer, so commas/quotes in
-    titles or institution names are always correctly quoted, never hand-escaped)."""
+    titles or institution names are always correctly quoted, never hand-escaped;
+    every string cell is also passed through `_csv_safe` against formula injection)."""
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow([
@@ -129,9 +149,11 @@ def render_projects_csv(projects: list) -> str:
     ])
     for p in projects:
         writer.writerow([
-            p.topic, p.project_num, p.core_project_num, p.title, p.fiscal_year,
-            f"{p.award_amount:.2f}", p.org_name, p.org_city, p.org_state, p.org_country,
-            "; ".join(p.pi_names), p.agency_ic, p.start_date or "", p.end_date or "",
+            _csv_safe(p.topic), _csv_safe(p.project_num), _csv_safe(p.core_project_num),
+            _csv_safe(p.title), p.fiscal_year, f"{p.award_amount:.2f}",
+            _csv_safe(p.org_name), _csv_safe(p.org_city), _csv_safe(p.org_state),
+            _csv_safe(p.org_country), _csv_safe("; ".join(p.pi_names)), _csv_safe(p.agency_ic),
+            _csv_safe(p.start_date or ""), _csv_safe(p.end_date or ""),
         ])
     return buffer.getvalue()
 
@@ -214,12 +236,12 @@ _TEMPLATE = """<!DOCTYPE html>
     <table id="projectsTable">
       <thead>
         <tr>
-          <th data-key="topic">Topic</th>
-          <th data-key="fiscal_year">FY</th>
-          <th data-key="award_amount">Award</th>
-          <th data-key="title">Title</th>
-          <th data-key="org_name">Institution</th>
-          <th data-key="agency_ic">Agency</th>
+          <th data-key="topic" tabindex="0" role="button" aria-sort="none">Topic</th>
+          <th data-key="fiscal_year" tabindex="0" role="button" aria-sort="none">FY</th>
+          <th data-key="award_amount" tabindex="0" role="button" aria-sort="descending">Award</th>
+          <th data-key="title" tabindex="0" role="button" aria-sort="none">Title</th>
+          <th data-key="org_name" tabindex="0" role="button" aria-sort="none">Institution</th>
+          <th data-key="agency_ic" tabindex="0" role="button" aria-sort="none">Agency</th>
         </tr>
       </thead>
       <tbody id="projectsBody"></tbody>
@@ -338,18 +360,31 @@ _TEMPLATE = """<!DOCTYPE html>
     renderProjects();
   });
 
+  function applySort(th) {
+    var key = th.getAttribute("data-key");
+    if (currentSort.key === key) {
+      currentSort.dir *= -1;
+    } else {
+      currentSort.key = key;
+      currentSort.dir = -1;
+    }
+    document.querySelectorAll("#projectsTable th").forEach(function (h) {
+      h.classList.remove("sorted");
+      h.setAttribute("aria-sort", "none");
+    });
+    th.classList.add("sorted");
+    th.setAttribute("aria-sort", currentSort.dir === -1 ? "descending" : "ascending");
+    renderProjects();
+  }
+
   document.querySelectorAll("#projectsTable th[data-key]").forEach(function (th) {
-    th.addEventListener("click", function () {
-      var key = th.getAttribute("data-key");
-      if (currentSort.key === key) {
-        currentSort.dir *= -1;
-      } else {
-        currentSort.key = key;
-        currentSort.dir = -1;
+    th.addEventListener("click", function () { applySort(th); });
+    // Keyboard-operable per WAI-ARIA button semantics: Enter and Space both activate.
+    th.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        applySort(th);
       }
-      document.querySelectorAll("#projectsTable th").forEach(function (h) { h.classList.remove("sorted"); });
-      th.classList.add("sorted");
-      renderProjects();
     });
   });
 

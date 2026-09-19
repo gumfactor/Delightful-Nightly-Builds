@@ -19,7 +19,7 @@ Grant Horizon is a competitive-intelligence tool for grant writing: it syncs liv
 4. Open `output/dashboard.html` directly in a browser (no server needed)
 5. Re-run `sync` + `report` before your next submission cycle to refresh the data — it upserts, so nothing is duplicated
 
-Optional: `python3 src/main.py report --ai` with `ANTHROPIC_API_KEY` exported adds a one-paragraph AI-written funding-landscape briefing per topic.
+Optional: `python3 src/main.py report --ai` with `ANTHROPIC_API_KEY` exported adds a one-paragraph AI-written funding-landscape briefing per topic. **What's sent to Anthropic when you use `--ai`:** the topic string itself (exactly as configured in `config.json` or passed to `--topics`), plus aggregate numbers computed from NIH's own public data (fiscal-year totals, institution names, project counts) and up to 8 project titles. PI names and abstracts are never sent (excluded by construction, not redaction — see `src/briefing.py`). Because the topic string is free text you control, avoid putting anything confidential in a custom `--topics` value if you don't want it sent to a third party; the 5 default topics are just plain research-area names.
 
 Haven't looked at real output yet? Open `sample_output/dashboard.html` first — it's built from a realistic synthetic fixture (see `sample_output/README.md` for why) and shows exactly what a live sync would produce.
 
@@ -55,7 +55,21 @@ python3 src/main.py report --topics "oxytocin,antisocial behavior" --fy-start 20
 
 ### CSV export
 
-`output/projects_export.csv` contains every tracked project with full detail (PI names, institution, agency, award amount, dates) for pasting into a grant's own literature/landscape section or a spreadsheet.
+`output/projects_export.csv` contains every tracked project with full detail (PI names, institution, agency, award amount, dates) for pasting into a grant's own literature/landscape section or a spreadsheet. Any cell that would otherwise be interpreted as a spreadsheet formula (starting with `=`, `+`, `-`, or `@`) is automatically prefixed so it opens as plain text instead.
+
+---
+
+## Running the Tests
+
+Two independent suites:
+
+```bash
+python -m pytest tests/ -v          # core logic: RePORTER client, storage, aggregation, briefing, CSV/HTML rendering
+npm install                         # one-time, installs @playwright/test
+npx playwright test                 # the rendered dashboard's actual browser behavior (search, sort, XSS safety)
+```
+
+The Playwright suite regenerates its own HTML fixtures from the real `render.py` before every run (see `tests/global-setup.js`), so it always tests the same template the CLI ships, never a stale copy.
 
 ---
 

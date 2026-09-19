@@ -3,6 +3,8 @@ import io
 import json
 import re
 
+import pytest
+
 import render
 from reporter_client import Project
 
@@ -157,3 +159,28 @@ def test_render_projects_csv_quotes_comma_in_title_and_round_trips():
     csv_text = render.render_projects_csv(projects)
     rows = list(csv.reader(io.StringIO(csv_text)))
     assert rows[1][3] == "Stress, cortisol, and coping"
+
+
+@pytest.mark.parametrize("leading_char", ["=", "+", "-", "@", "\t", "\r"])
+def test_csv_safe_neutralizes_formula_injection_leading_characters(leading_char):
+    dangerous = f"{leading_char}cmd|'/bin/calc'!A1"
+    safe = render._csv_safe(dangerous)
+    assert safe.startswith("'")
+    assert safe == "'" + dangerous
+
+
+def test_csv_safe_leaves_ordinary_text_untouched():
+    assert render._csv_safe("Neural correlates of psychopathy") == "Neural correlates of psychopathy"
+    assert render._csv_safe("") == ""
+
+
+def test_render_projects_csv_neutralizes_hostile_title_and_institution():
+    projects = [make_project(
+        project_num="P1",
+        title="=cmd|'/bin/calc'!A1",
+        org_name="+SUM(A1:A9)",
+    )]
+    csv_text = render.render_projects_csv(projects)
+    rows = list(csv.reader(io.StringIO(csv_text)))
+    assert rows[1][3] == "'=cmd|'/bin/calc'!A1"
+    assert rows[1][6] == "'+SUM(A1:A9)"

@@ -2,3 +2,7 @@ output/
 __pycache__/
 *.pyc
 .pytest_cache/
+node_modules/
+tests/fixtures/
+playwright-report/
+test-results/

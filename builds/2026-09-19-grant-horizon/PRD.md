@@ -35,9 +35,9 @@ As a mid-career neuroscience researcher who names "grant writing" as a recurring
 
 ## Tech Stack
 
-- **Language:** Python 3.11+
+- **Language:** Python 3.11+ (core tool); Node.js 22 + `@playwright/test` 1.56.1 (browser regression suite for the rendered dashboard's JS only — dev dependency, not part of the shipped tool)
 - **Framework:** None (stdlib `urllib.request` for HTTP, `sqlite3` for storage)
-- **Dependencies:** stdlib only for the core tool; `pytest` for tests (dev-only, in `requirements.txt`)
+- **Dependencies:** stdlib only for the core tool; `pytest` for Python tests (dev-only, in `requirements.txt`); `@playwright/test` for the browser suite (dev-only, in `package.json`, run against the pre-installed Chromium — see Testing Strategy)
 - **Runtime requirement:** `python3 src/main.py sync` then `python3 src/main.py report`, or `python3 src/main.py report --ai` with `ANTHROPIC_API_KEY` exported; opens `output/dashboard.html` directly in a browser afterward, no server needed
 
 ## Data Structure
@@ -73,7 +73,7 @@ As a mid-career neuroscience researcher who names "grant writing" as a recurring
 
 Primary key: `(topic, project_num)`. Re-running `sync` upserts (`INSERT ... ON CONFLICT DO UPDATE`), never duplicates.
 
-**NIH RePORTER API assumption:** the exact v2 response schema is written from documented public API knowledge, not live-verified — this build container's egress proxy blocks the live host (confirmed via a denied direct connectivity check tonight), the same constraint prior builds (Dominion Index, Preprint Pulse) hit against Wikidata/arXiv. The HTTP layer is isolated behind a single `fetch_page(topic, fiscal_years, offset, http_get)` function with an injectable transport, so every other layer (normalization, aggregation, rendering) is tested against realistic fixture JSON shaped to the documented schema, and the real transport is exercised only by the user at runtime.
+**NIH RePORTER API assumption:** the exact v2 response schema is written from documented public API knowledge, not live-verified — this build container's egress proxy blocks the live host (confirmed via a denied direct connectivity check tonight), the same constraint prior builds (Dominion Index, Preprint Pulse) hit against Wikidata/arXiv. The HTTP layer is isolated behind `fetch_all_projects(topic, fiscal_years, http_post, page_size)` (in `src/reporter_client.py`), which paginates and takes an injectable `http_post` transport — RePORTER's `v2/projects/search` endpoint is a POST with a JSON search-criteria body, not a GET, so every call site posts a body rather than encoding query parameters. Every other layer (normalization, aggregation, rendering) is tested against realistic fixture JSON shaped to the documented schema, and the real transport (`default_http_post`) is exercised only by the user at runtime.
 
 ## Folder Structure
 
@@ -86,6 +86,9 @@ builds/2026-09-19-grant-horizon/
 ├── Manual.md
 ├── config.json
 ├── requirements.txt
+├── package.json             (devDependency: @playwright/test, for tests/dashboard.spec.js only)
+├── package-lock.json
+├── playwright.config.js
 ├── src/
 │   ├── main.py              (CLI entry point: sync / report subcommands)
 │   ├── reporter_client.py   (NIH RePORTER HTTP client + pagination + normalization)
@@ -102,7 +105,11 @@ builds/2026-09-19-grant-horizon/
 │   ├── test_briefing.py
 │   ├── test_render.py
 │   ├── test_slug.py
-│   └── test_main.py
+│   ├── test_main.py
+│   ├── build_fixtures.py     (regenerates tests/fixtures/*.html from the real render.py before every Playwright run)
+│   ├── global-setup.js       (Playwright globalSetup: shells out to build_fixtures.py)
+│   ├── dashboard.spec.js     (Playwright: hero stats, CDN-blocked fallback, search, click+keyboard sort, hostile-payload XSS safety, mobile viewport)
+│   └── fixtures/             (generated, gitignored -- dashboard_normal.html, dashboard_hostile.html)
 └── sample_output/
     ├── README.md            (explains the sample was generated from a synthetic fixture, not a live sync, and why)
     ├── dashboard.html       (rendered from the synthetic fixture, so the user can see the real output before running a live sync)
@@ -112,14 +119,15 @@ builds/2026-09-19-grant-horizon/
 
 ## Testing Strategy
 
-- **Framework:** pytest
-- **Test file location:** `tests/test_*.py`
-- **Run command:** `python -m pytest tests/ -v`
+- **Frameworks:** pytest (core logic) + `@playwright/test` (the rendered dashboard's actual browser behavior)
+- **Test file location:** `tests/test_*.py` (pytest); `tests/dashboard.spec.js` (Playwright)
+- **Run commands:** `python -m pytest tests/ -v`; `npx playwright test` (installs its own `node_modules` via `npm install` first — see Manual.md)
 - **What will be tested:**
   - RePORTER client: pagination stops when a page returns fewer than the page size; normalization of a full record; normalization with missing/null optional fields (defensive defaults, no crash); malformed-JSON and non-200 HTTP responses raise a typed `ReporterAPIError` instead of crashing
-  - Storage: upsert dedupes on `(topic, project_num)` across two syncs with changed award data (second sync's value wins, no duplicate row); querying by topic returns only that topic's rows
-  - Aggregation: `funding_by_year` totals and counts against a hand-computed fixture; `year_over_year_growth` correct percentage change and `None` for the first year in range; `top_institutions` ranking and tie-breaking; `top_pis` ranking; `agency_breakdown` totals
+  - Storage: upsert dedupes on `(topic, project_num)` across two syncs with changed award data (second sync's value wins, no duplicate row); querying by topic returns only that topic's rows; `filtered_projects` restricts to the requested topics + fiscal-year range even when the database holds broader prior-sync data; `reconcile_topic` deletes rows no longer returned by the latest sync for that topic/fiscal-year range, without touching other topics or other fiscal years
+  - Aggregation: `funding_by_year` totals and counts against a hand-computed fixture; `year_over_year_growth` correct percentage change and `None` for the first year in range; `top_institutions` ranking and tie-breaking; `top_pis` ranking; `agency_breakdown` totals; `dedupe_by_project` collapses an award matched by multiple topics into one row for cross-topic totals
   - Briefing: deterministic fallback produces a complete, non-empty briefing referencing only computed aggregate numbers with zero network calls when `ANTHROPIC_API_KEY` is unset (`urllib.request.urlopen` monkey-patched to raise if invoked); a mocked successful Anthropic response is threaded into the briefing text; the constructed prompt string never contains any PI name from the fixture data (privacy-by-construction check)
+  - Browser (Playwright): hero stats match the fixture exactly; the Chart.js CDN-blocked fallback renders its DOM tables (exercised against this environment's real, genuinely-blocked CDN, not a simulation); the search box filters rows; clicking a sortable column header sorts and updates `aria-sort`; the same sort is reachable by keyboard alone (Tab to focus, Enter/Space to activate); zero horizontal overflow at a 375px viewport; a dedicated hostile-payload fixture (script/img-onerror injected into a title, institution, PI name, and AI briefing simultaneously) produces zero dialogs, zero page errors, zero injected globals, and exactly the page's own 3 `<script>` tags
   - Rendering: HTML output HTML-escapes a hostile fixture title (`</script><script>window.__xss=true;</script>`) and a hostile institution name (`<img src=x onerror=...>`), confirmed the raw hostile strings do not appear unescaped and the page's own `<script>` tag count matches expectation; CSV export contains the expected header and correctly quotes a title containing a comma; dashboard hero stats reflect the fixture's true totals
   - Slug: topic slugification collapses whitespace/punctuation into a safe `[a-z0-9-]` id, and a path-traversal-shaped topic (`"../../etc/passwd"`) never produces a slug containing `/` or `..`
   - CLI: argument parsing for `sync`/`report`/`--ai`/`--topics` produces the expected parsed config; an invalid fiscal-year range (`start > end`) raises a clear `ValueError` rather than silently returning no data

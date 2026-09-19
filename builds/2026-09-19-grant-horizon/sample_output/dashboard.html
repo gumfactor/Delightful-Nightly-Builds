@@ -76,12 +76,12 @@
     <table id="projectsTable">
       <thead>
         <tr>
-          <th data-key="topic">Topic</th>
-          <th data-key="fiscal_year">FY</th>
-          <th data-key="award_amount">Award</th>
-          <th data-key="title">Title</th>
-          <th data-key="org_name">Institution</th>
-          <th data-key="agency_ic">Agency</th>
+          <th data-key="topic" tabindex="0" role="button" aria-sort="none">Topic</th>
+          <th data-key="fiscal_year" tabindex="0" role="button" aria-sort="none">FY</th>
+          <th data-key="award_amount" tabindex="0" role="button" aria-sort="descending">Award</th>
+          <th data-key="title" tabindex="0" role="button" aria-sort="none">Title</th>
+          <th data-key="org_name" tabindex="0" role="button" aria-sort="none">Institution</th>
+          <th data-key="agency_ic" tabindex="0" role="button" aria-sort="none">Agency</th>
         </tr>
       </thead>
       <tbody id="projectsBody"></tbody>
@@ -200,18 +200,31 @@
     renderProjects();
   });
 
+  function applySort(th) {
+    var key = th.getAttribute("data-key");
+    if (currentSort.key === key) {
+      currentSort.dir *= -1;
+    } else {
+      currentSort.key = key;
+      currentSort.dir = -1;
+    }
+    document.querySelectorAll("#projectsTable th").forEach(function (h) {
+      h.classList.remove("sorted");
+      h.setAttribute("aria-sort", "none");
+    });
+    th.classList.add("sorted");
+    th.setAttribute("aria-sort", currentSort.dir === -1 ? "descending" : "ascending");
+    renderProjects();
+  }
+
   document.querySelectorAll("#projectsTable th[data-key]").forEach(function (th) {
-    th.addEventListener("click", function () {
-      var key = th.getAttribute("data-key");
-      if (currentSort.key === key) {
-        currentSort.dir *= -1;
-      } else {
-        currentSort.key = key;
-        currentSort.dir = -1;
+    th.addEventListener("click", function () { applySort(th); });
+    // Keyboard-operable per WAI-ARIA button semantics: Enter and Space both activate.
+    th.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        applySort(th);
       }
-      document.querySelectorAll("#projectsTable th").forEach(function (h) { h.classList.remove("sorted"); });
-      th.classList.add("sorted");
-      renderProjects();
     });
   });
 
