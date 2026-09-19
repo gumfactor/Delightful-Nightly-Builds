@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grant Horizon</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --panel-2: #1e222b; --border: #2a2f3a;
+    --text: #e6e8ec; --text-dim: #9aa1ad; --accent: #5b9dff; --accent-2: #7ee787;
+    --danger: #ff6b6b; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5; padding: 16px;
+  }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  h2 { font-size: 1.1rem; margin: 0 0 12px; color: var(--text); }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px; }
+  .hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .stat .value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
+  .topic-panel { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+  .briefing { font-size: 0.9rem; color: var(--text-dim); border-left: 3px solid var(--accent); padding-left: 10px; margin-top: 10px; }
+  canvas { max-width: 100%; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-dim); cursor: pointer; user-select: none; white-space: nowrap; }
+  th.sorted::after { content: " \25BE"; color: var(--accent); }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+  input[type=search] {
+    width: 100%; max-width: 320px; padding: 8px 10px; margin-bottom: 12px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+  }
+  .fallback-table { display: none; }
+  .fallback-table.active { display: block; }
+  .table-wrap { overflow-x: auto; }
+  @media (max-width: 600px) {
+    .hero { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<h1>Grant Horizon</h1>
+<div class="meta" id="generatedAt"></div>
+
+<div class="hero" id="hero"></div>
+
+<div class="panel">
+  <h2>Funding by fiscal year, per topic</h2>
+  <canvas id="trendChart" height="110"></canvas>
+  <div class="fallback-table table-wrap" id="trendFallback"></div>
+</div>
+
+<div class="panel">
+  <h2>Top funded institutions</h2>
+  <canvas id="institutionsChart" height="110"></canvas>
+  <div class="fallback-table table-wrap" id="institutionsFallback"></div>
+</div>
+
+<div class="panel">
+  <h2>Agency / IC breakdown</h2>
+  <div class="table-wrap" id="agencyTableWrap"></div>
+</div>
+
+<div class="panel" id="topicPanels"></div>
+
+<div class="panel">
+  <h2>Tracked projects</h2>
+  <input type="search" id="searchBox" placeholder="Search title, institution, or PI...">
+  <div class="table-wrap">
+    <table id="projectsTable">
+      <thead>
+        <tr>
+          <th data-key="topic">Topic</th>
+          <th data-key="fiscal_year">FY</th>
+          <th data-key="award_amount">Award</th>
+          <th data-key="title">Title</th>
+          <th data-key="org_name">Institution</th>
+          <th data-key="agency_ic">Agency</th>
+        </tr>
+      </thead>
+      <tbody id="projectsBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script type="application/json" id="data-payload">{"generated_at": "2026-09-19 08:00 UTC (synthetic sample data)", "hero": {"total_funding": 17878546.71, "total_projects": 47, "topic_count": 5, "fiscal_year_start": 2020, "fiscal_year_end": 2026}, "topics": [{"topic": "psychopathy", "slug": "psychopathy", "total_funding": 4366452.6, "project_count": 11, "years": [{"year": 2020, "total": 1027958.08, "count": 2}, {"year": 2022, "total": 1128512.8, "count": 3}, {"year": 2023, "total": 947859.11, "count": 3}, {"year": 2024, "total": 614815.7, "count": 1}, {"year": 2025, "total": 233126.1, "count": 1}, {"year": 2026, "total": 414180.81, "count": 1}], "briefing": "Across fiscal years 2020\u20132026, 11 NIH-funded projects matching \"psychopathy\" totaled $4,366,453. The most heavily funded institution in this set was University of Toronto ($1,921,181 across its tracked projects)."}, {"topic": "affective neuroscience", "slug": "affective-neuroscience", "total_funding": 5343087.5, "project_count": 12, "years": [{"year": 2020, "total": 479035.11, "count": 2}, {"year": 2021, "total": 271672.53, "count": 1}, {"year": 2022, "total": 665998.11, "count": 1}, {"year": 2023, "total": 682501.55, "count": 2}, {"year": 2024, "total": 876106.59, "count": 2}, {"year": 2025, "total": 1705893.74, "count": 3}, {"year": 2026, "total": 661879.87, "count": 1}], "briefing": "Across fiscal years 2020\u20132026, 12 NIH-funded projects matching \"affective neuroscience\" totaled $5,343,088. The most heavily funded institution in this set was King's College London ($1,558,608 across its tracked projects)."}, {"topic": "empathy neuroscience", "slug": "empathy-neuroscience", "total_funding": 2846316.24, "project_count": 9, "years": [{"year": 2020, "total": 381948.26, "count": 1}, {"year": 2021, "total": 941540.31, "count": 3}, {"year": 2022, "total": 305040.01, "count": 1}, {"year": 2023, "total": 732594.58, "count": 2}, {"year": 2024, "total": 485193.08, "count": 2}], "briefing": "Across fiscal years 2020\u20132024, 9 NIH-funded projects matching \"empathy neuroscience\" totaled $2,846,316. The most heavily funded institution in this set was King's College London ($807,142 across its tracked projects)."}, {"topic": "stress cortisol", "slug": "stress-cortisol", "total_funding": 2354930.9600000004, "project_count": 7, "years": [{"year": 2020, "total": 261653.96, "count": 1}, {"year": 2023, "total": 804027.12, "count": 2}, {"year": 2025, "total": 532742.22, "count": 2}, {"year": 2026, "total": 756507.66, "count": 2}], "briefing": "Across fiscal years 2020\u20132026, 7 NIH-funded projects matching \"stress cortisol\" totaled $2,354,931. The most heavily funded institution in this set was University of Toronto ($1,859,559 across its tracked projects)."}, {"topic": "forensic neuroscience", "slug": "forensic-neuroscience", "total_funding": 2967759.41, "project_count": 8, "years": [{"year": 2020, "total": 301237.01, "count": 1}, {"year": 2021, "total": 211508.63, "count": 1}, {"year": 2022, "total": 176153.35, "count": 1}, {"year": 2023, "total": 1465399.35, "count": 3}, {"year": 2024, "total": 563358.59, "count": 1}, {"year": 2025, "total": 250102.48, "count": 1}], "briefing": "Across fiscal years 2020\u20132025, 8 NIH-funded projects matching \"forensic neuroscience\" totaled $2,967,759. The most heavily funded institution in this set was Harvard Medical School ($813,146 across its tracked projects)."}], "top_institutions": [{"name": "University of Toronto", "total": 5810959.21, "count": 16}, {"name": "King's College London", "total": 4394341.73, "count": 12}, {"name": "Harvard Medical School", "total": 2384767.32, "count": 6}, {"name": "McGill University", "total": 2276843.5, "count": 4}, {"name": "Yale University", "total": 1796267.27, "count": 5}, {"name": "University of Wisconsin-Madison", "total": 1215367.68, "count": 4}], "agency_breakdown": [{"agency": "National Institute of Neurological Disorders and Stroke", "total": 6264230.86, "count": 17}, {"agency": "National Institute of Mental Health", "total": 5863583.51, "count": 14}, {"agency": "National Institute on Drug Abuse", "total": 5750732.34, "count": 16}], "projects": [{"topic": "affective neuroscience", "title": "Sample synthetic project #20 on affective neuroscience", "fiscal_year": 2026, "award_amount": 661879.87, "org_name": "McGill University", "org_state": "QC", "org_country": "Canada", "agency_ic": "National Institute of Mental Health", "pi_names": ["Jane Bianchi"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #15 on affective neuroscience", "fiscal_year": 2025, "award_amount": 720084.89, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Mental Health", "pi_names": ["Priya Researcher", "Wei Singh"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #19 on affective neuroscience", "fiscal_year": 2025, "award_amount": 645608.82, "org_name": "Yale University", "org_state": "CT", "org_country": "United States", "agency_ic": "National Institute of Mental Health", "pi_names": ["Elena Holt"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #23 on affective neuroscience", "fiscal_year": 2025, "award_amount": 340200.03, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Wei Researcher", "David Okafor"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #16 on affective neuroscience", "fiscal_year": 2024, "award_amount": 308569.12, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Elena Nowak"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #21 on affective neuroscience", "fiscal_year": 2024, "award_amount": 567537.47, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Elena Bianchi"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #13 on affective neuroscience", "fiscal_year": 2023, "award_amount": 195225.54, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute of Mental Health", "pi_names": ["Jane Chen", "Wei Singh"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #18 on affective neuroscience", "fiscal_year": 2023, "award_amount": 487276.01, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["David Singh"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #22 on affective neuroscience", "fiscal_year": 2022, "award_amount": 665998.11, "org_name": "Harvard Medical School", "org_state": "MA", "org_country": "United States", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Priya Bianchi"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #14 on affective neuroscience", "fiscal_year": 2021, "award_amount": 271672.53, "org_name": "University of Wisconsin-Madison", "org_state": "WI", "org_country": "United States", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Aisha Okafor"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #12 on affective neuroscience", "fiscal_year": 2020, "award_amount": 210785.35, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Mental Health", "pi_names": ["Elena Holt"]}, {"topic": "affective neuroscience", "title": "Sample synthetic project #17 on affective neuroscience", "fiscal_year": 2020, "award_amount": 268249.76, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Marcus Okafor"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #24 on empathy neuroscience", "fiscal_year": 2024, "award_amount": 307206.34, "org_name": "Yale University", "org_state": "CT", "org_country": "United States", "agency_ic": "National Institute of Mental Health", "pi_names": ["Jane Singh"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #26 on empathy neuroscience", "fiscal_year": 2024, "award_amount": 177986.74, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Jane Holt"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #30 on empathy neuroscience", "fiscal_year": 2023, "award_amount": 185813.26, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Aisha Singh"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #32 on empathy neuroscience", "fiscal_year": 2023, "award_amount": 546781.32, "org_name": "Harvard Medical School", "org_state": "MA", "org_country": "United States", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Jane Holt", "Jane Nowak"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #29 on empathy neuroscience", "fiscal_year": 2022, "award_amount": 305040.01, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Marcus Martinez", "Sam Nowak"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #25 on empathy neuroscience", "fiscal_year": 2021, "award_amount": 431938.71, "org_name": "University of Wisconsin-Madison", "org_state": "WI", "org_country": "United States", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Priya Chen"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #27 on empathy neuroscience", "fiscal_year": 2021, "award_amount": 316288.75, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute of Mental Health", "pi_names": ["Marcus Researcher"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #28 on empathy neuroscience", "fiscal_year": 2021, "award_amount": 193312.85, "org_name": "Harvard Medical School", "org_state": "MA", "org_country": "United States", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Aisha Chen"]}, {"topic": "empathy neuroscience", "title": "Sample synthetic project #31 on empathy neuroscience", "fiscal_year": 2020, "award_amount": 381948.26, "org_name": "McGill University", "org_state": "QC", "org_country": "Canada", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Aisha Chen"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #44 on forensic neuroscience", "fiscal_year": 2025, "award_amount": 250102.48, "org_name": "University of Wisconsin-Madison", "org_state": "WI", "org_country": "United States", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Priya Chen"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #47 on forensic neuroscience", "fiscal_year": 2024, "award_amount": 563358.59, "org_name": "McGill University", "org_state": "QC", "org_country": "Canada", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Jane Researcher"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #42 on forensic neuroscience", "fiscal_year": 2023, "award_amount": 312912.78, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Jane Chen"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #43 on forensic neuroscience", "fiscal_year": 2023, "award_amount": 636992.27, "org_name": "Harvard Medical School", "org_state": "MA", "org_country": "United States", "agency_ic": "National Institute of Mental Health", "pi_names": ["Marcus Bianchi"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #46 on forensic neuroscience", "fiscal_year": 2023, "award_amount": 515494.3, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Marcus Okafor", "Wei Martinez"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #40 on forensic neuroscience", "fiscal_year": 2022, "award_amount": 176153.35, "org_name": "Harvard Medical School", "org_state": "MA", "org_country": "United States", "agency_ic": "National Institute of Mental Health", "pi_names": ["Sam Researcher"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #45 on forensic neuroscience", "fiscal_year": 2021, "award_amount": 211508.63, "org_name": "Yale University", "org_state": "CT", "org_country": "United States", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Marcus Singh"]}, {"topic": "forensic neuroscience", "title": "Sample synthetic project #41 on forensic neuroscience", "fiscal_year": 2020, "award_amount": 301237.01, "org_name": "Yale University", "org_state": "CT", "org_country": "United States", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Aisha Martinez"]}, {"topic": "psychopathy", "title": "Sample synthetic project #5 on psychopathy", "fiscal_year": 2026, "award_amount": 414180.81, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Jane Okafor", "Wei Holt"]}, {"topic": "psychopathy", "title": "Sample synthetic project #7 on psychopathy", "fiscal_year": 2025, "award_amount": 233126.1, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Wei Nowak"]}, {"topic": "psychopathy", "title": "Sample synthetic project #6 on psychopathy", "fiscal_year": 2024, "award_amount": 614815.7, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Wei Nowak"]}, {"topic": "psychopathy", "title": "Sample synthetic project #8 on psychopathy", "fiscal_year": 2023, "award_amount": 462104.96, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Jane Bianchi", "Aisha Okafor"]}, {"topic": "psychopathy", "title": "Sample synthetic project #9 on psychopathy", "fiscal_year": 2023, "award_amount": 165529.42, "org_name": "Harvard Medical School", "org_state": "MA", "org_country": "United States", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Priya Researcher", "Marcus Okafor"]}, {"topic": "psychopathy", "title": "Sample synthetic project #10 on psychopathy", "fiscal_year": 2023, "award_amount": 320224.73, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Priya Bianchi"]}, {"topic": "psychopathy", "title": "Sample synthetic project #2 on psychopathy", "fiscal_year": 2022, "award_amount": 306262.32, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Elena Okafor"]}, {"topic": "psychopathy", "title": "Sample synthetic project #3 on psychopathy", "fiscal_year": 2022, "award_amount": 491544.01, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Mental Health", "pi_names": ["Elena Researcher"]}, {"topic": "psychopathy", "title": "Sample synthetic project #11 on psychopathy", "fiscal_year": 2022, "award_amount": 330706.47, "org_name": "Yale University", "org_state": "CT", "org_country": "United States", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Aisha Bianchi"]}, {"topic": "psychopathy", "title": "Sample synthetic project #1 on psychopathy", "fiscal_year": 2020, "award_amount": 358301.3, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Marcus Holt"]}, {"topic": "psychopathy", "title": "Sample synthetic project #4 on psychopathy", "fiscal_year": 2020, "award_amount": 669656.78, "org_name": "McGill University", "org_state": "QC", "org_country": "Canada", "agency_ic": "National Institute of Mental Health", "pi_names": ["Aisha Holt"]}, {"topic": "stress cortisol", "title": "Sample synthetic project #38 on stress cortisol", "fiscal_year": 2026, "award_amount": 193482.14, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Jane Okafor"]}, {"topic": "stress cortisol", "title": "Sample synthetic project #39 on stress cortisol", "fiscal_year": 2026, "award_amount": 563025.52, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute on Drug Abuse", "pi_names": ["Sam Researcher", "Sam Holt"]}, {"topic": "stress cortisol", "title": "Sample synthetic project #35 on stress cortisol", "fiscal_year": 2025, "award_amount": 299024.27, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Mental Health", "pi_names": ["Sam Singh"]}, {"topic": "stress cortisol", "title": "Sample synthetic project #36 on stress cortisol", "fiscal_year": 2025, "award_amount": 233717.95, "org_name": "King's College London", "org_state": "", "org_country": "United Kingdom", "agency_ic": "National Institute of Mental Health", "pi_names": ["Elena Bianchi", "Wei Researcher"]}, {"topic": "stress cortisol", "title": "Sample synthetic project #34 on stress cortisol", "fiscal_year": 2023, "award_amount": 504611.8, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Wei Bianchi"]}, {"topic": "stress cortisol", "title": "Sample synthetic project #37 on stress cortisol", "fiscal_year": 2023, "award_amount": 299415.32, "org_name": "University of Toronto", "org_state": "ON", "org_country": "Canada", "agency_ic": "National Institute of Mental Health", "pi_names": ["Aisha Martinez"]}, {"topic": "stress cortisol", "title": "Sample synthetic project #33 on stress cortisol", "fiscal_year": 2020, "award_amount": 261653.96, "org_name": "University of Wisconsin-Madison", "org_state": "WI", "org_country": "United States", "agency_ic": "National Institute of Neurological Disorders and Stroke", "pi_names": ["Priya Nowak", "Priya Bianchi"]}]}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onerror="window.__chartJsFailed = true;"></script>
+<script>
+(function () {
+  "use strict";
+  var data = JSON.parse(document.getElementById("data-payload").textContent);
+
+  function fmtMoney(n) {
+    return "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    if (attrs) {
+      for (var key in attrs) { node.setAttribute(key, attrs[key]); }
+    }
+    if (text !== undefined && text !== null) { node.textContent = text; }
+    return node;
+  }
+
+  // Generated-at line
+  document.getElementById("generatedAt").textContent =
+    "Generated " + data.generated_at + " · " + data.hero.topic_count + " topics · FY" +
+    data.hero.fiscal_year_start + "–FY" + data.hero.fiscal_year_end;
+
+  // Hero stats
+  var hero = document.getElementById("hero");
+  var heroStats = [
+    ["Total tracked funding", fmtMoney(data.hero.total_funding)],
+    ["Projects tracked", data.hero.total_projects],
+    ["Topics", data.hero.topic_count],
+    ["Fiscal years", data.hero.fiscal_year_start + "–" + data.hero.fiscal_year_end],
+  ];
+  heroStats.forEach(function (pair) {
+    var card = el("div", { class: "stat" });
+    card.appendChild(el("div", { class: "value" }, String(pair[1])));
+    card.appendChild(el("div", { class: "label" }, pair[0]));
+    hero.appendChild(card);
+  });
+
+  // Topic panels (with optional AI briefing)
+  var topicPanels = document.getElementById("topicPanels");
+  topicPanels.appendChild(el("h2", null, "Per-topic summary"));
+  data.topics.forEach(function (topic) {
+    var panel = el("div", { class: "topic-panel" });
+    panel.appendChild(el("h2", null, topic.topic));
+    panel.appendChild(el("div", { class: "meta" },
+      topic.project_count + " projects · " + fmtMoney(topic.total_funding) + " tracked"));
+    if (topic.briefing) {
+      panel.appendChild(el("div", { class: "briefing" }, topic.briefing));
+    }
+    topicPanels.appendChild(panel);
+  });
+
+  // Agency table
+  var agencyWrap = document.getElementById("agencyTableWrap");
+  var agencyTable = el("table");
+  var agencyHead = el("thead");
+  var agencyHeadRow = el("tr");
+  ["Agency", "Total", "Projects"].forEach(function (h) { agencyHeadRow.appendChild(el("th", null, h)); });
+  agencyHead.appendChild(agencyHeadRow);
+  agencyTable.appendChild(agencyHead);
+  var agencyBody = el("tbody");
+  data.agency_breakdown.forEach(function (row) {
+    var tr = el("tr");
+    tr.appendChild(el("td", null, row.agency));
+    tr.appendChild(el("td", null, fmtMoney(row.total)));
+    tr.appendChild(el("td", null, String(row.count)));
+    agencyBody.appendChild(tr);
+  });
+  agencyTable.appendChild(agencyBody);
+  agencyWrap.appendChild(agencyTable);
+
+  // Projects table (search + sort)
+  var projectsBody = document.getElementById("projectsBody");
+  var currentSort = { key: "award_amount", dir: -1 };
+  var currentFilter = "";
+
+  function projectMatches(p, q) {
+    if (!q) return true;
+    var haystack = (p.title + " " + p.org_name + " " + p.pi_names.join(" ")).toLowerCase();
+    return haystack.indexOf(q) !== -1;
+  }
+
+  function renderProjects() {
+    var rows = data.projects.filter(function (p) { return projectMatches(p, currentFilter); });
+    rows.sort(function (a, b) {
+      var av = a[currentSort.key], bv = b[currentSort.key];
+      if (typeof av === "string") { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+      if (av < bv) return -1 * currentSort.dir;
+      if (av > bv) return 1 * currentSort.dir;
+      return 0;
+    });
+    projectsBody.textContent = "";
+    rows.forEach(function (p) {
+      var tr = el("tr");
+      tr.appendChild(el("td", null, p.topic));
+      tr.appendChild(el("td", null, String(p.fiscal_year)));
+      tr.appendChild(el("td", null, fmtMoney(p.award_amount)));
+      tr.appendChild(el("td", null, p.title));
+      tr.appendChild(el("td", null, p.org_name + (p.org_state ? ", " + p.org_state : "")));
+      tr.appendChild(el("td", null, p.agency_ic));
+      projectsBody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("searchBox").addEventListener("input", function (e) {
+    currentFilter = e.target.value.trim().toLowerCase();
+    renderProjects();
+  });
+
+  document.querySelectorAll("#projectsTable th[data-key]").forEach(function (th) {
+    th.addEventListener("click", function () {
+      var key = th.getAttribute("data-key");
+      if (currentSort.key === key) {
+        currentSort.dir *= -1;
+      } else {
+        currentSort.key = key;
+        currentSort.dir = -1;
+      }
+      document.querySelectorAll("#projectsTable th").forEach(function (h) { h.classList.remove("sorted"); });
+      th.classList.add("sorted");
+      renderProjects();
+    });
+  });
+
+  renderProjects();
+
+  // Charts, with a DOM-table fallback if the Chart.js CDN was blocked
+  function buildTrendFallback() {
+    var wrap = document.getElementById("trendFallback");
+    var table = el("table");
+    var thead = el("thead");
+    var headRow = el("tr");
+    headRow.appendChild(el("th", null, "Topic"));
+    headRow.appendChild(el("th", null, "Fiscal Year"));
+    headRow.appendChild(el("th", null, "Total"));
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    var tbody = el("tbody");
+    data.topics.forEach(function (topic) {
+      topic.years.forEach(function (y) {
+        var tr = el("tr");
+        tr.appendChild(el("td", null, topic.topic));
+        tr.appendChild(el("td", null, String(y.year)));
+        tr.appendChild(el("td", null, fmtMoney(y.total)));
+        tbody.appendChild(tr);
+      });
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    wrap.classList.add("active");
+  }
+
+  function buildInstitutionsFallback() {
+    var wrap = document.getElementById("institutionsFallback");
+    var table = el("table");
+    var thead = el("thead");
+    var headRow = el("tr");
+    headRow.appendChild(el("th", null, "Institution"));
+    headRow.appendChild(el("th", null, "Total"));
+    headRow.appendChild(el("th", null, "Projects"));
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    var tbody = el("tbody");
+    data.top_institutions.forEach(function (row) {
+      var tr = el("tr");
+      tr.appendChild(el("td", null, row.name));
+      tr.appendChild(el("td", null, fmtMoney(row.total)));
+      tr.appendChild(el("td", null, String(row.count)));
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    wrap.classList.add("active");
+  }
+
+  function chartJsAvailable() {
+    return typeof window.Chart !== "undefined" && !window.__chartJsFailed;
+  }
+
+  function initCharts() {
+    if (!chartJsAvailable()) {
+      buildTrendFallback();
+      buildInstitutionsFallback();
+      return;
+    }
+    var allYears = [];
+    data.topics.forEach(function (t) { t.years.forEach(function (y) { if (allYears.indexOf(y.year) === -1) allYears.push(y.year); }); });
+    allYears.sort();
+
+    var palette = ["#5b9dff", "#7ee787", "#ff6b6b", "#f0b429", "#c792ea", "#4dd0e1"];
+    var datasets = data.topics.map(function (topic, i) {
+      var byYear = {};
+      topic.years.forEach(function (y) { byYear[y.year] = y.total; });
+      return {
+        label: topic.topic,
+        data: allYears.map(function (y) { return byYear[y] || 0; }),
+        borderColor: palette[i % palette.length],
+        backgroundColor: palette[i % palette.length],
+        fill: false,
+        tension: 0.2,
+      };
+    });
+
+    new window.Chart(document.getElementById("trendChart"), {
+      type: "line",
+      data: { labels: allYears, datasets: datasets },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: "#e6e8ec" } } },
+        scales: {
+          x: { ticks: { color: "#9aa1ad" }, grid: { color: "#2a2f3a" } },
+          y: { ticks: { color: "#9aa1ad" }, grid: { color: "#2a2f3a" } },
+        },
+      },
+    });
+
+    new window.Chart(document.getElementById("institutionsChart"), {
+      type: "bar",
+      data: {
+        labels: data.top_institutions.map(function (r) { return r.name; }),
+        datasets: [{
+          label: "Total funding",
+          data: data.top_institutions.map(function (r) { return r.total; }),
+          backgroundColor: "#5b9dff",
+        }],
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#9aa1ad" }, grid: { color: "#2a2f3a" } },
+          y: { ticks: { color: "#9aa1ad" }, grid: { color: "#2a2f3a" } },
+        },
+      },
+    });
+  }
+
+  window.addEventListener("load", function () {
+    setTimeout(initCharts, 50);
+  });
+})();
+</script>
+</body>
+</html>
