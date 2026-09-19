@@ -97,6 +97,27 @@ def test_total_funding_sums_all_projects():
     assert aggregate.total_funding(FIXTURE) == 650000.0
 
 
+def test_dedupe_by_project_collapses_same_award_across_topics():
+    same_award_two_topics = [
+        make_project(topic="psychopathy", project_num="X1", award_amount=500000.0, org_name="Inst A"),
+        make_project(topic="affective neuroscience", project_num="X1", award_amount=500000.0, org_name="Inst A"),
+        make_project(topic="psychopathy", project_num="X2", award_amount=100000.0, org_name="Inst B"),
+    ]
+    deduped = aggregate.dedupe_by_project(same_award_two_topics)
+    assert [p.project_num for p in deduped] == ["X1", "X2"]
+    assert aggregate.total_funding(deduped) == 600000.0
+
+
+def test_dedupe_by_project_keeps_first_occurrence():
+    projects = [
+        make_project(topic="psychopathy", project_num="X1", org_name="First Seen"),
+        make_project(topic="affective neuroscience", project_num="X1", org_name="Second Seen"),
+    ]
+    deduped = aggregate.dedupe_by_project(projects)
+    assert len(deduped) == 1
+    assert deduped[0].org_name == "First Seen"
+
+
 def test_top_institutions_ties_break_alphabetically():
     tied = [
         make_project(project_num="A", org_name="Zeta Univ", award_amount=100.0),

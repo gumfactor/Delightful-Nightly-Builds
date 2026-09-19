@@ -117,3 +117,64 @@ def all_projects(conn: sqlite3.Connection, topic: str = None) -> list:
 def project_count(conn: sqlite3.Connection) -> int:
     cursor = conn.execute("SELECT COUNT(*) FROM projects")
     return cursor.fetchone()[0]
+
+
+def filtered_projects(conn: sqlite3.Connection, topics: Iterable[str], fy_start: int, fy_end: int) -> list:
+    """Return stored projects restricted to `topics` and the [fy_start, fy_end] range.
+
+    `report` uses this instead of `all_projects` so that requesting a narrower
+    --topics/--fy-start/--fy-end than what was last synced doesn't pull in
+    out-of-scope rows left over from a broader prior sync.
+    """
+    topics = list(topics)
+    if not topics:
+        return []
+    conn.row_factory = sqlite3.Row
+    placeholders = ",".join("?" for _ in topics)
+    cursor = conn.execute(
+        f"""
+        SELECT * FROM projects
+        WHERE topic IN ({placeholders}) AND fiscal_year BETWEEN ? AND ?
+        ORDER BY topic, fiscal_year DESC
+        """,
+        (*topics, fy_start, fy_end),
+    )
+    return [_row_to_project(row) for row in cursor.fetchall()]
+
+
+def reconcile_topic(
+    conn: sqlite3.Connection, topic: str, fiscal_years: Iterable[int], seen_project_nums: Iterable[str]
+) -> int:
+    """Delete stored rows for `topic` whose fiscal_year was just re-synced but whose
+    project_num was NOT among the results the latest sync returned.
+
+    Without this, a project that NIH stops returning for a topic/fiscal-year search
+    (corrected, withdrawn, or no longer matching) would linger in every future
+    `report` forever, since `upsert_projects` only ever adds or updates rows it is
+    given -- it never learns that a previously-seen row should be removed. Returns
+    the number of rows deleted.
+    """
+    fiscal_years = list(fiscal_years)
+    if not fiscal_years:
+        return 0
+    seen = list(seen_project_nums)
+    fy_placeholders = ",".join("?" for _ in fiscal_years)
+    if seen:
+        seen_placeholders = ",".join("?" for _ in seen)
+        cursor = conn.execute(
+            f"""
+            DELETE FROM projects
+            WHERE topic = ? AND fiscal_year IN ({fy_placeholders})
+            AND project_num NOT IN ({seen_placeholders})
+            """,
+            (topic, *fiscal_years, *seen),
+        )
+    else:
+        # Nothing at all was returned for this topic across the synced fiscal
+        # years -- every previously stored row in that range is now stale.
+        cursor = conn.execute(
+            f"DELETE FROM projects WHERE topic = ? AND fiscal_year IN ({fy_placeholders})",
+            (topic, *fiscal_years),
+        )
+    conn.commit()
+    return cursor.rowcount

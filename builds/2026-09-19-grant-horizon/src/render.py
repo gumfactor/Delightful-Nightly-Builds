@@ -57,14 +57,24 @@ def build_dashboard_data(
             "briefing": briefings.get(topic),
         })
 
-    institutions = aggregate.top_institutions(projects, n=10)
-    agencies = aggregate.agency_breakdown(projects)
+    # Cross-topic aggregates must dedupe first: a single award that matched more
+    # than one configured topic is stored once per topic (correct for the
+    # per-topic totals above), but would otherwise have its funding counted
+    # once per topic here too. See aggregate.dedupe_by_project.
+    deduped_projects = aggregate.dedupe_by_project(projects)
+
+    institutions = aggregate.top_institutions(deduped_projects, n=10)
+    agencies = aggregate.agency_breakdown(deduped_projects)
     agency_rows = sorted(
         ({"agency": name, "total": round(data["total_amount"], 2), "count": data["count"]}
          for name, data in agencies.items()),
         key=lambda row: (-row["total"], row["agency"]),
     )
 
+    # Deliberately NOT deduped: the project table shows one row per topic an
+    # award matched (labeled by that topic), which is informative on its own,
+    # unlike the summed totals above. So its row count can exceed hero.total_projects
+    # whenever an award matched more than one configured topic.
     project_rows = [
         {
             "topic": p.topic,
@@ -83,8 +93,8 @@ def build_dashboard_data(
     return {
         "generated_at": generated_at,
         "hero": {
-            "total_funding": round(aggregate.total_funding(projects), 2),
-            "total_projects": len(projects),
+            "total_funding": round(aggregate.total_funding(deduped_projects), 2),
+            "total_projects": len(deduped_projects),
             "topic_count": len(topics),
             "fiscal_year_start": fiscal_year_start,
             "fiscal_year_end": fiscal_year_end,

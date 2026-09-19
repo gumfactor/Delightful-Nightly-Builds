@@ -77,8 +77,12 @@ def run_sync(args: argparse.Namespace) -> None:
         print(f"Syncing topic: {topic} (FY{fy_start}-FY{fy_end})...")
         projects = fetch_all_projects(topic, fiscal_years, default_http_post)
         written = storage.upsert_projects(conn, projects)
+        seen_project_nums = {p.project_num for p in projects}
+        deleted = storage.reconcile_topic(conn, topic, fiscal_years, seen_project_nums)
         total_written += written
         print(f"  {written} projects upserted.")
+        if deleted:
+            print(f"  {deleted} stale project(s) removed (no longer returned for this topic/fiscal-year range).")
     print(f"Sync complete. {total_written} project rows written across {len(topics)} topics.")
     conn.close()
 
@@ -86,7 +90,7 @@ def run_sync(args: argparse.Namespace) -> None:
 def run_report(args: argparse.Namespace) -> None:
     topics, fy_start, fy_end = resolve_topics_and_years(args)
     conn = storage.connect(args.db)
-    all_projects = storage.all_projects(conn)
+    all_projects = storage.filtered_projects(conn, topics, fy_start, fy_end)
     conn.close()
 
     api_key = os.environ.get("ANTHROPIC_API_KEY") if args.ai else None

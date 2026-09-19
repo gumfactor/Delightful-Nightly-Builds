@@ -69,6 +69,28 @@ def test_build_dashboard_data_top_institutions_ranked():
     assert data["top_institutions"][1]["total"] == 150000.0
 
 
+def test_build_dashboard_data_hero_dedupes_award_matched_by_multiple_topics():
+    same_award = [
+        make_project(topic="psychopathy", project_num="X1", fiscal_year=2022, award_amount=500000.0,
+                     org_name="Shared Inst"),
+        make_project(topic="affective neuroscience", project_num="X1", fiscal_year=2022, award_amount=500000.0,
+                     org_name="Shared Inst"),
+    ]
+    data = render.build_dashboard_data(
+        same_award, ["psychopathy", "affective neuroscience"], 2020, 2026, "2026-09-19 00:00 UTC"
+    )
+    # Hero counts the underlying award once, not once per topic it matched.
+    assert data["hero"]["total_funding"] == 500000.0
+    assert data["hero"]["total_projects"] == 1
+    assert data["top_institutions"] == [{"name": "Shared Inst", "total": 500000.0, "count": 1}]
+    # But each topic still legitimately shows the award in its own per-topic total.
+    by_topic = {row["topic"]: row for row in data["topics"]}
+    assert by_topic["psychopathy"]["total_funding"] == 500000.0
+    assert by_topic["affective neuroscience"]["total_funding"] == 500000.0
+    # And the raw project table still lists both topic-matches (each correctly labeled).
+    assert len(data["projects"]) == 2
+
+
 def test_build_dashboard_data_includes_briefing_text():
     data = render.build_dashboard_data(
         FIXTURE, ["psychopathy"], 2020, 2026, "2026-09-19 00:00 UTC",

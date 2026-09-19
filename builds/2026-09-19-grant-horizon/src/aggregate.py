@@ -98,3 +98,27 @@ def agency_breakdown(projects: list) -> dict:
 
 def total_funding(projects: list) -> float:
     return sum(project.award_amount for project in projects)
+
+
+def dedupe_by_project(projects: list) -> list:
+    """Collapse multiple topic-matches of the same underlying award into one row.
+
+    Storage is intentionally keyed on (topic, project_num), so one real NIH
+    project that matches more than one configured topic (e.g. a grant whose
+    abstract mentions both "empathy" and "affective neuroscience") is stored
+    as one row per topic it matched. That's correct for a per-topic total —
+    each topic legitimately found it — but summing across topics without
+    deduping first would count that single award's funding once per topic it
+    matched. This function keeps the first-seen row per project_num, for use
+    by cross-topic aggregates (hero totals, institution/agency rankings).
+    Per-topic aggregates should NOT use this — they should dedupe naturally,
+    since a topic can only store one row per project_num already.
+    """
+    seen = set()
+    deduped = []
+    for project in projects:
+        if project.project_num in seen:
+            continue
+        seen.add(project.project_num)
+        deduped.append(project)
+    return deduped
