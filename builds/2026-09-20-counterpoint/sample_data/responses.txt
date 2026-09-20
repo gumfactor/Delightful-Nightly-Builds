@@ -1,0 +1,22 @@
+[R1C1]
+We have revised Section 2.1 to explicitly define construct X and to
+distinguish it from construct Y (see tracked-changes manuscript, lines
+45-58).
+
+[R1C2]
+We conducted a post-hoc power analysis using G*Power (new Supplementary
+Table S1), confirming adequate power (1-β = 0.82) at our observed effect
+size for the primary analysis.
+
+[R1C3]
+We have added a paragraph to the Discussion (page 14) explicitly noting
+that the cross-sectional design precludes causal inference and framing our
+conclusions accordingly.
+
+[R2C1]
+Figure 3 has been redrawn with 14pt axis labels and bolded tick marks for
+legibility at print resolution.
+
+[R2C2]
+We have replaced all instances of "p < .05" with exact p-values throughout
+the Results section.
