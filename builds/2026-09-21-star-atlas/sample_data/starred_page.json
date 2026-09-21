@@ -1,0 +1,62 @@
+[
+  {
+    "starred_at": "2026-09-15T12:00:00Z",
+    "repo": {
+      "id": 1001,
+      "full_name": "acme/llm-agent-toolkit",
+      "description": "A toolkit for building LLM agents with tool use and memory.",
+      "html_url": "https://github.com/acme/llm-agent-toolkit",
+      "language": "Python",
+      "topics": ["llm", "agent", "ai"],
+      "stargazers_count": 4200
+    }
+  },
+  {
+    "starred_at": "2026-09-10T09:30:00Z",
+    "repo": {
+      "id": 1002,
+      "full_name": "dataworks/etl-pipeline",
+      "description": "Composable ETL pipelines for pandas dataframes.",
+      "html_url": "https://github.com/dataworks/etl-pipeline",
+      "language": "Python",
+      "topics": ["data-engineering", "etl", "pandas"],
+      "stargazers_count": 890
+    }
+  },
+  {
+    "starred_at": "2026-09-05T18:15:00Z",
+    "repo": {
+      "id": 1003,
+      "full_name": "webco/react-charts",
+      "description": "Lightweight charting components for React.",
+      "html_url": "https://github.com/webco/react-charts",
+      "language": "TypeScript",
+      "topics": ["react", "web", "component-library"],
+      "stargazers_count": 3100
+    }
+  },
+  {
+    "starred_at": "2026-08-28T07:45:00Z",
+    "repo": {
+      "id": 1004,
+      "full_name": "devtools/fast-cli",
+      "description": null,
+      "html_url": "https://github.com/devtools/fast-cli",
+      "language": "Go",
+      "topics": ["cli", "productivity"],
+      "stargazers_count": 512
+    }
+  },
+  {
+    "starred_at": "2026-08-20T14:00:00Z",
+    "repo": {
+      "id": 1005,
+      "full_name": "hostile/xss-fixture",
+      "description": "</script><script>window.__xss=true;</script> a fixture repo used only to test HTML-escaping safety",
+      "html_url": "https://github.com/hostile/xss-fixture",
+      "language": "JavaScript",
+      "topics": [],
+      "stargazers_count": 1
+    }
+  }
+]
