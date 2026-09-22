@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wake Log</title>
+<style>
+  :root {
+    --bg: #0f1620;
+    --surface: #161f2c;
+    --surface-alt: #1e2937;
+    --border: #2a3644;
+    --text: #e6edf3;
+    --text-dim: #9aa8b6;
+    --accent: #4fb0e0;
+    --good: #4caf7d;
+    --warn: #d9a441;
+    --bad: #d9534f;
+    --space: 1rem;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: var(--space);
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--text-dim); margin-bottom: 1.5rem; }
+  section { margin-bottom: 2rem; }
+  h2 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .card-header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  .score { font-weight: 700; font-size: 1.1rem; }
+  .score.good { color: var(--good); }
+  .score.warn { color: var(--warn); }
+  .score.bad { color: var(--bad); }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-top: 0.35rem; }
+  .narrative { margin-top: 0.5rem; }
+  input[type="search"] {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.5rem;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .empty { color: var(--text-dim); font-style: italic; }
+  canvas { max-width: 100%; }
+  @media (max-width: 480px) {
+    .card-header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+  <h1>Wake Log</h1>
+  <div class="subtitle" id="location-subtitle"></div>
+
+  <section>
+    <h2>Upcoming Windows</h2>
+    <canvas id="upcoming-chart" height="120" aria-label="Upcoming boating comfort scores" role="img"></canvas>
+    <div id="upcoming-fallback"></div>
+  </section>
+
+  <section>
+    <h2>Journal</h2>
+    <input type="search" id="search-box" placeholder="Search entries by text or location...">
+    <div id="entries-container"></div>
+  </section>
+
+<script type="application/json" id="wake-log-data">{"location_name": "Stony Lake (sample)", "entries": [{"id": 4, "created_at": "2026-09-22T08:24:44.955756+00:00", "location_name": "Stony Lake (sample)", "target_date": "2026-09-26", "window_label": "morning", "score": 89.5, "beaufort_name": "Light Breeze", "wind_knots": 4.0, "gust_knots": 5.0, "temp_c": 16.5, "precip_probability": 10.0, "cloud_cover": 40.0, "narrative": "Logged 2026-09-26, morning, Stony Lake (sample). Light Breeze conditions (4.0 kn, 5.0 kn gusts) made for easy, steady progress. 16.5C under 40.0% cloud, 10.0% chance of rain.", "ai_polished": false}, {"id": 3, "created_at": "2026-09-22T08:24:44.954912+00:00", "location_name": "Stony Lake (sample)", "target_date": "2026-09-26", "window_label": "evening", "score": 91.4, "beaufort_name": "Light Breeze", "wind_knots": 6.0, "gust_knots": 8.0, "temp_c": 18.0, "precip_probability": 15.0, "cloud_cover": 35.0, "narrative": "Stony Lake (sample), 2026-09-26 evening: 6.0 kn of Light Breeze (gusting 8.0 kn) kept the boat moving without any fuss. 18.0C, 35.0% cloud cover, 15.0% precipitation risk -- a solid window.", "ai_polished": false}, {"id": 2, "created_at": "2026-09-22T08:24:44.953828+00:00", "location_name": "Stony Lake (sample)", "target_date": "2026-09-26", "window_label": "afternoon", "score": 96.2, "beaufort_name": "Gentle Breeze", "wind_knots": 9.0, "gust_knots": 11.0, "temp_c": 21.0, "precip_probability": 5.0, "cloud_cover": 20.0, "narrative": "Logged 2026-09-26, afternoon, Stony Lake (sample). Gentle Breeze conditions (9.0 kn, 11.0 kn gusts) made for easy, steady progress. 21.0C under 20.0% cloud, 5.0% chance of rain.", "ai_polished": false}, {"id": 1, "created_at": "2026-09-22T08:24:44.952450+00:00", "location_name": "Stony Lake (sample)", "target_date": "2026-09-29", "window_label": "afternoon", "score": 98.3, "beaufort_name": "Gentle Breeze", "wind_knots": 8.5, "gust_knots": 10.0, "temp_c": 22.0, "precip_probability": 0.0, "cloud_cover": 5.0, "narrative": "2026-09-29 (afternoon) at Stony Lake (sample): a proper Gentle Breeze, 8.5 kn with gusts to 10.0 kn, just enough to fill a sail without any drama. 22.0C, 5.0% cloud, 0.0% rain risk -- close to as good as it gets out here.", "ai_polished": false}], "upcoming": [{"date": "2026-09-26", "window": "morning", "score": 89.5, "beaufort_name": "Light Breeze", "wind_knots": 4.0, "gust_knots": 5.0, "temp_c": 16.5, "precip_probability": 10.0, "cloud_cover": 40.0}, {"date": "2026-09-26", "window": "afternoon", "score": 96.2, "beaufort_name": "Gentle Breeze", "wind_knots": 9.0, "gust_knots": 11.0, "temp_c": 21.0, "precip_probability": 5.0, "cloud_cover": 20.0}, {"date": "2026-09-26", "window": "evening", "score": 91.4, "beaufort_name": "Light Breeze", "wind_knots": 6.0, "gust_knots": 8.0, "temp_c": 18.0, "precip_probability": 15.0, "cloud_cover": 35.0}, {"date": "2026-09-27", "window": "morning", "score": 77.8, "beaufort_name": "Moderate Breeze", "wind_knots": 12.0, "gust_knots": 14.0, "temp_c": 15.0, "precip_probability": 60.0, "cloud_cover": 85.0}, {"date": "2026-09-27", "window": "afternoon", "score": 74.5, "beaufort_name": "Moderate Breeze", "wind_knots": 14.0, "gust_knots": 19.0, "temp_c": 17.0, "precip_probability": 75.0, "cloud_cover": 95.0}, {"date": "2026-09-28", "window": "afternoon", "score": 46.2, "beaufort_name": "Near Gale", "wind_knots": 30.0, "gust_knots": 48.0, "temp_c": 12.0, "precip_probability": 40.0, "cloud_cover": 70.0}, {"date": "2026-09-29", "window": "afternoon", "score": 98.3, "beaufort_name": "Gentle Breeze", "wind_knots": 8.5, "gust_knots": 10.0, "temp_c": 22.0, "precip_probability": 0.0, "cloud_cover": 5.0}]}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  var data = JSON.parse(document.getElementById('wake-log-data').textContent);
+
+  var subtitle = document.getElementById('location-subtitle');
+  subtitle.textContent = data.location_name + ' — ' + data.entries.length + ' logged trip' +
+    (data.entries.length === 1 ? '' : 's');
+
+  function scoreClass(score) {
+    if (score >= 70) return 'good';
+    if (score >= 40) return 'warn';
+    return 'bad';
+  }
+
+  function renderUpcoming() {
+    var labels = data.upcoming.map(function(w) { return w.date + ' ' + w.window; });
+    var scores = data.upcoming.map(function(w) { return w.score; });
+
+    if (typeof Chart !== 'undefined' && data.upcoming.length > 0) {
+      var canvas = document.getElementById('upcoming-chart');
+      new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Comfort score',
+            data: scores,
+            backgroundColor: scores.map(function(s) {
+              if (s >= 70) return '#4caf7d';
+              if (s >= 40) return '#d9a441';
+              return '#d9534f';
+            })
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true, max: 100 } },
+          plugins: { legend: { display: false } }
+        }
+      });
+    } else {
+      var container = document.getElementById('upcoming-fallback');
+      document.getElementById('upcoming-chart').style.display = 'none';
+      if (data.upcoming.length === 0) {
+        var empty = document.createElement('p');
+        empty.className = 'empty';
+        empty.textContent = 'No upcoming forecast loaded.';
+        container.appendChild(empty);
+        return;
+      }
+      var table = document.createElement('table');
+      var thead = document.createElement('thead');
+      var headRow = document.createElement('tr');
+      ['Date', 'Window', 'Score', 'Beaufort'].forEach(function(h) {
+        var th = document.createElement('th');
+        th.textContent = h;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+      var tbody = document.createElement('tbody');
+      data.upcoming.forEach(function(w) {
+        var row = document.createElement('tr');
+        [w.date, w.window, String(w.score), w.beaufort_name].forEach(function(val) {
+          var td = document.createElement('td');
+          td.textContent = val;
+          row.appendChild(td);
+        });
+        tbody.appendChild(row);
+      });
+      table.appendChild(tbody);
+      container.appendChild(table);
+    }
+  }
+
+  function buildEntryCard(entry) {
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    var header = document.createElement('div');
+    header.className = 'card-header';
+
+    var title = document.createElement('strong');
+    title.textContent = entry.target_date + ' (' + entry.window_label + ') — ' + entry.location_name;
+    header.appendChild(title);
+
+    var score = document.createElement('span');
+    score.className = 'score ' + scoreClass(entry.score);
+    score.textContent = entry.score.toFixed(1) + ' / 100';
+    header.appendChild(score);
+
+    card.appendChild(header);
+
+    var meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = entry.beaufort_name + ' · ' + entry.wind_knots + ' kn (gusts ' + entry.gust_knots +
+      ' kn) · ' + entry.temp_c + 'C · ' + entry.precip_probability + '% rain · ' +
+      entry.cloud_cover + '% cloud' + (entry.ai_polished ? ' · AI-polished' : '');
+    card.appendChild(meta);
+
+    var narrative = document.createElement('p');
+    narrative.className = 'narrative';
+    narrative.textContent = entry.narrative;
+    card.appendChild(narrative);
+
+    return card;
+  }
+
+  function renderEntries(filterText) {
+    var container = document.getElementById('entries-container');
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+    var filtered = data.entries;
+    if (filterText) {
+      var needle = filterText.toLowerCase();
+      filtered = data.entries.filter(function(e) {
+        return e.narrative.toLowerCase().indexOf(needle) !== -1 ||
+          e.location_name.toLowerCase().indexOf(needle) !== -1;
+      });
+    }
+    if (filtered.length === 0) {
+      var empty = document.createElement('p');
+      empty.className = 'empty';
+      empty.textContent = data.entries.length === 0 ?
+        'No trips logged yet. Run "generate" to add one.' : 'No entries match your search.';
+      container.appendChild(empty);
+      return;
+    }
+    filtered.forEach(function(entry) {
+      container.appendChild(buildEntryCard(entry));
+    });
+  }
+
+  document.getElementById('search-box').addEventListener('input', function(e) {
+    renderEntries(e.target.value);
+  });
+
+  renderUpcoming();
+  renderEntries('');
+})();
+</script>
+</body>
+</html>
