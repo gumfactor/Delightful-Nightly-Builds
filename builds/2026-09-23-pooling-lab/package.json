@@ -1,0 +1,11 @@
+{
+  "name": "pooling-lab",
+  "version": "1.0.0",
+  "description": "Interactive browser trainer for nested/hierarchical data and multilevel-model partial pooling (shrinkage)",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}

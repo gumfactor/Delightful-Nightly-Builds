@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pooling Lab</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Pooling Lab</h1>
+      <p>
+        A live simulator for nested/hierarchical data: watch a mixed-effects model's
+        <strong>partial-pooling (shrinkage)</strong> estimator behave, live, versus the naive
+        <strong>no-pooling</strong> (raw per-group mean) and <strong>complete-pooling</strong> (grand mean)
+        alternatives.
+      </p>
+    </header>
+
+    <section aria-label="Simulation controls">
+      <h2>Simulation Controls</h2>
+      <div class="controls-grid">
+        <div class="control">
+          <label for="seed-input">Random seed</label>
+          <input type="number" id="seed-input" data-testid="seed-input" value="42" step="1" />
+        </div>
+        <div class="control">
+          <label for="profile-select">Group sample-size profile</label>
+          <select id="profile-select" data-testid="profile-select">
+            <option value="one-small" selected>One small group (n=3) among large (n=30)</option>
+            <option value="equal">Equal sizes (n=15 each, 6 groups)</option>
+            <option value="one-large">One large group (n=60) among small (n=8)</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="tau-slider">Between-group SD (τ): <span id="tau-value" data-testid="tau-value">2.0</span></label>
+          <input type="range" id="tau-slider" data-testid="tau-slider" min="0" max="10" step="0.1" value="2" />
+        </div>
+        <div class="control">
+          <label for="sigma-slider">Within-group SD (σ): <span id="sigma-value" data-testid="sigma-value">3.0</span></label>
+          <input type="range" id="sigma-slider" data-testid="sigma-slider" min="0" max="15" step="0.1" value="3" />
+        </div>
+        <div class="control">
+          <label>&nbsp;</label>
+          <button id="regenerate-btn" data-testid="regenerate-btn">Regenerate Data</button>
+        </div>
+      </div>
+      <p class="hint">
+        The τ/σ sliders update the chart and ICC readouts live against the current sample.
+        Click "Regenerate Data" to draw a brand-new sample using the current seed, profile, and slider values
+        as the true generating parameters.
+      </p>
+    </section>
+
+    <section aria-label="Results">
+      <h2>Results</h2>
+      <div class="readouts">
+        <div class="readout">
+          <div class="label">True ICC (τ² / (τ²+σ²))</div>
+          <div class="value" id="true-icc" data-testid="true-icc">—</div>
+        </div>
+        <div class="readout">
+          <div class="label">Empirical ICC (from sample)</div>
+          <div class="value" id="empirical-icc" data-testid="empirical-icc">—</div>
+        </div>
+        <div class="readout">
+          <div class="label">Grand mean (complete pooling)</div>
+          <div class="value" id="grand-mean" data-testid="grand-mean">—</div>
+        </div>
+      </div>
+
+      <canvas id="chart-canvas" data-testid="chart-canvas" aria-label="Chart of no-pooling, partial-pooling, and complete-pooling estimates per group"></canvas>
+      <div class="legend">
+        <span><span class="swatch" style="background:#81b29a"></span>No pooling (raw group mean)</span>
+        <span><span class="swatch" style="background:#3d5a80"></span>Partial pooling (shrinkage estimate)</span>
+        <span><span class="swatch" style="background:#e07a5f"></span>Complete pooling (grand mean, dashed line)</span>
+      </div>
+
+      <table data-testid="group-table">
+        <thead>
+          <tr>
+            <th>Group</th>
+            <th>n</th>
+            <th>No pooling</th>
+            <th>Shrinkage weight</th>
+            <th>Partial pooling</th>
+          </tr>
+        </thead>
+        <tbody id="group-table-body" data-testid="group-table-body"></tbody>
+      </table>
+    </section>
+
+    <section aria-label="Explain this panel">
+      <h2>Explain This</h2>
+      <p class="hint">
+        Optional: paste your own Anthropic API key (kept only in this page's memory, never stored or sent
+        anywhere except directly to Anthropic) to get a plain-English explanation of the current simulation
+        from Claude. With no key entered, a deterministic explanation is shown instead and no network
+        request is made.
+      </p>
+      <div class="control">
+        <label for="api-key-input">Anthropic API key (optional, session-only)</label>
+        <input type="password" id="api-key-input" data-testid="api-key-input" autocomplete="off" />
+      </div>
+      <button id="explain-btn" data-testid="explain-btn">Explain These Results</button>
+      <div id="explain-output" data-testid="explain-output"></div>
+    </section>
+
+    <section aria-label="Quiz">
+      <h2>Quiz</h2>
+      <p>Score: <span id="quiz-score" data-testid="quiz-score">0</span> / <span id="quiz-total" data-testid="quiz-total">0</span></p>
+      <div id="quiz-container" data-testid="quiz-container"></div>
+    </section>
+  </main>
+
+  <script src="src/stats.js"></script>
+  <script src="src/render.js"></script>
+  <script src="src/quiz.js"></script>
+  <script src="src/explain.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
