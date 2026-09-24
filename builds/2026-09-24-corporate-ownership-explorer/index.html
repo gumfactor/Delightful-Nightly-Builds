@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Corporate Ownership Chain Explorer</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Corporate Ownership Chain Explorer</h1>
+    <p class="subtitle">Search a company. See who owns it, and what it owns — sourced live from Wikidata, every link citable.</p>
+  </header>
+
+  <main class="app-main">
+    <section class="search-section" aria-label="Company search">
+      <label for="search-input" class="visually-hidden">Search for a company</label>
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Search a company name…"
+        autocomplete="off"
+        data-testid="search-input"
+      />
+      <ul id="search-results" class="search-results" hidden data-testid="search-results"></ul>
+    </section>
+
+    <nav id="breadcrumb" class="breadcrumb" aria-label="Visited companies" data-testid="breadcrumb"></nav>
+
+    <div id="error-banner" class="error-banner" hidden data-testid="error-banner"></div>
+    <div id="loading-indicator" class="loading-indicator" hidden data-testid="loading-indicator">Loading ownership data…</div>
+
+    <section id="focus-panel" class="focus-panel" aria-label="Selected company" data-testid="focus-panel"></section>
+
+    <div class="chains">
+      <section class="chain-section" aria-label="Ownership chain">
+        <h2>Owned by</h2>
+        <div id="parent-chain" data-testid="parent-chain"></div>
+      </section>
+
+      <section class="chain-section" aria-label="Subsidiaries">
+        <h2>Subsidiaries</h2>
+        <div id="subsidiaries" data-testid="subsidiaries"></div>
+      </section>
+    </div>
+
+    <section class="recent-section" aria-label="Recent searches">
+      <h2>Recent searches</h2>
+      <div id="recent-list"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Data from <a href="https://www.wikidata.org" target="_blank" rel="noopener noreferrer">Wikidata</a>, a free, community-editable knowledge base. Every ownership link cites the exact Wikidata statement it came from — always verify before treating it as final.</p>
+  </footer>
+
+  <script src="src/graph.js"></script>
+  <script src="src/api.js"></script>
+  <script src="src/render.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
