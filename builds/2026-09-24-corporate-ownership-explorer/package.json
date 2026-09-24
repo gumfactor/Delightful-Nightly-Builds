@@ -1,0 +1,11 @@
+{
+  "name": "corporate-ownership-chain-explorer",
+  "version": "1.0.0",
+  "description": "Browser tool that shows a company's live Wikidata-sourced ownership chain and subsidiaries, with a citation link on every edge",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
