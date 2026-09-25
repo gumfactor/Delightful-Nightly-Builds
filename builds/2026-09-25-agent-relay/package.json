@@ -1,0 +1,11 @@
+{
+  "name": "agent-relay",
+  "version": "1.0.0",
+  "description": "Browser puzzle game — schedule a dependency graph of tasks across limited parallel agent lanes and beat the true optimal makespan",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
