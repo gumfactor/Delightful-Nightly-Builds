@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agent Relay</title>
+<link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+<div id="app" class="app">
+
+  <header class="app-header">
+    <h1>Agent Relay</h1>
+    <p class="tagline">Schedule the agents. Beat the optimal.</p>
+    <nav class="main-nav" id="main-nav">
+      <button type="button" data-nav="home" class="nav-btn active" data-testid="nav-home">Home</button>
+      <button type="button" data-nav="dashboard" class="nav-btn" data-testid="nav-dashboard">Dashboard</button>
+    </nav>
+  </header>
+
+  <main id="view-root">
+
+    <section id="view-home" class="view">
+      <p class="intro">
+        Every level is a small dependency graph of tasks — some can only start once others finish,
+        and you only have a handful of parallel agent lanes. Assign each task to a lane, in the
+        order you like, and try to finish as fast as the truly optimal schedule allows.
+      </p>
+      <div class="home-actions">
+        <button type="button" id="btn-tutorial" class="btn btn-secondary" data-testid="btn-tutorial">Tutorial</button>
+        <button type="button" id="btn-campaign" class="btn btn-primary" data-testid="btn-campaign">Campaign</button>
+        <button type="button" id="btn-daily" class="btn btn-secondary" data-testid="btn-daily">Daily Challenge</button>
+      </div>
+      <p id="daily-status" class="daily-status" data-testid="daily-status"></p>
+    </section>
+
+    <section id="view-level-select" class="view hidden">
+      <h2>Campaign</h2>
+      <p class="section-hint">Levels unlock in order. Replay any unlocked level any time.</p>
+      <div id="level-list" class="level-list" data-testid="level-list"></div>
+      <button type="button" class="btn btn-secondary" data-back="home">Back</button>
+    </section>
+
+    <section id="view-play" class="view hidden">
+      <div class="play-header">
+        <h2 id="play-title"></h2>
+        <p id="play-flavor" class="section-hint"></p>
+      </div>
+
+      <div id="tutorial-banner" class="tutorial-banner hidden" data-testid="tutorial-banner"></div>
+
+      <canvas id="graph-canvas" class="graph-canvas" data-testid="graph-canvas"></canvas>
+
+      <div class="play-panel">
+        <div class="ready-tray-wrap">
+          <h3>Ready</h3>
+          <div id="ready-tray" class="ready-tray" data-testid="ready-tray"></div>
+        </div>
+        <div class="lanes-wrap">
+          <h3>Lanes</h3>
+          <div id="lanes" class="lanes" data-testid="lanes"></div>
+        </div>
+      </div>
+
+      <div class="play-footer">
+        <p id="live-makespan" class="live-makespan" data-testid="live-makespan"></p>
+        <div class="play-actions">
+          <button type="button" id="btn-reset" class="btn btn-secondary" data-testid="btn-reset">Reset</button>
+          <button type="button" id="btn-submit" class="btn btn-primary" data-testid="btn-submit" disabled>Submit</button>
+          <button type="button" id="btn-exit-play" class="btn btn-secondary" data-testid="btn-exit-play">Exit</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-result" class="view hidden">
+      <h2>Result</h2>
+      <div id="result-badge" class="result-badge" data-testid="result-grade"></div>
+      <p id="result-summary" class="result-summary" data-testid="result-summary"></p>
+      <div id="result-lanes" class="lanes result-lanes" data-testid="result-lanes"></div>
+      <p id="daily-share" class="daily-share hidden" data-testid="daily-share"></p>
+
+      <div class="ai-panel">
+        <h3>Mission Debrief</h3>
+        <p class="ai-hint">Optional — send this run's numbers to Claude for a coaching note. Your key stays in this browser only.</p>
+        <div class="ai-controls">
+          <input type="password" id="ai-key-input" class="ai-key-input" placeholder="Anthropic API key (optional)" data-testid="ai-key-input" />
+          <button type="button" id="btn-get-debrief" class="btn btn-secondary" data-testid="btn-get-debrief">Get Debrief</button>
+        </div>
+        <p id="ai-note" class="ai-note" data-testid="ai-note"></p>
+      </div>
+
+      <div class="result-actions">
+        <button type="button" id="btn-play-again" class="btn btn-secondary" data-testid="btn-play-again">Play Again</button>
+        <button type="button" id="btn-next-level" class="btn btn-primary hidden" data-testid="btn-next-level">Next Level</button>
+        <button type="button" id="btn-back-menu" class="btn btn-secondary" data-testid="btn-back-menu">Back to Menu</button>
+      </div>
+    </section>
+
+    <section id="view-dashboard" class="view hidden">
+      <h2>Dashboard</h2>
+      <div id="dashboard-daily" class="dashboard-block" data-testid="dashboard-daily"></div>
+      <div id="dashboard-campaign" class="dashboard-block" data-testid="dashboard-campaign"></div>
+      <button type="button" class="btn btn-secondary" data-back="home">Back</button>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Runs entirely in your browser. Progress is saved locally on this device only.</p>
+  </footer>
+</div>
+
+<script src="src/engine.js"></script>
+<script src="src/levels.js"></script>
+<script src="src/graph.js"></script>
+<script src="src/ai.js"></script>
+<script src="src/game.js"></script>
+</body>
+</html>
