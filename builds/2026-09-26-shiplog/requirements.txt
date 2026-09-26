@@ -1,0 +1,3 @@
+# Shiplog core CLI is stdlib-only.
+# pytest is required to run the test suite (dev-only dependency).
+pytest>=8.0
