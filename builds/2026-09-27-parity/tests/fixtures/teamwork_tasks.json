@@ -1,0 +1,26 @@
+[
+  {
+    "id": "tw-101",
+    "title": "Finish Q3 grant report",
+    "completed": false,
+    "due_date": "2026-10-15",
+    "project_id": 123456,
+    "url": "https://example.teamwork.com/tasks/101"
+  },
+  {
+    "id": "tw-102",
+    "title": "Renew lab safety certification",
+    "completed": true,
+    "due_date": "2026-09-01",
+    "project_id": 123456,
+    "url": "https://example.teamwork.com/tasks/102"
+  },
+  {
+    "id": "tw-103",
+    "title": "Order new fMRI console cables",
+    "completed": false,
+    "due_date": null,
+    "project_id": 123456,
+    "url": "https://example.teamwork.com/tasks/103"
+  }
+]

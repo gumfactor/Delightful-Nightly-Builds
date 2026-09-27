@@ -1,0 +1,9 @@
+config.json
+parity.db
+dashboard.html
+xss_test.db
+xss_dashboard.html
+verify_dashboard.mjs
+__pycache__/
+*.pyc
+.pytest_cache/

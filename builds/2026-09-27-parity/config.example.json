@@ -1,0 +1,13 @@
+{
+  "teamwork": {
+    "project_ids": [123456, 789012]
+  },
+  "coda": {
+    "doc_id": "AbCdEfGhIj",
+    "table_id": "grid-xxxxxxxx",
+    "title_column": "Name",
+    "status_column": "Status",
+    "done_values": ["Done", "Complete", "Closed"]
+  },
+  "match_threshold": 0.5
+}
