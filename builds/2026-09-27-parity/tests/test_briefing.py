@@ -1,6 +1,8 @@
 import json
+import urllib.error
+from unittest.mock import patch
 
-from briefing import generate_briefing
+from briefing import _default_http_post, generate_briefing
 from store import SyncRun
 
 
@@ -66,5 +68,42 @@ def test_anthropic_error_falls_back_to_deterministic_template():
 
     latest = run(1, matched=2, conflict=0, tw_only=0, coda_only=0)
     text = generate_briefing(latest, [latest], api_key="fake-key", http_post=failing_post)
+    assert "2" in text
+    assert "first recorded sync" in text
+
+
+def test_default_http_post_converts_http_error_to_briefing_error():
+    from briefing import BriefingError
+
+    with patch("urllib.request.urlopen", side_effect=urllib.error.HTTPError(
+        "https://api.anthropic.com/v1/messages", 500, "Server Error", {}, None
+    )):
+        try:
+            _default_http_post("https://api.anthropic.com/v1/messages", {}, b"{}")
+            assert False, "expected BriefingError"
+        except BriefingError as exc:
+            assert "500" in str(exc)
+
+
+def test_default_http_post_converts_connection_failure_to_briefing_error():
+    # A DNS/timeout/connection failure raises urllib.error.URLError (HTTPError's
+    # superclass) *before* any HTTP response exists — this must also become a
+    # BriefingError, not an uncaught traceback out of the `briefing` CLI command.
+    from briefing import BriefingError
+
+    with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("Name or service not known")):
+        try:
+            _default_http_post("https://api.anthropic.com/v1/messages", {}, b"{}")
+            assert False, "expected BriefingError"
+        except BriefingError as exc:
+            assert "Anthropic API request failed" in str(exc)
+
+
+def test_generate_briefing_falls_back_when_connection_fails_end_to_end():
+    # Full path: generate_briefing -> real _default_http_post -> urlopen raises
+    # URLError -> caught as BriefingError -> deterministic template returned.
+    latest = run(1, matched=2, conflict=0, tw_only=0, coda_only=0)
+    with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("connection refused")):
+        text = generate_briefing(latest, [latest], api_key="fake-key")
     assert "2" in text
     assert "first recorded sync" in text

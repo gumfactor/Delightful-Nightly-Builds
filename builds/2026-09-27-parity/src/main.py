@@ -56,7 +56,7 @@ def fetch_live(config: dict) -> tuple[list[dict], list[dict]]:
     teamwork = TeamworkClient(domain=domain, api_key=teamwork_key)
     coda = CodaClient(api_key=coda_key)
 
-    teamwork_items = teamwork.fetch_open_tasks_for_projects(config["teamwork"]["project_ids"])
+    teamwork_items = teamwork.fetch_tasks_for_projects(config["teamwork"]["project_ids"])
     coda_cfg = config["coda"]
     coda_items = coda.fetch_rows(
         doc_id=coda_cfg["doc_id"],

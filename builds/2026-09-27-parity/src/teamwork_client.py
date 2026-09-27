@@ -55,14 +55,20 @@ class TeamworkClient:
         token = base64.b64encode(f"{api_key}:x".encode("utf-8")).decode("ascii")
         return f"Basic {token}"
 
-    def fetch_open_tasks(self, project_id: int) -> list[dict]:
-        """Fetch every non-completed task for one project, following pagination."""
+    def fetch_tasks(self, project_id: int) -> list[dict]:
+        """Fetch every task (completed and open) for one project, following pagination.
+
+        Completed tasks are deliberately included, not filtered server-side: the
+        matcher needs both sides' done/open state to detect status conflicts, and
+        a Coda row already marked done would otherwise be misclassified as
+        `coda_only` whenever its matching Teamwork task had been closed out.
+        """
         tasks: list[dict] = []
         page = 1
         while True:
             url = (
                 f"https://{self.domain}/projects/{project_id}/tasks.json"
-                f"?completed=false&pageSize={PAGE_SIZE}&page={page}"
+                f"?pageSize={PAGE_SIZE}&page={page}"
             )
             response = self._http_get(url, {"Authorization": self._auth_header})
             if response.status != 200:
@@ -83,10 +89,10 @@ class TeamworkClient:
             page += 1
         return tasks
 
-    def fetch_open_tasks_for_projects(self, project_ids: list[int]) -> list[dict]:
+    def fetch_tasks_for_projects(self, project_ids: list[int]) -> list[dict]:
         results: list[dict] = []
         for project_id in project_ids:
-            results.extend(self.fetch_open_tasks(project_id))
+            results.extend(self.fetch_tasks(project_id))
         return results
 
 

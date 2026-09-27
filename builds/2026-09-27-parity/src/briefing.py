@@ -32,6 +32,10 @@ def _default_http_post(url: str, headers: dict[str, str], body: bytes) -> bytes:
             return response.read()
     except urllib.error.HTTPError as exc:
         raise BriefingError(f"Anthropic API returned status {exc.code}") from exc
+    except urllib.error.URLError as exc:
+        # Raised for failures before any HTTP response arrives (DNS, timeout,
+        # connection refused) — must also fall back, not crash the CLI.
+        raise BriefingError(f"Anthropic API request failed: {exc.reason}") from exc
 
 
 def _build_aggregate_summary(latest: SyncRun, history_runs: list[SyncRun]) -> dict:

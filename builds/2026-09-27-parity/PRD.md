@@ -18,7 +18,7 @@ As a solo founder and lab director who plans work in Coda and executes it in Tea
 ## Scope
 
 ### In Scope
-- A `TeamworkClient` that authenticates with a Teamwork.com API token (HTTP Basic auth, token as username) and paginates through open (non-completed) tasks for one or more configured project IDs, normalizing each into `{id, title, completed, due_date, project_id, url}`.
+- A `TeamworkClient` that authenticates with a Teamwork.com API token (HTTP Basic auth, token as username) and paginates through every task, completed and open, for one or more configured project IDs, normalizing each into `{id, title, completed, due_date, project_id, url}`. Both states are fetched deliberately — the matcher needs each side's done/open status to detect a genuine status conflict, and a Coda row already marked done would otherwise be misclassified as `coda_only` once its Teamwork counterpart was closed out.
 - A `CodaClient` that authenticates with a Coda API token (Bearer auth) and paginates through rows of one configured table in one configured doc, normalizing each into `{id, title, status_text, is_done, url}` using a configurable "title column" and "status column" plus a configurable list of status values that count as done (case-insensitive).
 - A pure, dependency-free matcher (`matcher.py`) that:
   - Normalizes titles (casefold, strip punctuation, collapse whitespace) into token sets.

@@ -42,6 +42,21 @@ def test_fetch_rows_extracts_configured_columns():
     ]
 
 
+def test_fetch_rows_requests_named_columns_not_column_ids():
+    # Without useColumnNames=true, Coda keys `values` by internal column ID, not
+    # the display names ("Name", "Status") this client looks up — every title and
+    # status would come back blank on a live sync without this request parameter.
+    captured = {}
+
+    def fake_get(url, headers):
+        captured["url"] = url
+        return make_page([])
+
+    client = CodaClient(api_key="tok", http_get=fake_get)
+    client.fetch_rows("doc1", "table1", "Name", "Status", ["Done"])
+    assert "useColumnNames=true" in captured["url"]
+
+
 def test_fetch_rows_sends_bearer_auth_header():
     captured = {}
 

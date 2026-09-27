@@ -21,7 +21,7 @@ def test_requires_domain_and_api_key():
         TeamworkClient(domain="example.teamwork.com", api_key="")
 
 
-def test_fetch_open_tasks_normalizes_fields():
+def test_fetch_tasks_normalizes_fields():
     calls = []
 
     def fake_get(url, headers):
@@ -29,7 +29,7 @@ def test_fetch_open_tasks_normalizes_fields():
         return make_page([task(101, "Finish report", completed=False, due_date="2026-10-01")])
 
     client = TeamworkClient(domain="example.teamwork.com", api_key="tok", http_get=fake_get)
-    tasks = client.fetch_open_tasks(123)
+    tasks = client.fetch_tasks(123)
 
     assert tasks == [
         {
@@ -46,7 +46,7 @@ def test_fetch_open_tasks_normalizes_fields():
     assert calls[0][1]["Authorization"].startswith("Basic ")
 
 
-def test_fetch_open_tasks_paginates_until_partial_page():
+def test_fetch_tasks_paginates_until_partial_page():
     pages = [
         [task(i, f"Task {i}") for i in range(100)],  # full page -> fetch another
         [task(200, "Last task")],                    # partial page -> stop
@@ -59,24 +59,30 @@ def test_fetch_open_tasks_paginates_until_partial_page():
         return make_page(page)
 
     client = TeamworkClient(domain="example.teamwork.com", api_key="tok", http_get=fake_get)
-    tasks = client.fetch_open_tasks(123)
+    tasks = client.fetch_tasks(123)
 
     assert call_count["n"] == 2
     assert len(tasks) == 101
     assert tasks[-1]["title"] == "Last task"
 
 
-def test_completed_tasks_are_not_filtered_client_side_but_query_excludes_them():
-    # The client relies on the API's completed=false query param; verify it's actually sent.
+def test_fetch_tasks_includes_both_completed_and_open_tasks():
+    # No server-side completed filter: the matcher needs both sides' done/open
+    # state to detect status conflicts, so completed tasks must come through too.
     captured_url = {}
 
     def fake_get(url, headers):
         captured_url["url"] = url
-        return make_page([])
+        return make_page([
+            task(1, "Open task", completed=False),
+            task(2, "Done task", completed=True),
+        ])
 
     client = TeamworkClient(domain="example.teamwork.com", api_key="tok", http_get=fake_get)
-    client.fetch_open_tasks(999)
-    assert "completed=false" in captured_url["url"]
+    tasks = client.fetch_tasks(999)
+
+    assert "completed=false" not in captured_url["url"]
+    assert {t["completed"] for t in tasks} == {False, True}
 
 
 def test_non_200_status_raises_teamwork_api_error():
@@ -85,7 +91,7 @@ def test_non_200_status_raises_teamwork_api_error():
 
     client = TeamworkClient(domain="example.teamwork.com", api_key="badkey", http_get=fake_get)
     with pytest.raises(TeamworkAPIError):
-        client.fetch_open_tasks(123)
+        client.fetch_tasks(123)
 
 
 def test_malformed_json_raises_teamwork_api_error():
@@ -94,16 +100,16 @@ def test_malformed_json_raises_teamwork_api_error():
 
     client = TeamworkClient(domain="example.teamwork.com", api_key="tok", http_get=fake_get)
     with pytest.raises(TeamworkAPIError):
-        client.fetch_open_tasks(123)
+        client.fetch_tasks(123)
 
 
-def test_fetch_open_tasks_for_projects_combines_all_projects():
+def test_fetch_tasks_for_projects_combines_all_projects():
     def fake_get(url, headers):
         if "/projects/1/" in url:
             return make_page([task(1, "Project 1 task")])
         return make_page([task(2, "Project 2 task")])
 
     client = TeamworkClient(domain="example.teamwork.com", api_key="tok", http_get=fake_get)
-    tasks = client.fetch_open_tasks_for_projects([1, 2])
+    tasks = client.fetch_tasks_for_projects([1, 2])
     titles = {t["title"] for t in tasks}
     assert titles == {"Project 1 task", "Project 2 task"}

@@ -61,7 +61,10 @@ class CodaClient:
         page_token: Optional[str] = None
 
         while True:
-            params = {"valueFormat": "simple", "limit": str(PAGE_LIMIT)}
+            # useColumnNames=true is required so `values` is keyed by the column's
+            # display name (e.g. "Name", "Status") instead of its internal column ID —
+            # without it, every _normalize_row lookup below would silently return "".
+            params = {"valueFormat": "simple", "useColumnNames": "true", "limit": str(PAGE_LIMIT)}
             if page_token:
                 params["pageToken"] = page_token
             url = (

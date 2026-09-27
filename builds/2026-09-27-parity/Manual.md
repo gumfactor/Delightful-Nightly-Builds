@@ -74,7 +74,7 @@ Prints a short plain-language summary of the latest run. With `ANTHROPIC_API_KEY
 | `TEAMWORK_API_KEY` (env var) | none | Your Teamwork.com API token. Required for live `sync`. Never store this in a file. |
 | `CODA_API_KEY` (env var) | none | Your Coda API token. Required for live `sync`. Never store this in a file. |
 | `ANTHROPIC_API_KEY` (env var) | none | Optional. Enables the AI-generated `briefing`; falls back to a deterministic template when unset. |
-| `teamwork.project_ids` (config.json) | — | List of Teamwork project IDs to pull open tasks from. |
+| `teamwork.project_ids` (config.json) | — | List of Teamwork project IDs to pull all tasks (completed and open) from. |
 | `coda.doc_id` / `coda.table_id` (config.json) | — | The Coda doc and table to read rows from. |
 | `coda.title_column` (config.json) | — | The exact column name in your Coda table holding each item's title. |
 | `coda.status_column` (config.json) | — | The exact column name holding each item's status. |
