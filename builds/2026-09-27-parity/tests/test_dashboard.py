@@ -72,6 +72,36 @@ def test_render_dashboard_escapes_script_injection_payload():
     assert parsed["items"][0]["teamwork_title"] == malicious_title
 
 
+def test_render_dashboard_escapes_uppercase_script_injection_payload():
+    # HTML's script-end-tag matching is case-insensitive, so "</SCRIPT>" is just
+    # as dangerous as "</script>" if the escape only targeted a lowercase spelling.
+    # The escape here targets the bare "</" delimiter itself (which has no case),
+    # so this must be neutralized identically to the lowercase case above.
+    malicious_title = "</SCRIPT><SCRIPT>alert(1)</SCRIPT>"
+    items = [{
+        "bucket": "teamwork_only", "teamwork_title": malicious_title,
+        "teamwork_url": None, "coda_title": None, "coda_url": None, "detail": None,
+    }]
+    html = render_dashboard([make_run()], items)
+
+    assert "</SCRIPT>" not in html
+
+    payload_block = html.split('id="parity-data">', 1)[1].split("</script>", 1)[0]
+    parsed = json.loads(payload_block)
+    assert parsed["items"][0]["teamwork_title"] == malicious_title
+
+
+def test_render_dashboard_table_headers_are_keyboard_accessible():
+    html = render_dashboard([make_run()], items=[{
+        "bucket": "coda_only", "teamwork_title": None, "teamwork_url": None,
+        "coda_title": "x", "coda_url": "https://example.com", "detail": None,
+    }])
+    # Sortable <th> headers must be reachable and activatable without a pointer.
+    assert 'th.setAttribute("role", "button")' in html
+    assert 'th.setAttribute("tabindex", "0")' in html
+    assert '"Enter" || event.key === " "' in html
+
+
 def test_render_dashboard_only_innerhtml_usage_is_a_static_clear():
     html = render_dashboard([make_run()], items=[{
         "bucket": "coda_only", "teamwork_title": None, "teamwork_url": None,

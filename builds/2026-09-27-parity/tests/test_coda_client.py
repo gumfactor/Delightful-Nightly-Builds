@@ -1,8 +1,10 @@
 import json
+import urllib.error
+from unittest.mock import patch
 
 import pytest
 
-from coda_client import CodaAPIError, CodaClient, HttpResponse
+from coda_client import CodaAPIError, CodaClient, HttpResponse, _default_http_get
 
 
 def make_page(items, next_page_token=None):
@@ -114,6 +116,15 @@ def test_fetch_rows_follows_next_page_token_until_exhausted():
     assert len(calls) == 2
     assert "pageToken=page2" in calls[1]
     assert [r["title"] for r in rows] == ["First", "Second"]
+
+
+def test_default_http_get_converts_connection_failure_to_coda_api_error():
+    # A DNS/timeout/connection failure raises urllib.error.URLError (HTTPError's
+    # superclass) before any HTTP response exists — this must surface as a typed
+    # CodaAPIError, not an uncaught traceback out of the CLI.
+    with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("Name or service not known")):
+        with pytest.raises(CodaAPIError, match="Coda API request failed"):
+            _default_http_get("https://coda.io/apis/v1/docs/doc1/tables/table1/rows", {})
 
 
 def test_non_200_status_raises_coda_api_error():

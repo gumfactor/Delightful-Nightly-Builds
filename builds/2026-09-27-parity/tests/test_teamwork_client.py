@@ -1,8 +1,10 @@
 import json
+import urllib.error
+from unittest.mock import patch
 
 import pytest
 
-from teamwork_client import HttpResponse, TeamworkAPIError, TeamworkClient
+from teamwork_client import HttpResponse, TeamworkAPIError, TeamworkClient, _default_http_get
 
 
 def make_page(tasks):
@@ -101,6 +103,15 @@ def test_malformed_json_raises_teamwork_api_error():
     client = TeamworkClient(domain="example.teamwork.com", api_key="tok", http_get=fake_get)
     with pytest.raises(TeamworkAPIError):
         client.fetch_tasks(123)
+
+
+def test_default_http_get_converts_connection_failure_to_teamwork_api_error():
+    # A DNS/timeout/connection failure raises urllib.error.URLError (HTTPError's
+    # superclass) before any HTTP response exists — this must surface as a typed
+    # TeamworkAPIError, not an uncaught traceback out of the CLI.
+    with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("Name or service not known")):
+        with pytest.raises(TeamworkAPIError, match="Teamwork API request failed"):
+            _default_http_get("https://example.teamwork.com/projects/1/tasks.json", {})
 
 
 def test_fetch_tasks_for_projects_combines_all_projects():

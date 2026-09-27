@@ -18,11 +18,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from briefing import generate_briefing
-from coda_client import CodaClient
+from coda_client import CodaAPIError, CodaClient
 from dashboard import render_dashboard
 from matcher import reconcile
 from store import connect, history as store_history, latest_run_items, save_run
-from teamwork_client import TeamworkClient
+from teamwork_client import TeamworkAPIError, TeamworkClient
 
 BUILD_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_DB_PATH = BUILD_DIR / "parity.db"
@@ -165,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return args.func(args)
-    except ConfigError as exc:
+    except (ConfigError, TeamworkAPIError, CodaAPIError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 

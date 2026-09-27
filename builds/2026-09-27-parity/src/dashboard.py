@@ -118,6 +118,7 @@ def render_dashboard(runs: list[SyncRun], items: list[dict]) -> str:
   }}
   th {{ cursor: pointer; color: var(--muted); user-select: none; white-space: nowrap; }}
   th:hover {{ color: var(--text); }}
+  th:focus-visible {{ outline: 2px solid var(--accent); outline-offset: -2px; color: var(--text); }}
   .empty {{ color: var(--muted); font-style: italic; padding: 10px 0; }}
   @media (max-width: 480px) {{
     table, thead, tbody, th, td, tr {{ display: block; }}
@@ -250,6 +251,9 @@ def render_dashboard(runs: list[SyncRun], items: list[dict]) -> str:
         var th = document.createElement("th");
         th.textContent = col.label;
         th.dataset.key = col.key;
+        th.setAttribute("role", "button");
+        th.setAttribute("tabindex", "0");
+        th.setAttribute("aria-sort", "none");
         headRow.appendChild(th);
       }});
       thead.appendChild(headRow);
@@ -289,12 +293,23 @@ def render_dashboard(runs: list[SyncRun], items: list[dict]) -> str:
         }});
       }}
 
+      function activateSort(th) {{
+        var key = th.dataset.key;
+        sortState.asc = sortState.key === key ? !sortState.asc : true;
+        sortState.key = key;
+        headRow.querySelectorAll("th").forEach(function (other) {{
+          other.setAttribute("aria-sort", other === th ? (sortState.asc ? "ascending" : "descending") : "none");
+        }});
+        draw(searchInput ? searchInput.value : "");
+      }}
+
       headRow.querySelectorAll("th").forEach(function (th) {{
-        th.addEventListener("click", function () {{
-          var key = th.dataset.key;
-          sortState.asc = sortState.key === key ? !sortState.asc : true;
-          sortState.key = key;
-          draw(searchInput ? searchInput.value : "");
+        th.addEventListener("click", function () {{ activateSort(th); }});
+        th.addEventListener("keydown", function (event) {{
+          if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {{
+            event.preventDefault();
+            activateSort(th);
+          }}
         }});
       }});
 

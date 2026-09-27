@@ -86,6 +86,34 @@ def test_render_produces_html_file(config_path, db_path, tmp_path):
     assert "<!doctype html>" in out_path.read_text()
 
 
+def test_teamwork_api_error_produces_clean_message_not_traceback(config_path, db_path, monkeypatch, capsys):
+    from teamwork_client import TeamworkAPIError
+
+    def raising_fetch_live(config):
+        raise TeamworkAPIError("Teamwork API returned status 401 for project 1")
+
+    monkeypatch.setattr(parity_main, "fetch_live", raising_fetch_live)
+    exit_code = parity_main.main(["--db", db_path, "sync", "--config", config_path])
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    assert "Teamwork API returned status 401" in captured.err
+
+
+def test_coda_api_error_produces_clean_message_not_traceback(config_path, db_path, monkeypatch, capsys):
+    from coda_client import CodaAPIError
+
+    def raising_fetch_live(config):
+        raise CodaAPIError("Coda API returned status 403 for table table1")
+
+    monkeypatch.setattr(parity_main, "fetch_live", raising_fetch_live)
+    exit_code = parity_main.main(["--db", db_path, "sync", "--config", config_path])
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    assert "Coda API returned status 403" in captured.err
+
+
 def test_render_without_prior_sync_returns_error_not_crash(db_path, tmp_path, capsys):
     out_path = tmp_path / "dashboard.html"
     exit_code = parity_main.main(["--db", db_path, "render", "--out", str(out_path)])

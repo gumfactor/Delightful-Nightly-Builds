@@ -34,6 +34,10 @@ def _default_http_get(url: str, headers: dict[str, str]) -> HttpResponse:
             return HttpResponse(response.status, response.read())
     except urllib.error.HTTPError as exc:
         return HttpResponse(exc.code, exc.read())
+    except urllib.error.URLError as exc:
+        # Raised for failures before any HTTP response arrives (DNS, timeout,
+        # connection refused) — must surface as a typed error, not a raw traceback.
+        raise TeamworkAPIError(f"Teamwork API request failed: {exc.reason}") from exc
 
 
 class TeamworkClient:
