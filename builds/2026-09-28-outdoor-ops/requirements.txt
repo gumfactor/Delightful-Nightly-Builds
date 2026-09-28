@@ -1,0 +1,8 @@
+# Outdoor Ops core engine uses only the Python 3 standard library
+# (urllib, sqlite3, argparse, html, json, datetime). pytest is the one
+# third-party dependency, needed only to run the test suite:
+#
+#   pip install -r requirements.txt
+#   python -m pytest tests/ -v
+
+pytest==9.0.2
