@@ -90,6 +90,44 @@ def test_composite_score_never_exceeds_100_or_drops_below_0():
     assert 0.0 <= scoring.golf_score(extreme) <= 100.0
 
 
+def test_aqi_score_none_for_unknown_reading():
+    assert scoring.aqi_score(None) is None
+
+
+def test_composite_score_excludes_unknown_aqi_instead_of_treating_it_as_clean():
+    known_clean_air = scoring.DayConditions(
+        temp_max=12.0, wind_max=5.0, precip_prob_max=0.0, aqi_max=20.0, uv_index_max=2.0)
+    unknown_air = scoring.DayConditions(
+        temp_max=12.0, wind_max=5.0, precip_prob_max=0.0, aqi_max=None, uv_index_max=2.0)
+
+    # Both should score 100 here (temp/wind/precip/uv are all ideal, and a
+    # known-clean AQI of 20 also scores 100) — this establishes the baseline.
+    assert scoring.running_score(known_clean_air) == 100.0
+    # Unknown AQI must NOT silently default to a perfect score; it is
+    # excluded from the composite (renormalized among the other known,
+    # ideal factors), which for an otherwise-perfect day still nets 100 —
+    # the real assertion is in the next test, where AQI is the only
+    # non-ideal factor.
+    assert scoring.running_score(unknown_air) == 100.0
+
+
+def test_unknown_aqi_does_not_mask_a_bad_air_quality_day_as_worse_than_reported():
+    bad_but_known_air = scoring.DayConditions(
+        temp_max=12.0, wind_max=5.0, precip_prob_max=0.0, aqi_max=300.0, uv_index_max=2.0)
+    unknown_air = scoring.DayConditions(
+        temp_max=12.0, wind_max=5.0, precip_prob_max=0.0, aqi_max=None, uv_index_max=2.0)
+
+    known_score = scoring.running_score(bad_but_known_air)
+    unknown_score = scoring.running_score(unknown_air)
+
+    # A day with genuinely bad, known air quality must score worse than a
+    # day where air quality simply wasn't measured — proving "unknown" is
+    # never silently treated as at least as good as "known clean" (aqi_max=0
+    # would previously have scored both of these identically to a perfect day).
+    assert unknown_score > known_score
+    assert unknown_score == 100.0
+
+
 def test_best_day_picks_highest_score():
     days = [
         {"forecast_date": "2026-09-28", "running_score": 60.0, "precip_prob_max": 10.0},

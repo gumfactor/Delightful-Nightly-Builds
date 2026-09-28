@@ -23,9 +23,14 @@ NO_DATA_NOTE = "No data yet — run `sync` (or `demo`) first, then `render`."
 
 def _score_row(forecast: dict, air_quality: Optional[dict], location_name: str, lat: float, lon: float,
                 sync_day: str, fetched_at: str) -> SnapshotRow:
-    aqi_max = air_quality["aqi_max"] if air_quality else 0.0
-    aqi_mean = air_quality["aqi_mean"] if air_quality else 0.0
-    pm25_mean = air_quality["pm25_mean"] if air_quality else 0.0
+    # air_quality is None when the air-quality API didn't return a record for
+    # this date. That means "unknown", not "clean" — defaulting to 0.0 (a
+    # perfect AQI) would silently inflate both scores exactly when air
+    # quality can't actually be assessed, so the fields stay None and the
+    # scoring engine excludes the AQI factor entirely for this day instead.
+    aqi_max = air_quality["aqi_max"] if air_quality else None
+    aqi_mean = air_quality["aqi_mean"] if air_quality else None
+    pm25_mean = air_quality["pm25_mean"] if air_quality else None
 
     conditions = scoring.DayConditions(
         temp_max=forecast["temp_max"],

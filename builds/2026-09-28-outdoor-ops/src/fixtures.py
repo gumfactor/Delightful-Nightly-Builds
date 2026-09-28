@@ -4,7 +4,13 @@ snapshot with zero network calls, used for verification and first-run preview.
 
 from __future__ import annotations
 
-DEMO_LOCATION_NAME = "Toronto, ON"
+# Deliberately distinct from cli.DEFAULT_LOCATION_NAME ("Toronto, ON"): demo
+# rows share the real database file by default, and the upsert key is
+# (location_name, forecast_date, sync_day). If this matched the live default
+# location, running `demo` on the same day as a real `sync` — or vice versa —
+# would silently overwrite real synced data with sample data for any
+# overlapping forecast date.
+DEMO_LOCATION_NAME = "Demo (Toronto, ON)"
 DEMO_LAT = 43.6532
 DEMO_LON = -79.3832
 

@@ -8,7 +8,12 @@ FACTOR_KEYS = ["temp", "wind", "precip", "aqi", "uv"]
 
 
 def _limiting_factor(row: Mapping, params: dict) -> str:
-    """Return the factor name with the lowest score for this row+activity params."""
+    """Return the known factor with the lowest score for this row+activity params.
+
+    A factor with an unknown reading (score is None, currently only possible
+    for AQI) is excluded — an unknown reading can't be blamed as the worst
+    factor, since it was never actually scored.
+    """
     from . import scoring
 
     conditions = scoring.DayConditions(
@@ -18,15 +23,9 @@ def _limiting_factor(row: Mapping, params: dict) -> str:
         aqi_max=row["aqi_max"],
         uv_index_max=row["uv_index_max"],
     )
-    factors = {
-        "temp": scoring.temp_score(conditions.temp_max, params["ideal_low"], params["ideal_high"],
-                                    params["cold_penalty"], params["hot_penalty"]),
-        "wind": scoring.wind_score(conditions.wind_max, params["wind_threshold"], params["wind_penalty"]),
-        "precip": scoring.precip_score(conditions.precip_prob_max, params["precip_threshold"], params["precip_penalty"]),
-        "aqi": scoring.aqi_score(conditions.aqi_max),
-        "uv": scoring.uv_score(conditions.uv_index_max, params["uv_threshold"], params["uv_penalty"]),
-    }
-    return min(factors, key=lambda k: factors[k])
+    factors = scoring.factor_scores(conditions, params)
+    known = {key: score for key, score in factors.items() if score is not None}
+    return min(known, key=lambda k: known[k])
 
 
 def build_week_summary(days: List[Mapping]) -> dict:

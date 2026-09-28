@@ -43,6 +43,10 @@ def _safe_json(obj) -> str:
     return json.dumps(obj).replace("</", "<\\/")
 
 
+def _fmt_aqi(aqi_max: Optional[float]) -> str:
+    return f"{aqi_max:.0f}" if aqi_max is not None else "&mdash;"
+
+
 def _score_class(score: float) -> str:
     if score >= 75:
         return "score-good"
@@ -96,7 +100,7 @@ def render_dashboard(
           <td>{d['temp_min']:.0f}&ndash;{d['temp_max']:.0f}&deg;C</td>
           <td>{d['precip_prob_max']:.0f}%</td>
           <td>{d['wind_max']:.0f} km/h</td>
-          <td>{d['aqi_max']:.0f}</td>
+          <td>{_fmt_aqi(d.get('aqi_max'))}</td>
           <td class="{_score_class(d['running_score'])}">{d['running_score']:.0f}</td>
           <td class="{_score_class(d['golf_score'])}">{d['golf_score']:.0f}</td>
         </tr>""" for d in days)

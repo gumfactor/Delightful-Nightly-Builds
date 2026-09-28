@@ -8,7 +8,7 @@ and weights are named constants so the model is auditable and testable.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
@@ -39,8 +39,16 @@ def precip_score(precip_prob_pct: float, threshold_pct: float, penalty_per_pct: 
     return _clamp(100.0 - (precip_prob_pct - threshold_pct) * penalty_per_pct)
 
 
-def aqi_score(aqi_us: float) -> float:
-    """US EPA AQI tiers mapped to a coarse 0-100 comfort score."""
+def aqi_score(aqi_us: Optional[float]) -> Optional[float]:
+    """US EPA AQI tiers mapped to a coarse 0-100 comfort score.
+
+    Returns None when the AQI reading itself is unknown (no air-quality
+    data was available for the day) — the caller must not default a
+    missing reading to a numeric AQI value before calling this, since
+    unknown air quality is not the same as good air quality.
+    """
+    if aqi_us is None:
+        return None
     if aqi_us <= 50:
         return 100.0
     if aqi_us <= 100:
@@ -84,12 +92,13 @@ class DayConditions:
     temp_max: float
     wind_max: float
     precip_prob_max: float
-    aqi_max: float
+    aqi_max: Optional[float]
     uv_index_max: float
 
 
-def _composite_score(conditions: DayConditions, params: dict) -> float:
-    factors: Dict[str, float] = {
+def factor_scores(conditions: DayConditions, params: dict) -> Dict[str, Optional[float]]:
+    """Per-factor scores for one activity's params. 'aqi' is None when unknown."""
+    return {
         "temp": temp_score(conditions.temp_max, params["ideal_low"], params["ideal_high"],
                             params["cold_penalty"], params["hot_penalty"]),
         "wind": wind_score(conditions.wind_max, params["wind_threshold"], params["wind_penalty"]),
@@ -97,8 +106,21 @@ def _composite_score(conditions: DayConditions, params: dict) -> float:
         "aqi": aqi_score(conditions.aqi_max),
         "uv": uv_score(conditions.uv_index_max, params["uv_threshold"], params["uv_penalty"]),
     }
+
+
+def _composite_score(conditions: DayConditions, params: dict) -> float:
+    factors = factor_scores(conditions, params)
     weights = params["weights"]
-    total = sum(factors[key] * weights[key] for key in weights)
+    # A factor with an unknown reading (currently only possible for AQI, when
+    # air-quality data wasn't available for the day) is excluded rather than
+    # defaulted to a value — an unknown can't be assumed favorable. The
+    # remaining factors' weights are renormalized so the composite is still
+    # a proper 0-100 weighted average of only the factors actually known.
+    known = {key: score for key, score in factors.items() if score is not None}
+    known_weight = sum(weights[key] for key in known)
+    if known_weight == 0:
+        return 0.0
+    total = sum(known[key] * weights[key] for key in known) / known_weight
     return round(_clamp(total), 1)
 
 

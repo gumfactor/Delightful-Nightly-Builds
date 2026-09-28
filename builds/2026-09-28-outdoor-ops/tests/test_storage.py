@@ -81,3 +81,20 @@ def test_last_sync_time_returns_latest_fetched_at(storage):
 
 def test_last_sync_time_none_when_no_data(storage):
     assert storage.last_sync_time("Nowhere") is None
+
+
+def test_latest_snapshots_excludes_dates_that_rolled_out_of_the_current_horizon(storage):
+    # Day 1 sync covers Sep 28-Oct 4. Day 2 sync (the forecast window having
+    # rolled forward) covers Sep 29-Oct 5, so Sep 28 is no longer synced.
+    day1_dates = ["2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01",
+                  "2026-10-02", "2026-10-03", "2026-10-04"]
+    day2_dates = ["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02",
+                  "2026-10-03", "2026-10-04", "2026-10-05"]
+    storage.upsert_snapshots([make_row(d, "2026-09-28", "2026-09-28T08:00:00") for d in day1_dates])
+    storage.upsert_snapshots([make_row(d, "2026-09-29", "2026-09-29T08:00:00") for d in day2_dates])
+
+    latest = storage.latest_snapshots("Toronto, ON")
+    latest_dates = [r["forecast_date"] for r in latest]
+
+    assert latest_dates == day2_dates
+    assert "2026-09-28" not in latest_dates

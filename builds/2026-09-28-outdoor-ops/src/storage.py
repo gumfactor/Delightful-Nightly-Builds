@@ -74,9 +74,9 @@ class SnapshotRow(TypedDict):
     windgust_max: float
     uv_index_max: float
     weathercode: int
-    aqi_max: float
-    aqi_mean: float
-    pm25_mean: float
+    aqi_max: Optional[float]
+    aqi_mean: Optional[float]
+    pm25_mean: Optional[float]
     running_score: float
     golf_score: float
 
@@ -103,18 +103,23 @@ class Storage:
         self._conn.commit()
 
     def latest_snapshots(self, location_name: str) -> List[sqlite3.Row]:
-        """Return the most-recently-synced row for each forecast_date, sorted by date."""
+        """Return every row from the most recent sync_day only, sorted by date.
+
+        Restricting to a single sync_day (rather than the latest row per
+        forecast_date across all history) matters because forecast_date
+        values roll forward each day: a date synced once and never synced
+        again (because it has since fallen out of the forecast window)
+        would otherwise keep showing up forever as a stale "latest" row for
+        that date, growing the dashboard's day list without bound and
+        potentially mislabeling an expired date as "today".
+        """
         query = """
             SELECT s.*
             FROM forecast_snapshots s
-            INNER JOIN (
-                SELECT forecast_date, MAX(fetched_at) AS max_fetched_at
-                FROM forecast_snapshots
-                WHERE location_name = ?
-                GROUP BY forecast_date
-            ) latest
-            ON s.forecast_date = latest.forecast_date AND s.fetched_at = latest.max_fetched_at
             WHERE s.location_name = ?
+              AND s.sync_day = (
+                  SELECT MAX(sync_day) FROM forecast_snapshots WHERE location_name = ?
+              )
             ORDER BY s.forecast_date ASC;
         """
         return list(self._conn.execute(query, (location_name, location_name)).fetchall())
