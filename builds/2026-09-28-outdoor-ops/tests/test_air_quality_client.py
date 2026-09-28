@@ -61,6 +61,21 @@ def test_get_daily_air_quality_raises_on_missing_hourly_block():
         client.get_daily_air_quality(43.65, -79.38)
 
 
+def test_get_daily_air_quality_raises_controlled_error_on_null_hourly_block():
+    # {"hourly": null} must not reach hourly["time"] and raise an uncaught
+    # TypeError — it must be a normal, catchable AirQualityClientError.
+    client = AirQualityClient(transport=lambda url: json.dumps({"hourly": None}))
+    with pytest.raises(AirQualityClientError):
+        client.get_daily_air_quality(43.65, -79.38)
+
+
+def test_get_daily_air_quality_raises_on_non_array_hourly_field():
+    malformed = json.dumps({"hourly": {"time": ["2026-09-28T00:00"], "us_aqi": None, "pm2_5": [4.0]}})
+    client = AirQualityClient(transport=lambda url: malformed)
+    with pytest.raises(AirQualityClientError):
+        client.get_daily_air_quality(43.65, -79.38)
+
+
 def test_get_daily_air_quality_wraps_transport_exception():
     def raising_transport(url):
         raise TimeoutError("timed out")

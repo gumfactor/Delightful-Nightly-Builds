@@ -21,8 +21,15 @@ DAILY_VARS = [
     "windspeed_10m_max",
     "windgusts_10m_max",
     "uv_index_max",
-    "weathercode",
+    "weather_code",
 ]
+
+# Open-Meteo's weather-condition-code daily variable has gone by two names
+# across API/doc versions: the older "weathercode" and the current
+# "weather_code". We request the current name, but parse the response
+# defensively under either key so this keeps working if a cached or
+# differently-versioned deployment still responds with the older key.
+_WEATHERCODE_KEYS = ("weather_code", "weathercode")
 
 
 class DailyForecast(TypedDict):
@@ -79,10 +86,16 @@ class WeatherClient:
         except json.JSONDecodeError as exc:
             raise WeatherClientError(f"Open-Meteo forecast API returned invalid JSON: {exc}") from exc
 
-        if "daily" not in payload:
+        daily = payload.get("daily")
+        if not isinstance(daily, dict):
             raise WeatherClientError("Open-Meteo forecast response missing 'daily' block")
 
-        daily = payload["daily"]
+        weathercode_key = next((k for k in _WEATHERCODE_KEYS if k in daily), None)
+        if weathercode_key is None:
+            raise WeatherClientError(
+                f"Open-Meteo forecast response missing a weather-code field (tried {_WEATHERCODE_KEYS})"
+            )
+
         try:
             dates = daily["time"]
             records: List[DailyForecast] = []
@@ -96,8 +109,8 @@ class WeatherClient:
                     wind_max=daily["windspeed_10m_max"][i],
                     windgust_max=daily["windgusts_10m_max"][i],
                     uv_index_max=daily["uv_index_max"][i],
-                    weathercode=daily["weathercode"][i],
+                    weathercode=daily[weathercode_key][i],
                 ))
             return records
-        except (KeyError, IndexError) as exc:
+        except (KeyError, IndexError, TypeError) as exc:
             raise WeatherClientError(f"Open-Meteo forecast response missing expected field: {exc}") from exc

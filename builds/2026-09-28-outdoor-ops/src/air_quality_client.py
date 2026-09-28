@@ -68,16 +68,23 @@ class AirQualityClient:
         except json.JSONDecodeError as exc:
             raise AirQualityClientError(f"Open-Meteo air quality API returned invalid JSON: {exc}") from exc
 
-        if "hourly" not in payload:
+        hourly = payload.get("hourly")
+        if not isinstance(hourly, dict):
+            # Covers both a missing key and a present-but-null/wrong-type
+            # value (e.g. {"hourly": null}) — either way there's no data to
+            # index into, so this must be a controlled error, not a
+            # TypeError from indexing None a few lines down.
             raise AirQualityClientError("Open-Meteo air quality response missing 'hourly' block")
 
-        hourly = payload["hourly"]
         try:
             timestamps = hourly["time"]
             aqi_values = hourly["us_aqi"]
             pm25_values = hourly["pm2_5"]
         except KeyError as exc:
             raise AirQualityClientError(f"Open-Meteo air quality response missing expected field: {exc}") from exc
+
+        if not all(isinstance(v, list) for v in (timestamps, aqi_values, pm25_values)):
+            raise AirQualityClientError("Open-Meteo air quality response has a non-array hourly field")
 
         by_date_aqi: Dict[str, List[float]] = defaultdict(list)
         by_date_pm25: Dict[str, List[float]] = defaultdict(list)
