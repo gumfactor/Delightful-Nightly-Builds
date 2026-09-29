@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "/ABSOLUTE/PATH/TO/worklog hook" } ] }
+    ],
+    "SessionEnd": [
+      { "hooks": [ { "type": "command", "command": "/ABSOLUTE/PATH/TO/worklog hook" } ] }
+    ]
+  }
+}
