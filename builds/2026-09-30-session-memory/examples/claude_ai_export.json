@@ -1,0 +1,19 @@
+[
+ {
+  "uuid": "c1",
+  "name": "Grant aim wording for empathy study",
+  "created_at": "2026-09-02T13:00:00Z",
+  "chat_messages": [
+   {
+    "sender": "human",
+    "text": "Help me tighten Specific Aim 2 on vicarious pain and callous-unemotional traits.",
+    "created_at": "2026-09-02T13:00:00Z"
+   },
+   {
+    "sender": "assistant",
+    "text": "Aim 2 currently makes three claims. Split it: (a) test whether CU traits blunt anterior insula response, (b) test moderation by attention to the victim's face. We decided to drop the developmental claim from this aim.",
+    "created_at": "2026-09-02T13:02:00Z"
+   }
+  ]
+ }
+]

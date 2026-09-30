@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Memory</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1c2128; --muted: #5b6673; --line: #d8dde3;
+    --accent: #1f6feb; --accent-text: #ffffff; --mark: #ffe58a; --user: #eaf2ff; --assistant: #f1f3f5;
+    --space: 12px; --radius: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1318; --panel: #171c23; --text: #e6e9ee; --muted: #9aa5b1; --line: #2a323c;
+      --accent: #4c8dff; --accent-text: #0b0f14; --mark: #6b5a12; --user: #16263f; --assistant: #1e252e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+  header { display: flex; gap: var(--space); align-items: center; padding: var(--space); background: var(--panel);
+    border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; flex-wrap: wrap; }
+  header h1 { font-size: 17px; margin: 0; }
+  #stats { color: var(--muted); font-size: 13px; }
+  #q { flex: 1 1 220px; min-width: 0; padding: 9px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+    background: var(--bg); color: var(--text); font-size: 15px; }
+  select, button { font: inherit; padding: 8px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+    background: var(--panel); color: var(--text); cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  main { display: grid; grid-template-columns: 220px 340px 1fr; gap: var(--space); padding: var(--space); align-items: start; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  section h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; padding: 10px var(--space);
+    border-bottom: 1px solid var(--line); }
+  .item { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
+    padding: 10px var(--space); background: transparent; }
+  .item:last-child { border-bottom: 0; }
+  .item[aria-current="true"] { background: var(--user); }
+  .item .meta { color: var(--muted); font-size: 12px; }
+  .item .title { font-weight: 600; overflow-wrap: anywhere; }
+  .snippet { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  mark { background: var(--mark); color: inherit; border-radius: 2px; }
+  #detail { min-height: 200px; }
+  .pad { padding: var(--space); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  .box { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px var(--space); margin: 10px 0; background: var(--bg); }
+  .box h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .box ul { margin: 4px 0; padding-left: 18px; }
+  .msg { border-radius: var(--radius); padding: 8px 12px; margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.user { background: var(--user); } .msg.assistant { background: var(--assistant); }
+  .msg .who { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
+  .msg.hit { outline: 2px solid var(--accent); }
+  pre#brief { white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.5 ui-monospace, monospace; margin: 0; }
+  .empty, .error { padding: var(--space); color: var(--muted); }
+  .error { color: #c62828; }
+  .tag { display: inline-block; font-size: 11px; padding: 0 6px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Session Memory</h1>
+  <input id="q" type="search" placeholder="Search every AI conversation…" aria-label="Search" data-testid="search-input">
+  <select id="source" aria-label="Source" data-testid="source-filter">
+    <option value="">All sources</option>
+    <option value="claude-code">Claude Code</option>
+    <option value="claude-ai">Claude.ai</option>
+    <option value="chatgpt">ChatGPT</option>
+  </select>
+  <button id="rescan" data-testid="rescan">Rescan</button>
+  <span id="stats" data-testid="stats"></span>
+</header>
+<main>
+  <section aria-label="Projects"><h2>Projects</h2><div id="projects" data-testid="projects"></div></section>
+  <section aria-label="Sessions"><h2 id="list-title">Sessions</h2><div id="list" data-testid="list"></div></section>
+  <section aria-label="Detail" id="detail" data-testid="detail"><div class="empty">Pick a project for its resume brief, or a session to read it.</div></section>
+</main>
+<script>
+"use strict";
+const state = { project: "", source: "", sessionId: "", aiAvailable: false, hitIdx: null };
+const $ = (id) => document.getElementById(id);
+const HL_START = "\x02", HL_END = "\x03";
+
+// All DOM is built with textContent / createElement. No transcript text ever goes through innerHTML.
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "class") node.className = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, value);
+  }
+  for (const child of children) node.append(child);
+  return node;
+}
+
+async function api(path, options) {
+  const res = await fetch(path, options);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+function highlighted(snippet) {
+  const out = el("div", { class: "snippet" });
+  let open = false;
+  for (const part of snippet.split(/([\x02\x03])/)) {
+    if (part === HL_START) open = true;
+    else if (part === HL_END) open = false;
+    else if (part) out.append(open ? el("mark", {}, part) : part);
+  }
+  return out;
+}
+
+function shortDate(iso) { return (iso || "").slice(0, 10) || "undated"; }
+
+async function loadStatus() {
+  const status = await api("/api/status");
+  state.aiAvailable = status.ai_available;
+  $("stats").textContent = `${status.sessions} sessions · ${status.messages} messages`;
+}
+
+async function loadProjects() {
+  const projects = await api("/api/projects");
+  const box = $("projects");
+  box.replaceChildren(el("button", { class: "item", "aria-current": String(!state.project), "data-testid": "project-all",
+      onclick: () => selectProject("") }, el("div", { class: "title" }, "All projects")));
+  if (!projects.length) box.append(el("div", { class: "empty" }, "Nothing indexed yet. Run: python -m sessionmemory ingest"));
+  for (const project of projects) {
+    box.append(el("button", { class: "item", "aria-current": String(state.project === project.project),
+        "data-testid": "project-item", onclick: () => selectProject(project.project) },
+      el("div", { class: "title" }, project.project),
+      el("div", { class: "meta" }, `${project.sessions} session${project.sessions === 1 ? "" : "s"} · last ${shortDate(project.last_active)}`)));
+  }
+}
+
+async function selectProject(name) {
+  state.project = name;
+  $("q").value = "";
+  await loadProjects();
+  await loadSessions();
+  if (name) await showBrief(name);
+  else $("detail").replaceChildren(el("div", { class: "empty" }, "Pick a project for its resume brief, or a session to read it."));
+}
+
+async function loadSessions() {
+  const params = new URLSearchParams({ project: state.project, source: state.source });
+  const sessions = await api(`/api/sessions?${params}`);
+  $("list-title").textContent = state.project ? `Sessions · ${state.project}` : "Sessions";
+  const list = $("list");
+  list.replaceChildren();
+  if (!sessions.length) list.append(el("div", { class: "empty" }, "No sessions."));
+  for (const session of sessions) {
+    list.append(el("button", { class: "item", "aria-current": String(state.sessionId === session.id), "data-testid": "session-item",
+        onclick: () => openSession(session.id) },
+      el("div", { class: "title" }, session.title),
+      el("div", { class: "meta" }, `${shortDate(session.ended)} · ${session.msg_count} msgs · `, el("span", { class: "tag" }, session.source))));
+  }
+}
+
+async function runSearch() {
+  const query = $("q").value.trim();
+  if (!query) return loadSessions();
+  const params = new URLSearchParams({ q: query, project: state.project, source: state.source });
+  const hits = await api(`/api/search?${params}`);
+  $("list-title").textContent = `${hits.length} match${hits.length === 1 ? "" : "es"}`;
+  const list = $("list");
+  list.replaceChildren();
+  if (!hits.length) list.append(el("div", { class: "empty", "data-testid": "no-results" }, "No matches."));
+  for (const hit of hits) {
+    list.append(el("button", { class: "item", "data-testid": "hit", onclick: () => openSession(hit.session_id, hit.idx) },
+      el("div", { class: "title" }, hit.title),
+      el("div", { class: "meta" }, `${hit.project} · ${shortDate(hit.ended)} · `, el("span", { class: "tag" }, hit.source)),
+      highlighted(hit.snippet)));
+  }
+}
+
+function listBox(title, items) {
+  if (!items || !items.length) return "";
+  return el("div", { class: "box" }, el("h3", {}, title), el("ul", {}, ...items.map((item) => el("li", {}, item))));
+}
+
+async function openSession(id, hitIdx = null) {
+  state.sessionId = id;
+  const session = await api(`/api/session/${encodeURIComponent(id)}`);
+  const summary = session.summary || {};
+  const detail = $("detail");
+  detail.replaceChildren(el("h2", {}, session.project + " · " + session.source));
+  const body = el("div", { class: "pad", "data-testid": "session-detail" });
+  body.append(el("h3", {}, summary.title || session.title),
+    el("div", { class: "meta" }, `${shortDate(session.started)} → ${shortDate(session.ended)}` + (session.branch ? ` · branch ${session.branch}` : "")),
+    el("p", { "data-testid": "summary-text" }, summary.summary || ""));
+  const aiButton = el("button", { "data-testid": "ai-summary", onclick: () => aiSummarise(id, aiButton) },
+    summary.kind === "ai" ? "Re-summarise with Claude" : "Summarise with Claude");
+  if (!state.aiAvailable) aiButton.title = "Set ANTHROPIC_API_KEY before starting the server to enable this";
+  body.append(el("div", { class: "actions" }, aiButton,
+    el("span", { class: "tag", "data-testid": "summary-kind" }, summary.kind === "ai" ? "AI summary" : "offline summary")));
+  for (const box of [listBox("Open items", summary.open_items), listBox("Decisions", summary.decisions),
+      listBox("Files edited", session.files)]) if (box) body.append(box);
+  const transcript = el("div", { "data-testid": "transcript" });
+  session.messages.forEach((message, idx) => {
+    transcript.append(el("div", { class: `msg ${message.role}${idx === hitIdx ? " hit" : ""}`, id: `m${idx}` },
+      el("div", { class: "who" }, message.role), message.text));
+  });
+  body.append(transcript);
+  detail.append(body);
+  if (hitIdx !== null) document.getElementById(`m${hitIdx}`)?.scrollIntoView({ block: "center" });
+  document.querySelectorAll("#list .item").forEach((node) => node.removeAttribute("aria-current"));
+}
+
+async function aiSummarise(id, button) {
+  button.disabled = true;
+  button.textContent = "Summarising…";
+  try {
+    await api("/api/summarize", { method: "POST", body: JSON.stringify({ session_id: id }) });
+    await openSession(id);
+  } catch (err) {
+    button.disabled = false;
+    button.textContent = "Summarise with Claude";
+    $("detail").prepend(el("div", { class: "error", "data-testid": "error" }, err.message));
+  }
+}
+
+async function showBrief(project) {
+  const { markdown } = await api(`/api/brief?${new URLSearchParams({ project })}`);
+  const detail = $("detail");
+  detail.replaceChildren(el("h2", {}, `Resume brief · ${project}`));
+  const copy = el("button", { class: "primary", "data-testid": "copy-brief", onclick: async () => {
+    try { await navigator.clipboard.writeText(markdown); copy.textContent = "Copied"; }
+    catch { window.getSelection().selectAllChildren($("brief")); copy.textContent = "Select + copy manually"; }
+  } }, "Copy brief");
+  const ai = el("button", { "data-testid": "ai-brief", onclick: () => aiBrief(project, ai) }, "Tighten with Claude");
+  if (!state.aiAvailable) ai.title = "Set ANTHROPIC_API_KEY before starting the server to enable this";
+  detail.append(el("div", { class: "pad" },
+    el("p", { class: "meta" }, "Paste this at the start of a new AI session."),
+    el("div", { class: "actions" }, copy, ai),
+    el("pre", { id: "brief", "data-testid": "brief" }, markdown)));
+}
+
+async function aiBrief(project, button) {
+  button.disabled = true;
+  button.textContent = "Working…";
+  try {
+    const { markdown } = await api("/api/ai_brief", { method: "POST", body: JSON.stringify({ project }) });
+    $("brief").textContent = markdown;
+    button.textContent = "Tightened";
+  } catch (err) {
+    button.disabled = false;
+    button.textContent = "Tighten with Claude";
+    $("detail").prepend(el("div", { class: "error", "data-testid": "error" }, err.message));
+  }
+}
+
+let searchTimer;
+$("q").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 200); });
+$("source").addEventListener("change", (event) => { state.source = event.target.value; $("q").value.trim() ? runSearch() : loadSessions(); });
+$("rescan").addEventListener("click", async () => {
+  $("rescan").disabled = true;
+  try { await api("/api/ingest", { method: "POST", body: "{}" }); await refresh(); } finally { $("rescan").disabled = false; }
+});
+
+async function refresh() { await Promise.all([loadStatus(), loadProjects(), loadSessions()]); }
+refresh().catch((err) => $("detail").replaceChildren(el("div", { class: "error" }, err.message)));
+</script>
+</body>
+</html>
