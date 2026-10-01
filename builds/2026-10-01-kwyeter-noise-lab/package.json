@@ -1,0 +1,11 @@
+{
+  "name": "noise-lab",
+  "version": "1.0.0",
+  "description": "Browser noise synthesiser: seamless sleep/focus/masking loops, tinnitus notch noise, spectrum view, WAV export",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

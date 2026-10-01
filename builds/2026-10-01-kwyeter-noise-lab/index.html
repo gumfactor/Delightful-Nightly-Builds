@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noise Lab</title>
+<style>
+  :root {
+    --bg: #0f1419; --panel: #181f27; --line: #2a343f; --text: #e6edf3; --muted: #8b98a5;
+    --accent: #4fb3a5; --accent-ink: #06201c; --warn: #e0a84f; --curve: #e6edf3; --fill: rgba(79,179,165,.35);
+    --gap: 16px; --radius: 10px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f6f8fa; --panel: #ffffff; --line: #d0d7de; --text: #1f2328; --muted: #59636e;
+      --accent: #0f766e; --accent-ink: #ffffff; --warn: #9a6700; --curve: #1f2328; --fill: rgba(15,118,110,.3); }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: var(--gap); display: grid; gap: var(--gap); }
+  h1 { font-size: 1.4rem; margin: 0; }
+  h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 8px; }
+  p.sub { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--gap); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  button, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 12px; min-height: 40px; cursor: pointer; }
+  button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  canvas { width: 100%; height: 220px; display: block; border-radius: 6px; background: var(--bg); }
+  .meters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; text-align: center; }
+  .meters b { display: block; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+  .meters span { color: var(--muted); font-size: .75rem; }
+  .row { display: grid; grid-template-columns: 1fr; gap: 2px; margin-bottom: 12px; }
+  .row label { display: flex; justify-content: space-between; font-size: .9rem; }
+  .row output { color: var(--muted); font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--accent); min-height: 28px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .bar .grow { flex: 1 1 140px; }
+  .note { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
+  .warn { color: var(--warn); }
+  details summary { cursor: pointer; font-weight: 600; margin-bottom: 10px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 8px; }
+  legend { color: var(--muted); font-size: .8rem; padding: 0; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Noise Lab</h1>
+    <p class="sub">Synthesise seamless noise loops: sleep, focus, masking, tinnitus notch therapy. Everything runs in your browser.</p>
+  </header>
+
+  <section aria-label="Presets">
+    <h2>Presets</h2>
+    <div class="chips" id="presets" data-testid="presets"></div>
+  </section>
+
+  <section aria-label="Spectrum">
+    <h2>Spectrum of the loop you are hearing</h2>
+    <canvas id="spectrum" data-testid="spectrum" role="img" aria-label="Spectrum plot, frequency 20 hertz to 20 kilohertz"></canvas>
+    <div class="meters">
+      <div><b id="m-rms" data-testid="m-rms">–</b><span>RMS (dBFS)</span></div>
+      <div><b id="m-a" data-testid="m-a">–</b><span>A-weighted (dBFS)</span></div>
+      <div><b id="m-peak" data-testid="m-peak">–</b><span>Peak (dBFS)</span></div>
+    </div>
+    <p class="note">Levels are relative to digital full scale at your chosen volume. Real loudness depends on your headphones or speakers, so this is not a calibrated meter.</p>
+  </section>
+
+  <section aria-label="Playback">
+    <h2>Playback</h2>
+    <div class="bar">
+      <button id="play" class="primary" data-testid="play" data-state="stopped">Play</button>
+      <label class="grow">Volume <output id="out-level" data-testid="out-level"></output>
+        <input type="range" id="level" data-testid="level" min="-60" max="-10" step="1" aria-label="Volume in dBFS">
+      </label>
+    </div>
+    <div class="bar" style="margin-top:10px">
+      <label for="timer">Sleep timer</label>
+      <select id="timer" data-testid="timer">
+        <option value="0">Off</option><option value="15">15 min</option><option value="30">30 min</option>
+        <option value="60">1 hour</option><option value="120">2 hours</option><option value="480">8 hours</option>
+      </select>
+      <span id="timer-left" data-testid="timer-left" class="note"></span>
+    </div>
+    <p class="note warn">Start quiet and raise the volume slowly. Sustained listening above about 70 dB(A) can damage hearing, and masking noise should sit just below the level of the sound it covers.</p>
+  </section>
+
+  <section aria-label="Shape">
+    <h2>Shape</h2>
+    <div id="controls" data-testid="controls"></div>
+    <details>
+      <summary>Advanced: notch, bands, modulation</summary>
+      <div id="advanced"></div>
+    </details>
+  </section>
+
+  <section aria-label="Tinnitus pitch match">
+    <h2>Tinnitus pitch match</h2>
+    <div class="row">
+      <label>Test tone <output id="out-pitch" data-testid="out-pitch"></output></label>
+      <input type="range" id="pitch" data-testid="pitch" min="0" max="1000" step="1" aria-label="Test tone frequency">
+    </div>
+    <div class="bar">
+      <button id="pitch-play" data-testid="pitch-play" aria-pressed="false">Play tone</button>
+      <button id="pitch-apply" data-testid="pitch-apply">Centre notch on this pitch</button>
+    </div>
+    <p class="note">Slide until the tone matches the pitch of your tinnitus, then centre a 1-octave notch on it. Notched-noise listening is an experimental approach studied in research, not a medical treatment. Talk to an audiologist before relying on it. The tone plays quietly, keep it that way.</p>
+  </section>
+
+  <section aria-label="Export and share">
+    <h2>Export and share</h2>
+    <div class="bar">
+      <button id="export-loop" data-testid="export-loop">WAV: seamless loop</button>
+      <button id="export-1" data-testid="export-1">WAV: 1 minute</button>
+      <button id="export-10" data-testid="export-10">WAV: 10 minutes</button>
+      <button id="share" data-testid="share">Copy link to this sound</button>
+    </div>
+    <p class="note" id="status" data-testid="status" role="status"></p>
+  </section>
+</main>
+<script src="src/dsp.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
