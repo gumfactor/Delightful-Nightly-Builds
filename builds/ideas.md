@@ -50,6 +50,11 @@ always generates fresh ideas.
 | 10 | 2026-06-17 | F | ambitious | SEC EDGAR Financial History Extractor | Uses SEC EDGAR public API (no auth) to pull 5 years of income statement and balance sheet data for any list of US tickers; outputs clean CSV and a comparison summary HTML; useful for investment research and financial modeling | — | — | — | pending |
 | 11 | 2026-06-18 | G | ambitious | Market Cap Higher or Lower | Browser game using baked-in Yahoo Finance data: given two company names with sector/industry hints, guess which has the higher market cap. Tracks accuracy and streak per session. Teaches market intuition through play. | — | — | — | pending |
 | 12 | 2026-06-18 | G | ambitious | Stock Chart Direction Quiz | Show a real historical stock chart (last 6 months) with sector and key metrics visible; guess whether the stock went up, down, or flat over the next quarter. Uses pre-generated yfinance data as static JSON. Trains pattern recognition and market intuition. | — | — | — | pending |
+| 13 | 2026-10-01 | D | ambitious | Canada List Product Voice Rewriter | Paste raw product/business records and get on-brand editorial descriptions via the Anthropic API, with a house-style checklist and batch CSV in/out | — | — | — | pending |
+| 14 | 2026-10-01 | D | ambitious | Stress & Coping Vignette Studio | Generate psychologically grounded case vignettes with controllable stressor type, appraisal and coping style for teaching and study materials | — | — | — | pending |
+| 15 | 2026-10-01 | D | ambitious | Research Figure Palette Lab | Generate colour-blind-safe, print-safe palettes for papers with live preview on chart types and contrast checks | — | — | — | pending |
+| 16 | 2026-10-02 | E | ambitious | Neuroimaging Methods Flashcards with Spaced Repetition | Cards for fMRI/EEG concepts generated from pasted methods sections via the Anthropic API, scheduled with an SM-2 style algorithm | — | — | — | pending |
+| 17 | 2026-10-02 | E | ambitious | Study Design Critic | Paste a study design and get an AI power, confound and preregistration review, paired with the Replication Lab simulations | — | — | — | pending |
 
 ---
 

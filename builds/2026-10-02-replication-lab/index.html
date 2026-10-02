@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Replication Lab</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Replication Lab</h1>
+    <p class="tagline">Predict first, then simulate. Five experiments on why studies fail to replicate.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Labs" id="tabs"></nav>
+
+  <main id="lab" aria-live="polite"></main>
+
+  <footer class="foot">
+    <label>Seed <input id="seed" type="number" min="1" max="999999" value="2026" data-testid="seed"></label>
+    <span id="calibration" data-testid="calibration">No predictions yet.</span>
+  </footer>
+
+  <script src="src/stats.js"></script>
+  <script src="src/charts.js"></script>
+  <script src="src/labs.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
