@@ -1,0 +1,4 @@
+atlas.db
+atlas.html
+__pycache__/
+.pytest_cache/

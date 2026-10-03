@@ -1,0 +1,4 @@
+# Runtime: stdlib only.
+# Development / tests:
+pytest==8.3.4
+playwright==1.49.1
