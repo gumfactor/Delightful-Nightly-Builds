@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neuro Arcade</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Neuro Arcade</h1>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="play" data-testid="tab-play" aria-selected="true">Play</button>
+      <button role="tab" data-tab="results" data-testid="tab-results" aria-selected="false">Results</button>
+      <button role="tab" data-tab="data" data-testid="tab-data" aria-selected="false">Data</button>
+    </nav>
+  </header>
+  <main>
+    <section id="view-play" aria-label="Play"></section>
+    <section id="view-results" aria-label="Results" hidden></section>
+    <section id="view-data" aria-label="Data" hidden></section>
+  </main>
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Task" hidden>
+    <div id="overlay-body" class="overlay-body"></div>
+  </div>
+  <script src="src/stats.js"></script>
+  <script src="src/tasks.js"></script>
+  <script src="src/store.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

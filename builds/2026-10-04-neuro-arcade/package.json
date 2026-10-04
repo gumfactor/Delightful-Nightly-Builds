@@ -1,0 +1,11 @@
+{
+  "name": "neuro-arcade",
+  "version": "1.0.0",
+  "description": "Four playable cognitive-psychology paradigms with scoring, reference ranges, and CSV export/import",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}
