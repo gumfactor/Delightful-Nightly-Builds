@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CanPulse — Canadian Economy</title>
+<style>
+:root { --bg:#f6f7f9; --card:#fff; --ink:#15181d; --muted:#5d6673; --line:#dfe3e8; --accent:#1f6feb;
+  --good:#1a7f4b; --bad:#c62828; --watch:#b26a00; --neutral:#5d6673; --radius:12px; --gap:12px; }
+:root[data-theme="dark"] { --bg:#0f1318; --card:#181d24; --ink:#e8ecf1; --muted:#9aa5b3; --line:#2a313b;
+  --accent:#58a6ff; --good:#3fb97a; --bad:#ef6a6a; --watch:#e0a030; --neutral:#9aa5b3; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:16px; }
+header { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:var(--gap); }
+h1 { font-size:20px; margin:0; } h2 { font-size:15px; margin:0 0 8px; }
+.sub { color:var(--muted); font-size:13px; }
+button, select { font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 10px; cursor:pointer; }
+.controls button[aria-pressed="true"] { background:var(--accent); color:#fff; border-color:var(--accent); }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin-bottom:var(--gap); }
+.banner { border-left:4px solid var(--watch); }
+.brief p { margin:0 0 6px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:var(--gap); margin-bottom:var(--gap); }
+.card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:12px; text-align:left; display:block; width:100%; }
+.card[aria-pressed="true"] { outline:2px solid var(--accent); }
+.card .label { color:var(--muted); font-size:13px; display:flex; justify-content:space-between; gap:6px; }
+.card .value { font-size:24px; font-weight:650; margin:2px 0; }
+.card .chg { font-size:13px; color:var(--muted); }
+.card canvas { height:42px !important; width:100% !important; margin-top:6px; }
+.card.error { border-color:var(--bad); }
+.badge { font-size:11px; padding:1px 7px; border-radius:99px; border:1px solid currentColor; white-space:nowrap; }
+.badge.good { color:var(--good); } .badge.bad { color:var(--bad); } .badge.watch { color:var(--watch); } .badge.neutral { color:var(--neutral); }
+.stale { color:var(--watch); font-size:12px; }
+.controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px; }
+.chartbox { position:relative; height:320px; }
+.facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-top:10px; font-size:13px; }
+.facts b { display:block; font-size:15px; }
+@media (max-width:520px) { .chartbox { height:260px; } main { padding:12px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>CanPulse</h1><div class="sub" id="asof" data-testid="asof"></div></div>
+    <button id="theme" data-testid="theme-toggle" type="button">Dark / light</button>
+  </header>
+  <div class="panel banner" id="sample-banner" data-testid="sample-banner" hidden>
+    Illustrative sample data, not real statistics. Run <code>python3 src/main.py</code> to fetch live data.
+  </div>
+  <section class="panel brief" id="brief" data-testid="briefing"><h2 id="brief-title">Briefing</h2><div id="brief-body"></div></section>
+  <section class="grid" id="cards" data-testid="cards"></section>
+  <section class="panel" id="detail" data-testid="detail" hidden>
+    <h2 id="detail-title"></h2>
+    <div class="controls">
+      <span id="ranges"></span>
+      <label>Compare <select id="compare" data-testid="compare"><option value="">None</option></select></label>
+    </div>
+    <div class="chartbox"><canvas id="main-chart" data-testid="main-chart"></canvas></div>
+    <div class="facts" id="facts"></div>
+    <div class="sub" id="note"></div>
+  </section>
+  <p class="sub">Sources: Statistics Canada (Web Data Service), Bank of Canada (Valet). Signals are rule-based summaries, not forecasts.</p>
+</main>
+<script src="__CHART_JS_URL__"></script>
+<script>
+const DATA = /*__DATA__*/null;
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+const RANGES = [["1Y", 1], ["5Y", 5], ["10Y", 10], ["Max", 0]];
+const state = { id: null, range: "5Y", compare: "" };
+let mainChart = null;
+const sparkCharts = [];
+
+function fmt(v, unit) {
+  if (v === null || v === undefined) return "n/a";
+  if (unit === "CAD per USD") return v.toFixed(4);
+  if (Math.abs(v) >= 100000) return Math.round(v).toLocaleString("en-CA");
+  return v.toFixed(2);
+}
+function fmtChg(v, kind) {
+  if (v === null || v === undefined) return "n/a";
+  return (v >= 0 ? "+" : "") + v.toFixed(2) + (kind === "pct" ? "%" : " pp");
+}
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+function sliceRange(points, years) {
+  if (!years) return points;
+  const last = new Date(points[points.length - 1][0]);
+  last.setFullYear(last.getFullYear() - years);
+  const cutoff = last.toISOString().slice(0, 10);
+  return points.filter((p) => p[0] >= cutoff);
+}
+function decimate(points, max = 700) {
+  if (points.length <= max) return points;
+  const step = Math.ceil(points.length / max);
+  const out = points.filter((_, i) => i % step === 0);
+  if (out[out.length - 1] !== points[points.length - 1]) out.push(points[points.length - 1]);
+  return out;
+}
+
+function buildCards() {
+  const host = $("cards");
+  host.textContent = "";
+  DATA.order.forEach((id) => {
+    const s = DATA.series[id], st = DATA.stats[id];
+    if (!st) return;
+    const card = el("button", "card"); card.type = "button";
+    card.dataset.testid = "card-" + id; card.setAttribute("aria-pressed", "false");
+    const top = el("div", "label"); top.append(el("span", "", s.label), el("span", "badge " + st.signal, st.signal));
+    card.append(top, el("div", "value", fmt(st.latest, s.unit) + (s.unit === "%" || s.unit === "pp" ? (s.unit === "%" ? "%" : " pp") : "")));
+    const yoy = st.yoy_kind === "pct" ? fmtChg(st.yoy, "pct") : fmtChg(st.yoy, "pp");
+    card.append(el("div", "chg", yoy + " y/y · " + st.reason));
+    if (st.stale) card.append(el("div", "stale", "Stale: last data " + st.latest_date));
+    else card.append(el("div", "chg", "as of " + st.latest_date + (s.from_cache ? " (cached)" : "")));
+    const cv = el("canvas"); card.append(cv);
+    card.addEventListener("click", () => select(id));
+    host.append(card);
+    sparkCharts.push(spark(cv, s));
+  });
+  DATA.failed.forEach((f) => {
+    const card = el("div", "card error"); card.dataset.testid = "error-" + f.id;
+    card.append(el("div", "label", f.label), el("div", "value", "Unavailable"), el("div", "chg", f.error));
+    host.append(card);
+  });
+}
+
+function spark(canvas, s) {
+  if (typeof Chart === "undefined") return null;
+  const pts = decimate(sliceRange(s.points, 2), 120);
+  return new Chart(canvas, { type: "line",
+    data: { labels: pts.map((p) => p[0]), datasets: [{ data: pts.map((p) => p[1]), borderColor: css("--accent"), borderWidth: 1.5, pointRadius: 0, tension: 0.2 }] },
+    options: { animation: false, responsive: true, maintainAspectRatio: false, events: [],
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } } } });
+}
+
+function buildControls() {
+  const host = $("ranges");
+  RANGES.forEach(([name]) => {
+    const b = el("button", "", name); b.type = "button"; b.dataset.testid = "range-" + name;
+    b.setAttribute("aria-pressed", String(name === state.range));
+    b.addEventListener("click", () => { state.range = name; refreshRangeButtons(); drawMain(); });
+    host.append(b); host.append(document.createTextNode(" "));
+  });
+  const sel = $("compare");
+  DATA.order.forEach((id) => { const o = el("option", "", DATA.series[id].label); o.value = id; sel.append(o); });
+  sel.addEventListener("change", () => { state.compare = sel.value; drawMain(); });
+}
+function refreshRangeButtons() {
+  $("ranges").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.testid === "range-" + state.range)));
+}
+
+function select(id) {
+  state.id = id;
+  document.querySelectorAll(".card").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.testid === "card-" + id)));
+  $("detail").hidden = false;
+  drawMain();
+  $("detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+const eventPlugin = { id: "events", afterDatasetsDraw(chart) {
+  const labels = chart.data.labels; if (!labels.length) return;
+  const ctx = chart.ctx, area = chart.chartArea;
+  ctx.save(); ctx.strokeStyle = css("--muted"); ctx.setLineDash([4, 4]); ctx.fillStyle = css("--muted"); ctx.font = "11px system-ui";
+  DATA.events.forEach((ev) => {
+    if (ev.date < labels[0] || ev.date > labels[labels.length - 1]) return;
+    let idx = labels.findIndex((l) => l >= ev.date); if (idx < 0) return;
+    const x = chart.scales.x.getPixelForValue(idx);
+    ctx.beginPath(); ctx.moveTo(x, area.top); ctx.lineTo(x, area.bottom); ctx.stroke();
+    ctx.save(); ctx.translate(x + 3, area.top + 4); ctx.rotate(Math.PI / 2); ctx.fillText(ev.label, 0, 0); ctx.restore();
+  });
+  ctx.restore();
+} };
+
+function drawMain() {
+  const s = DATA.series[state.id], st = DATA.stats[state.id];
+  const years = RANGES.find((r) => r[0] === state.range)[1];
+  const pts = sliceRange(s.points, years);
+  $("detail-title").textContent = s.label + " (" + s.unit + ")";
+  $("note").textContent = (s.note || "") + (s.source === "derived" ? "" : " Source: " + (s.source === "statcan" ? "Statistics Canada" : "Bank of Canada") + ".");
+  const facts = $("facts"); facts.textContent = "";
+  [["Latest", fmt(st.latest, s.unit)], ["1-month", fmtChg(st.chg_1m, st.yoy_kind)], ["Year over year", fmtChg(st.yoy, st.yoy_kind)],
+   ["5-yr percentile", st.pct5y.toFixed(0)], ["Z-score (5y)", st.z === null ? "n/a" : st.z.toFixed(2)], ["Trend", st.trend]].forEach(([k, v]) => {
+    const d = el("div"); const b = el("b", "", v); b.dataset.testid = "fact-" + k.toLowerCase().replace(/[^a-z]+/g, "-"); d.append(b, document.createTextNode(k)); facts.append(d);
+  });
+  if (typeof Chart === "undefined") { $("note").textContent = "Chart library unavailable (offline?). Statistics above are still valid."; return; }
+  const datasets = []; let labels = pts.map((p) => p[0]);
+  let dec = decimate(pts); labels = dec.map((p) => p[0]);
+  if (state.compare && state.compare !== state.id) {
+    const other = DATA.series[state.compare];
+    const aligned = dec.map((p) => { let v = null; for (const q of other.points) { if (q[0] <= p[0]) v = q[1]; else break; } return v; });
+    const baseA = dec[0][1], baseB = aligned.find((v) => v !== null);
+    datasets.push({ label: s.label + " (=100)", data: dec.map((p) => baseA ? p[1] / baseA * 100 : null), borderColor: css("--accent"), pointRadius: 0, borderWidth: 2 });
+    datasets.push({ label: other.label + " (=100)", data: aligned.map((v) => (v === null || !baseB) ? null : v / baseB * 100), borderColor: css("--watch"), pointRadius: 0, borderWidth: 2 });
+  } else {
+    datasets.push({ label: s.label, data: dec.map((p) => p[1]), borderColor: css("--accent"), backgroundColor: "transparent", pointRadius: 0, borderWidth: 2 });
+  }
+  if (mainChart) mainChart.destroy();
+  mainChart = new Chart($("main-chart"), { type: "line", data: { labels, datasets }, plugins: [eventPlugin],
+    options: { animation: false, responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: datasets.length > 1, labels: { color: css("--ink") } } },
+      scales: { x: { ticks: { maxTicksLimit: 7, color: css("--muted") }, grid: { color: css("--line") } }, y: { ticks: { color: css("--muted") }, grid: { color: css("--line") } } } } });
+  $("main-chart").dataset.points = String(dec.length);
+  $("main-chart").dataset.series = datasets.length;
+}
+
+function buildBriefing() {
+  const b = DATA.briefing, host = $("brief-body");
+  $("brief-title").textContent = b.source === "ai" ? "AI briefing" : "Briefing (rule-based)";
+  host.textContent = "";
+  b.lines.forEach((l) => host.append(el("p", "", l)));
+  if (b.error) host.append(el("div", "sub", "AI briefing unavailable: " + b.error));
+}
+
+function init() {
+  const m = DATA.meta;
+  $("asof").textContent = "Fetched " + m.fetched_at + " · " + DATA.order.length + " series";
+  $("sample-banner").hidden = !m.sample;
+  const stored = (() => { try { return localStorage.getItem("canpulse-theme"); } catch (e) { return null; } })();
+  if (stored) document.documentElement.dataset.theme = stored;
+  $("theme").addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("canpulse-theme", next); } catch (e) { /* ignore */ }
+    if (state.id) drawMain();
+  });
+  buildBriefing(); buildCards(); buildControls();
+}
+init();
+</script>
+</body>
+</html>

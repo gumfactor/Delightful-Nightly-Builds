@@ -1,0 +1,5 @@
+node_modules/
+test-results/
+data/cache.json
+__pycache__/
+.pytest_cache/

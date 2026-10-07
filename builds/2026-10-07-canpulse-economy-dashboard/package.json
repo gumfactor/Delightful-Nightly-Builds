@@ -1,0 +1,7 @@
+{
+  "name": "canpulse-tests",
+  "version": "1.0.0",
+  "description": "Playwright UI tests for the CanPulse dashboard",
+  "scripts": { "test": "npx playwright test" },
+  "devDependencies": { "chart.js": "4.4.4", "@playwright/test": "1.56.1" }
+}
