@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Vault</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1c2128;--muted:#667085;--line:#dde1e7;--accent:#2457d6;--mark:#fff3b0;--user:#eef3ff;--ai:#f1f8f1}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1318;--card:#171c23;--fg:#e6e9ee;--muted:#8b95a5;--line:#2a313b;--accent:#6c9bff;--mark:#5a4a00;--user:#18233a;--ai:#17261b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;z-index:2}
+h1{font-size:17px;margin:0 0 8px}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input{flex:1;min-width:140px}select{max-width:100%}
+button{cursor:pointer}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+nav{display:flex;gap:4px;margin-top:8px}
+nav button{border:0;border-radius:6px;padding:6px 12px;background:none;color:var(--muted)}
+nav button.on{background:var(--bg);color:var(--fg);font-weight:600}
+main{max-width:860px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer}
+.card:hover{border-color:var(--accent)}
+.meta{color:var(--muted);font-size:13px}
+.title{font-weight:600}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 2px}
+.msg{border-radius:10px;padding:10px 12px;margin:8px 0;white-space:pre-wrap;word-break:break-word}
+.msg.user{background:var(--user)}.msg.assistant{background:var(--ai)}
+.msg b{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+ul{padding-left:20px;margin:4px 0 10px}
+h3{margin:14px 0 2px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.empty,.err{color:var(--muted);padding:24px 0;text-align:center}.err{color:#c0392b}
+code{font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Context Vault</h1>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search every past session…" aria-label="Search" data-testid="search-input">
+    <select id="proj" aria-label="Project filter" data-testid="project-filter"><option value="">All projects</option></select>
+    <button id="reindex" title="Re-scan transcript folder" data-testid="reindex">Reindex</button>
+  </div>
+  <nav><button id="t-projects" class="on">Projects</button><button id="t-search">Search</button></nav>
+</header>
+<main id="view" data-testid="view"></main>
+<script>
+const $ = s => document.querySelector(s);
+const view = $('#view');
+const api = async (path, opts) => {
+  const r = await fetch(path, opts);
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+};
+const post = path => api(path, {method: 'POST', headers: {'X-Ctxvault': '1'}});
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const kid of kids) n.append(kid);
+  return n;
+};
+const show = (...nodes) => { view.replaceChildren(...nodes); window.scrollTo(0, 0); };
+const fail = e => show(el('div', {class: 'err'}, e.message));
+const day = ts => (ts || '').slice(0, 10);
+const tab = name => { $('#t-projects').classList.toggle('on', name === 'projects'); $('#t-search').classList.toggle('on', name === 'search'); };
+
+// Render FTS snippet where [[ ]] mark hits, without ever using innerHTML.
+function snippet(text) {
+  const span = el('div');
+  text.split('[[').forEach((part, i) => {
+    if (i === 0) return span.append(part);
+    const [hit, rest] = part.split(']]');
+    span.append(el('mark', {}, hit), rest || '');
+  });
+  return span;
+}
+
+function list(items) {
+  return items.length ? el('ul', {}, ...items.map(t => el('li', {}, t))) : el('div', {class: 'meta'}, 'None recorded.');
+}
+
+async function loadProjects() {
+  const projects = await api('/api/projects');
+  const sel = $('#proj'), cur = sel.value;
+  sel.replaceChildren(el('option', {value: ''}, 'All projects'), ...projects.map(p => el('option', {value: p.project}, p.project)));
+  sel.value = cur;
+  return projects;
+}
+
+async function showProjects() {
+  tab('projects');
+  try {
+    const projects = await loadProjects();
+    if (!projects.length) return show(el('div', {class: 'empty'}, 'No sessions indexed yet. Check the transcripts folder and press Reindex.'));
+    show(...projects.map(p => el('div', {class: 'card', 'data-testid': 'project-card', onclick: () => showProject(p.project)},
+      el('div', {class: 'title'}, p.project),
+      el('div', {class: 'meta'}, `${p.sessions} sessions · ${p.messages} messages · last active ${day(p.last_active)} · ${p.summarized}/${p.sessions} summarised`))));
+  } catch (e) { fail(e); }
+}
+
+async function showProject(name) {
+  tab('projects');
+  try {
+    const sessions = await api('/api/sessions?project=' + encodeURIComponent(name));
+    const briefBtn = el('button', {class: 'primary', 'data-testid': 'brief-btn', onclick: () => showBrief(name)}, 'Resume brief');
+    const sumBtn = el('button', {'data-testid': 'summarize-all', onclick: async () => {
+      sumBtn.disabled = true; sumBtn.textContent = 'Summarising…';
+      try { const r = await post('/api/summarize?project=' + encodeURIComponent(name));
+        if (r.errors.length) alert(r.errors[0]);
+      } catch (e) { alert(e.message); }
+      showProject(name);
+    }}, 'Summarise recent');
+    show(el('h2', {}, name), el('div', {class: 'bar'}, briefBtn, sumBtn), el('p'),
+      ...sessions.map(s => el('div', {class: 'card', 'data-testid': 'session-card', onclick: () => showSession(s.id)},
+        el('div', {class: 'title'}, s.title || '(untitled)'),
+        el('div', {class: 'meta'}, `${day(s.ended)} · ${s.msg_count} msgs${s.branch ? ' · ' + s.branch : ''}${s.summary ? ' · AI summary' : ''}`),
+        el('div', {}, s.summary ? s.summary.goal : s.first_prompt.slice(0, 160)))));
+  } catch (e) { fail(e); }
+}
+
+async function showBrief(name) {
+  try {
+    const {markdown} = await api('/api/brief?project=' + encodeURIComponent(name));
+    const copy = el('button', {class: 'primary', 'data-testid': 'copy-brief', onclick: async () => {
+      try { await navigator.clipboard.writeText(markdown); copy.textContent = 'Copied'; } catch { copy.textContent = 'Copy failed'; }
+    }}, 'Copy markdown');
+    show(el('div', {class: 'bar'}, el('button', {onclick: () => showProject(name)}, '← Back'), copy),
+      el('pre', {'data-testid': 'brief-text'}, markdown));
+  } catch (e) { fail(e); }
+}
+
+async function showSession(id) {
+  try {
+    const s = await api('/api/session/' + encodeURIComponent(id));
+    const sum = s.summary;
+    const head = [el('div', {class: 'bar'}, el('button', {onclick: () => showProject(s.project)}, '← ' + s.project),
+      el('button', {'data-testid': 'summarize-one', onclick: async () => {
+        try { await post('/api/summarize/' + encodeURIComponent(id)); } catch (e) { alert(e.message); }
+        showSession(id);
+      }}, sum ? 'Re-summarise' : 'Summarise with AI')),
+      el('h2', {}, (sum && sum.title) || s.hint_title || s.first_prompt.slice(0, 80)),
+      el('div', {class: 'meta'}, `${day(s.started)} · ${s.msg_count} messages${s.branch ? ' · branch ' + s.branch : ''}`)];
+    if (sum) head.push(el('h3', {}, 'Goal'), el('div', {}, sum.goal), el('h3', {}, 'Decisions'), list(sum.decisions),
+      el('h3', {}, 'Open threads'), list(sum.open_threads), el('h3', {}, 'Next steps'), list(sum.next_steps));
+    if (s.files.length) head.push(el('h3', {}, 'Files touched'), el('div', {}, ...s.files.slice(0, 12).map(f => el('div', {}, el('code', {}, f.path)))));
+    head.push(el('h3', {}, 'Transcript'));
+    const msgs = s.messages.map(m => el('div', {class: 'msg ' + m.role, id: 'm' + m.idx}, el('b', {}, m.role), m.text));
+    show(...head, ...msgs);
+  } catch (e) { fail(e); }
+}
+
+async function runSearch() {
+  const q = $('#q').value.trim();
+  if (!q) return showProjects();
+  tab('search');
+  try {
+    const hits = await api('/api/search?q=' + encodeURIComponent(q) + '&project=' + encodeURIComponent($('#proj').value));
+    if (!hits.length) return show(el('div', {class: 'empty', 'data-testid': 'no-results'}, 'No matches.'));
+    show(...hits.map(h => el('div', {class: 'card', 'data-testid': 'hit', onclick: () => showSession(h.session_id)},
+      el('div', {class: 'title'}, h.title || h.session_id),
+      el('div', {class: 'meta'}, `${h.project} · ${day(h.ts)} · ${h.role}`), snippet(h.snippet))));
+  } catch (e) { fail(e); }
+}
+
+let timer;
+$('#q').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(runSearch, 200); });
+$('#proj').addEventListener('change', () => $('#q').value.trim() ? runSearch() : ($('#proj').value ? showProject($('#proj').value) : showProjects()));
+$('#t-projects').addEventListener('click', () => { $('#q').value = ''; showProjects(); });
+$('#t-search').addEventListener('click', () => $('#q').focus());
+$('#reindex').addEventListener('click', async () => {
+  try { const r = await post('/api/reindex'); $('#reindex').textContent = `Reindex (+${r.indexed})`; } catch (e) { return fail(e); }
+  showProjects();
+});
+showProjects();
+</script>
+</body>
+</html>
