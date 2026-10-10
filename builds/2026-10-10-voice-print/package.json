@@ -1,0 +1,8 @@
+{
+  "name": "voice-print",
+  "version": "1.0.0",
+  "description": "Learn your own writing voice, flag AI-sounding prose in drafts, and generate a targeted revision prompt. Runs offline in the browser.",
+  "main": "index.html",
+  "scripts": { "start": "python3 -m http.server 8080", "test": "playwright test" },
+  "devDependencies": { "@playwright/test": "1.56.1" }
+}

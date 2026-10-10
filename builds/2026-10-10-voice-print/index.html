@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice Print</title>
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Voice Print</h1>
+    <p class="tag">Measure your own writing voice. Find the sentences that don't sound like you. Runs entirely in this page; nothing is uploaded.</p>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="profile-h">
+      <h2 id="profile-h">1. Your voice</h2>
+      <p class="hint">Paste 150+ words you wrote yourself (papers, emails, blog posts). Add several samples to sharpen the profile.</p>
+      <label for="baseline" class="sr">Baseline writing sample</label>
+      <textarea id="baseline" data-testid="baseline" rows="6" placeholder="Paste your own writing here"></textarea>
+      <div class="row">
+        <button id="build-profile" data-testid="build-profile" class="primary">Add to profile</button>
+        <button id="demo-human" data-testid="demo-human" class="ghost">Use demo human text</button>
+        <button id="clear-profile" data-testid="clear-profile" class="ghost">Clear profile</button>
+      </div>
+      <p id="profile-status" data-testid="profile-status" class="status" role="status">No profile yet. Drafts will be checked for AI tells only.</p>
+      <details>
+        <summary>Export / import profile</summary>
+        <div class="row">
+          <button id="export-profile" data-testid="export-profile" class="ghost">Show profile JSON</button>
+          <label class="ghost filebtn">Import file<input id="import-file" data-testid="import-file" type="file" accept="application/json,.json"></label>
+        </div>
+        <textarea id="profile-json" data-testid="profile-json" rows="5" aria-label="Profile JSON" placeholder="Profile JSON appears here. Paste JSON and press Import to load one."></textarea>
+        <button id="import-profile" data-testid="import-profile" class="ghost">Import pasted JSON</button>
+      </details>
+    </section>
+
+    <section class="card" aria-labelledby="draft-h">
+      <h2 id="draft-h">2. Draft to check</h2>
+      <label for="draft" class="sr">Draft</label>
+      <textarea id="draft" data-testid="draft" rows="10" placeholder="Paste the draft you want to check"></textarea>
+      <div class="row">
+        <button id="demo-machine" data-testid="demo-machine" class="ghost">Load demo machine-style draft</button>
+        <button id="clear-draft" data-testid="clear-draft" class="ghost">Clear</button>
+      </div>
+    </section>
+
+    <section id="results" class="card" aria-labelledby="results-h" hidden>
+      <h2 id="results-h">3. Results</h2>
+      <div class="scores">
+        <div class="score" data-testid="ai-card"><span class="label">AI-tell score</span><span class="num" id="ai-score" data-testid="ai-score">0</span><span class="sub" id="ai-verdict"></span></div>
+        <div class="score" data-testid="voice-card"><span class="label">Voice match</span><span class="num" id="voice-score" data-testid="voice-score">–</span><span class="sub" id="voice-verdict"></span></div>
+      </div>
+      <p class="hint">This is a style linter, not a detector. It flags habits common in machine prose; people have them too.</p>
+
+      <h3>Highlighted draft</h3>
+      <div id="highlighted" data-testid="highlighted" class="highlighted" tabindex="0"></div>
+      <ul id="flag-summary" data-testid="flag-summary" class="flags"></ul>
+
+      <h3>Sentence rhythm</h3>
+      <div id="rhythm" data-testid="rhythm" class="rhythm" role="img" aria-label="Bar chart of words per sentence"></div>
+
+      <h3>Compared with your voice</h3>
+      <div class="tablewrap"><table id="metrics" data-testid="metrics"><thead><tr><th>Measure</th><th>Draft</th><th>You</th><th>Verdict</th></tr></thead><tbody></tbody></table></div>
+
+      <h3>Revision prompt</h3>
+      <p class="hint">Copy this into Claude or any editor assistant. It lists what to fix and your measured targets.</p>
+      <div class="row"><button id="make-prompt" data-testid="make-prompt" class="primary">Build revision prompt</button><button id="copy-prompt" data-testid="copy-prompt" class="ghost">Copy</button></div>
+      <textarea id="prompt" data-testid="prompt" rows="8" readonly aria-label="Revision prompt"></textarea>
+    </section>
+  </main>
+
+  <script src="src/analyzer.js"></script>
+  <script src="src/samples.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
