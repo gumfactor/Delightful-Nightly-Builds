@@ -1,0 +1,11 @@
+{
+  "name": "bayes-lab",
+  "version": "1.0.0",
+  "description": "Interactive Bayesian reasoning lab: six lessons, offline, no build step",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
