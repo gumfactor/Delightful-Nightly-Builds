@@ -1,0 +1,1 @@
+{"name":"reviewer-2","version":"1.0.0","description":"Spot the methodological flaw game","scripts":{"test":"playwright test"},"devDependencies":{"@playwright/test":"1.56.1"}}

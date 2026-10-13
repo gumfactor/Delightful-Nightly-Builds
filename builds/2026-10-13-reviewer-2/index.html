@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reviewer 2</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header><h1>Reviewer 2</h1><p class="sub">Every study has a flaw. Find it.</p></header>
+
+  <section id="screen-home" data-testid="home">
+    <div class="stats-row">
+      <div><span id="rank" data-testid="rank"></span><small>rank</small></div>
+      <div><span id="total-points" data-testid="total-points">0</span><small>points</small></div>
+      <div><span id="best-streak" data-testid="best-streak">0</span><small>best streak</small></div>
+    </div>
+    <button id="daily-btn" class="primary" data-testid="daily-btn">Daily Review</button>
+    <p id="daily-status" class="note"></p>
+    <button id="practice-btn" data-testid="practice-btn">Practice (targets your weak spots)</button>
+    <details>
+      <summary>Fresh cases from Claude</summary>
+      <p class="note">Calls the Anthropic API directly from this page. The key stays in this tab only (sessionStorage); nothing else is sent.</p>
+      <input id="key-input" type="password" autocomplete="off" placeholder="Anthropic API key" data-testid="key-input">
+      <button id="key-save" data-testid="key-save">Save key</button>
+      <span id="key-status" class="note"></span>
+      <button id="fresh-btn" data-testid="fresh-btn">Play 3 fresh cases</button>
+      <p id="ai-status" class="note" data-testid="ai-status" role="status"></p>
+    </details>
+    <h2>Accuracy by flaw</h2>
+    <ul id="flaw-stats" class="flaw-list"></ul>
+    <button id="reset-btn" class="link">Reset stats</button>
+  </section>
+
+  <section id="screen-play" hidden>
+    <div class="hud"><span id="progress" data-testid="progress"></span><span>Points <b id="points" data-testid="points">0</b></span><span>Streak <b id="streak" data-testid="streak">0</b></span></div>
+    <article class="card">
+      <h2 id="case-title" data-testid="case-title"></h2>
+      <p id="case-text" data-testid="case-text"></p>
+    </article>
+    <p class="prompt">What is the main flaw?</p>
+    <div id="choices"></div>
+    <button id="hint-btn" class="link" data-testid="hint-btn">Hint (−4 points)</button>
+    <p id="hint" class="hint" data-testid="hint" hidden></p>
+    <div id="feedback" hidden role="status"><b id="feedback-head" data-testid="feedback-head"></b><p id="feedback-body" data-testid="feedback-body"></p></div>
+    <button id="next-btn" class="primary" data-testid="next-btn" hidden>Next case</button>
+  </section>
+
+  <section id="screen-results" hidden data-testid="results">
+    <h2>Review submitted</h2>
+    <div class="stats-row">
+      <div><span id="final-score" data-testid="final-score"></span><small>points</small></div>
+      <div><span id="final-correct" data-testid="final-correct"></span><small>correct</small></div>
+      <div><span id="final-rank" data-testid="final-rank"></span><small>decision</small></div>
+    </div>
+    <div id="missed" data-testid="missed"></div>
+    <button id="home-btn" class="primary" data-testid="home-btn">Back to start</button>
+  </section>
+</main>
+<script src="cases.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
